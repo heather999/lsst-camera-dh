@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app version="2.4" xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
+    <session-config>
+        <session-timeout>
+            30
+        </session-timeout>
+    </session-config>
+    <display-name>LSST Camera Portal</display-name>
+
+    <context-param>
+        <param-name>
+            version
+        </param-name>
+        <param-value>
+            ${pom.version}
+        </param-value>
+    </context-param>
+
+    <!-- Default database connection -->
+    <context-param>
+      <param-name>
+        javax.servlet.jsp.jstl.sql.dataSource
+      </param-name>
+      <param-value>
+        jdbc/rd-lsst-cam-dev
+      </param-value>
+    </context-param>
+
+
+    <context-param>
+        <param-name>
+            applicationTitle
+        </param-name>
+        <param-value>
+            Portal
+        </param-value>
+    </context-param>
+    
+    <filter>
+        <filter-name>ModeSwitcherFilter</filter-name>
+        <filter-class>org.srs.web.base.filters.modeswitcher.ModeSwitcherFilter</filter-class>
+        <init-param>
+            <param-name>experiment</param-name>
+            <param-value>${experiment.name}</param-value>
+        </init-param>
+        <init-param>
+            <param-name>configDb</param-name>
+            <param-value>${experiment.configuration.database}</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>ModeSwitcherFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+
+    <!-- Adding Sitemesh Filter -->
+    <filter>
+        <filter-name>LoginFilter</filter-name>
+        <filter-class>org.srs.web.base.filters.login.LoginFilter</filter-class>
+        <init-param>
+            <param-name>configDb</param-name>
+            <param-value>${experiment.configuration.database}</param-value>
+        </init-param>
+    </filter>
+    <filter-mapping>
+        <filter-name>LoginFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+
+    <filter>
+        <filter-name>sitemesh</filter-name>
+        <filter-class>com.opensymphony.module.sitemesh.filter.PageFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>sitemesh</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+
+
+    <filter>
+        <filter-name>ResponseOverrideFilter</filter-name>
+        <filter-class>org.displaytag.filter.ResponseOverrideFilter</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>ResponseOverrideFilter</filter-name>
+        <url-pattern>*.jsp</url-pattern>
+    </filter-mapping>    
+    
+    
+    <welcome-file-list>
+        <welcome-file>
+            index.jsp
+        </welcome-file>
+    </welcome-file-list>
+
+
+    <context-param>
+      <param-name>org.srs.web.base.datasource.mode</param-name>
+      <param-value>dataSourceMode</param-value>
+    </context-param>
+    <context-param>
+      <param-name>org.srs.web.base.datasource.variable</param-name>
+      <param-value>etravelerDb</param-value>  
+    </context-param>
+    
+    <listener>
+        <listener-class>org.srs.web.base.datasource.DefaultDataSourceSwitcher</listener-class>
+    </listener>
+
+
+
+
+
+    <!-- Adding Servelet to make icons for the tree -->
+    <servlet>
+        <servlet-name>fhicon</servlet-name>
+        <servlet-class>org.freehep.webutil.tree.IconServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>fhicon</servlet-name>
+        <url-pattern>/icon.jsp</url-pattern>
+    </servlet-mapping>
+    <!-- Done adding Servelet to make icons for the tree -->
+
+    <!-- Adding AIDA TLD -->
+    <servlet>
+        <servlet-name>aidaplot</servlet-name>
+        <servlet-class>hep.aida.web.servlet.PlotServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>aidaplot</servlet-name>
+        <url-pattern>/aida_plot.jsp</url-pattern>
+    </servlet-mapping>
+    <!-- Done adding AIDA TLD -->
+
+</web-app>

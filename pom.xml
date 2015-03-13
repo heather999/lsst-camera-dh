@@ -1,0 +1,100 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+    <parent>
+        <groupId>srs</groupId>
+        <artifactId>org-srs-maven-project-war</artifactId>
+        <version>4.4</version>
+        <relativePath />
+    </parent>
+
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>org.lsst.camera</groupId>
+    <artifactId>org-lsst-camera-portal-web</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+    <name>LSST Camera Portal</name>    
+
+    <repositories>
+        <repository>
+            <id>srs-maven2-public</id>
+            <name>SRS Maven 2 central repository</name>
+            <url>http://srs.slac.stanford.edu/nexus/content/groups/srs-maven2-public/</url>
+        </repository>
+    </repositories>
+
+
+    <build>
+        <finalName>Portal</finalName>
+    </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>srs</groupId>
+            <artifactId>org-srs-web-base</artifactId>
+            <version>2.22</version>
+        </dependency>
+        <dependency>
+            <groupId>srs</groupId>
+            <artifactId>org-srs-maven-project-aida</artifactId>
+            <version>4.4</version>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-jaida</artifactId>
+            <version>3.4.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-graphicsio</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-graphicsio-pdf</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-graphicsio-swf</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-graphicsio-svg</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-graphicsio-ps</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-graphicsio-emf</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-graphicsbase</artifactId>
+            <version>2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.freehep</groupId>
+            <artifactId>freehep-export</artifactId>
+            <version>2.1.3</version>
+        </dependency>
+      <dependency>
+          <groupId>mysql</groupId>
+          <artifactId>mysql-connector-java</artifactId>
+          <version>5.1.18</version>
+      </dependency>
+     </dependencies>
+     
+     
+<properties>
+   <netbeans.hint.deploy.server>Apache Tomcat 7.0.59</netbeans.hint.deploy.server>
+</properties>
+
+</project>
