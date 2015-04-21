@@ -24,6 +24,11 @@ public class HdwStatusLoc {
     public void setLocation(String l) {
         location = l == null || "".equals(l) ? "NA" : l; 
     }
+    public void setValues(String id, String stat, String loc) {
+        lsstId = id == null || "".equals(id) ? "NA" : id; 
+        status = stat == null || "".equals(stat) ? "NA" : stat; 
+        location = loc == null || "".equals(loc) ? "NA" : loc; 
+    }
     public String getLsstId() {
         return lsstId;
     }

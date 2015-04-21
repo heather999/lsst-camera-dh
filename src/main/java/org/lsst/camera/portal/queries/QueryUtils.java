@@ -15,6 +15,7 @@ import java.util.Map;
 import javax.servlet.http.HttpSession;
 import org.lsst.camera.portal.data.TravelerStatus;
 import org.lsst.camera.portal.data.HardwareStatus;
+import org.lsst.camera.portal.data.HdwStatusLoc;
 import org.srs.web.base.db.ConnectionManager;
 
 /**
@@ -41,6 +42,27 @@ public class QueryUtils {
         return result;
     }
         
+    // Retrieve all the LsstIds of a certain HardwareType
+    // Return a Map of id, LsstId
+    public static Map getComponentIds(HttpSession session, Integer hdwType) {
+        HashMap<Integer,String> result = new HashMap<>();
+        
+       try ( Connection connection = ConnectionManager.getConnection(session) ) {
+           
+           PreparedStatement idStatement = connection.prepareStatement("select Hardware.id,Hardware.lsstId "+
+                   "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and HardwareType.id=? ");
+           idStatement.setInt(1, hdwType);
+           ResultSet r = idStatement.executeQuery();
+           while (r.next() ) {
+               result.put(r.getInt("id"), r.getString("lsstId"));
+           }            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return result;
+   
+    }
 
     public static String getTravelerStatus(TravelerStatus status, String travelerUniqueId) {
         String s = status.getTravelerStatus(travelerUniqueId);
@@ -127,41 +149,44 @@ public class QueryUtils {
         return result;
     }
 
-    /*
-  public static List getHdwStatLocTable(HttpSession session, ArrayList ccdList, String hardwareTypeId) {
-        List<TravelerStatus> result = new ArrayList<>();
-        Map<String,TravelerStatus> travelerStatusMap = new HashMap<>();
-        try ( Connection connection = ConnectionManager.getConnection(session) ) {
-            for (String ccd : ccdList.lsstId)
-           PreparedStatement hdwStatusStatement = connection.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "+
-                   "HardwareStatusHistory.hardwareStatusId from Hardware, HardwareStatusHistory, HardwareStatus "+
-                   "where Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "+
-                   "and Hardware.lsstId="${ccd.lsstId}" and Hardware.hardwareTypeId="?" order By HardwareStatusHistory.creationTS DESC");
-           hdwStatusStatement.setInt(2, Integer.valueOf(hardwareTypeId));
-           ResultSet r = travelerStatusStatement.executeQuery();
-           while (r.next() ) {
-               String lsstNumber = r.getString("lsstId");
-               TravelerStatus status = travelerStatusMap.get(lsstNumber);
-               if ( status == null ) {
-                   status = new TravelerStatus(lsstNumber);
-                   travelerStatusMap.put(lsstNumber,status);
-               }
-               String travelerName = r.getString("name");
-               String travelerVersion = r.getString("version");
-               String uniqueTravelerName = travelerName+"_"+travelerVersion;
-               String travelerFinalStatus = r.getString("activityFinalStatusId");
-               status.setTravelerStatus(uniqueTravelerName, travelerFinalStatus);
-           }            
+    public static List getHdwStatLocTable(HttpSession session, Integer hardwareTypeId) {
+        List<HdwStatusLoc> result = new ArrayList<>();
+        // Map<String,HdwStatLoc> travelerStatusMap = new HashMap<>(); 
+
+        try (Connection connection = ConnectionManager.getConnection(session)) {
+
+            Map<Integer, String> compIds = getComponentIds(session, hardwareTypeId);
+
+            for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
+                PreparedStatement hdwStatusStatement = connection.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
+                        + "HardwareStatusHistory.hardwareStatusId from Hardware, HardwareStatusHistory, HardwareStatus "
+                        + "where Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
+                        + "and Hardware.lsstId=? and Hardware.hardwareTypeId=? order By HardwareStatusHistory.creationTS DESC");
+                hdwStatusStatement.setString(1, lsstId);
+                hdwStatusStatement.setInt(2, Integer.valueOf(hardwareTypeId));
+
+                ResultSet statusResult = hdwStatusStatement.executeQuery();
+                statusResult.first();
+
+                PreparedStatement hdwLocStatement = connection.prepareStatement("SELECT Hardware.lsstId, Location.name, "
+                        + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location "
+                        + "where Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId "
+                        + "and Hardware.lsstId=? and Hardware.hardwareTypeId=? order By HardwareLocationHistory.creationTS DESC");
+                hdwLocStatement.setString(1,lsstId);
+                hdwLocStatement.setInt(2, Integer.valueOf(hardwareTypeId));
+                ResultSet locResult = hdwLocStatement.executeQuery();
+                locResult.first();
+                HdwStatusLoc hsl = new HdwStatusLoc();
+                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"));
+                result.add(hsl);
+
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        for (TravelerStatus status : travelerStatusMap.values()) {
-            result.add(status);
-        }
-        
+
         return result;
     }
-    
-    */
+
 }

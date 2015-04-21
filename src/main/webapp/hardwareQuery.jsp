@@ -49,7 +49,7 @@
 
         <c:choose>
             <c:when test="${empty selectedHdwTypeId}">
-                Please select a Harware Type from the above drop down menu.
+                Please select a Hardware Type from the above drop down menu.
             </c:when>
             <c:otherwise>
 

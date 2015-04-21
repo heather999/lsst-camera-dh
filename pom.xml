@@ -13,7 +13,7 @@
     <artifactId>org-lsst-camera-portal-web</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>war</packaging>
-    <name>LSST Camera Portal</name>    
+    <name>LSST Camera Data Portal</name>    
 
     <repositories>
         <repository>

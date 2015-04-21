@@ -10,7 +10,7 @@
     </tr>
     <tr valign="bottom" align="right">
         <td align="right" valign="bottom">
-            <srs_utils:conditonalLink name="Portal Home" url="index.jsp" iswelcome="true"/> |
+            <srs_utils:conditonalLink name="Data Portal Home" url="index.jsp" iswelcome="true"/> |
             <%--
             <srs_utils:conditonalLink name="Java" url="indexWithJava.jsp" /> |
             <srs_utils:conditonalLink name="Plots" url="plot.jsp" />

@@ -14,79 +14,73 @@
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
 
 
-    <head>
-        <title>CCD Current Status</title>
-    </head>
-     
-        <h1>CCD Current Status</h1>
-  <%-- Select CCD as the HardwareType for this page, scope session means all the pages? set scope to page --%>
-        <c:set var="ccdHdwTypeId" value="1" scope="session"/>  
-        <sql:query  var="ccdList"  >
-                select  Hardware.id,Hardware.lsstId from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and HardwareType.id=? 
-                <sql:param value="${ccdHdwTypeId}"/>
-        </sql:query>
-                
-        <display:table name="${ccdList.rows}" export="true" class="datatable"/>
-        
-           
-      
-        <c:forEach items="${ccdList.rows}" var="ccd">
-            <%@ page import = "java.sql.*" %>
-            <%
-                Connection conn =  DriverManager.getConnection("${pageContext.session}"); // <== Check!
+<head>
+    <title>CCD Overview</title>
+</head>
 
-                Statement stmt = conn.createStatement();
+<%-- Select CCD as the HardwareType for this page, scope session means all the pages? set scope to page --%>
+<c:set var="ccdHdwTypeId" value="1" scope="page"/>  
+<sql:query  var="ccdList"  >
+    select  Hardware.id,Hardware.lsstId from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and HardwareType.id=? 
+    <sql:param value="${ccdHdwTypeId}"/>
+</sql:query>
 
-                String sqlStr = "SELECT Hardware.lsstId AS lsstId, Process.name AS name,"
-                        + "Process.version AS version,Activity.begin,Activity.end,activityFinalStatusId,ActivityFinalStatus.name from Activity,"
-                        + "TravelerType,Process,Hardware,ActivityFinalStatus where Activity.processId=TravelerType.id and "
-                        + "Process.id=TravelerType.rootProcessId and Hardware.id=Activity.hardwareId and ";
-                 sqlStr += "ActivityFinalStatus.id=Activity.activityFinalStatusId ORDER BY Activity.begin DESC";
-              //  sqlStr += "Hardware.lsstId=\"${ccd.lsstId}\" and ActivityFinalStatus.id=Activity.activityFinalStatusId and Hardware.hardwareTypeId=\"${ccdHdwTypeId}\" ORDER BY Activity.begin DESC"
-              
- 
-          // for debugging
-          System.out.println("Query statement is " + sqlStr);
-          ResultSet rset = stmt.executeQuery(sqlStr);
-            %>
+<%-- <display:table name="${ccdList.rows}" export="true" class="datatable"/> --%>
 
-            
-            
-         <%--   <c:set var="hardwareStatusTable" value="${portal:getHardwareStatusTable(pageContext.session,ccdHdwTypeId,\"000-00\")}"/> --%>
-   
-           <%-- <c:set var="hardwareStatusTable" value="${portal:getHardwareStatusTable(pageContext.session,\"${ccd.lsstId}\")}" --%>
-         <%--   <display:table name="${hardwareStatusTable.rows}" export="true" class="datatable"/>
-            <display:table name="${hardwareStatusTable}" export="true" class="datatable" id="tst" >
-                <display:column title="Serial #" >${tst.lsstNumber}</display:column>
-                              
-            </display:table>
-         --%>
-        </c:forEach>
-        
-       <%-- <sql:query  var="ccdList"  >
-                select  Hardware.id,Hardware.lsstId from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and HardwareType.id=? 
-                <sql:param value="${selectedHdwTypeId}"/>
+
+<h1>CCD Most Recent Process Status</h1>
+
+
+<jsp:useBean id="aL" class="org.lsst.camera.portal.data.DataList" scope="page" />
+
+
+    <%-- Note use of concat in the query, the AS statement was not working otherwise 
+    http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
+    --%>
+
+    <c:forEach items="${ccdList.rows}" var="ccd">
+        <sql:query var="activityQuery">
+            SELECT Hardware.lsstId, concat(Process.name,'') as Process, Activity.inNCR,
+            Process.version AS version,Activity.begin,Activity.end,concat(ActivityFinalStatus.name,'') AS Status from Activity,
+            TravelerType,Process,Hardware,ActivityFinalStatus where Activity.processId=TravelerType.id and 
+            Process.id=TravelerType.rootProcessId and Hardware.id=Activity.hardwareId and 
+            Hardware.lsstId="${ccd.lsstId}" and ActivityFinalStatus.id=Activity.activityFinalStatusId and Hardware.hardwareTypeId="${ccdHdwTypeId}" ORDER BY Activity.begin DESC
         </sql:query>
 
-                
+        <c:forEach items="${activityQuery.rows}" var="row" begin="0" end="0"> 
+                <jsp:setProperty name="aL" property="child" value="${row}" />
+        </c:forEach> 
 
-         <h3>CCD Ids</h3>
-            <display:table name="${ccdList.rows}" export="true" class="datatable"/>
-
-         <h3>CCD Activity</h3>
-            <c:forEach items="${ccdList.rows}" var="ccd">
-                <sql:query var="activityQuery">
-                   select  Hardware.lsstId, Process.name,Process.version,Activity.begin,Activity.end,activityFinalStatusId,ActivityFinalStatus.name from Activity,TravelerType,Process,Hardware,ActivityFinalStatus where Activity.processId=TravelerType.id and Process.id=TravelerType.rootProcessId and Hardware.id=Activity.hardwareId and Hardware.lsstId="${ccd.lsstId}" and ActivityFinalStatus.id=Activity.activityFinalStatusId and Hardware.hardwareTypeId=? ORDER BY Activity.begin DESC;
-                   <sql:param value="${selectedHdwTypeId}"/>
-                </sql:query>
-                   
-                <display:table name="${activityQuery.rows}" export="true" class="datatable"/>
-            </c:forEach>
-           --%> 
-
-            
-
-            
-
+    </c:forEach>
     
 
+<display:table name="${aL}" export="true" class="datatable" id="mainTable"> 
+     <display:column title="LsstId" sortable="true"> <c:out value="${mainTable.lsstId}"/> </display:column> 
+     <display:column title="Most Recent Process" sortable="true"> <c:out value="${mainTable.Process}"/> </display:column> 
+     <display:column title="Version" sortable="true"> <c:out value="${mainTable.version}"/> </display:column> 
+     <display:column title="Status" sortable="true"> <c:out value="${mainTable.Status}"/> </display:column> 
+     <display:column title="Start Time" sortable="true"> <c:out value="${mainTable.begin}"/> </display:column>
+     <display:column title="End Time" sortable="true"> <c:out value="${mainTable.end}"/> </display:column>
+     <display:column title="inNCR" sortable="true"> <c:out value="${mainTable.inNCR}"/> </display:column>
+</display:table>
+
+
+
+
+<%--
+<c:set var="componentIdTable" value="${portal:getComponentIds(pageContext.session,ccdHdwTypeId)}"/>
+
+<display:table name="${componentIdTable}" export="true" class="datatable" id="ccdId" >
+</display:table>
+--%>
+
+<h1>CCD Current Status and Location</h1>
+<c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
+
+<display:table name="${hdwStatLocTable}" export="true" class="datatable" id="hdl" >
+    <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column>
+    <display:column title="Current Status" sortable="true" >${hdl.status}</display:column>
+    <display:column title="Current Location" sortable="true" >${hdl.location}</display:column>
+</display:table>
+
+   
