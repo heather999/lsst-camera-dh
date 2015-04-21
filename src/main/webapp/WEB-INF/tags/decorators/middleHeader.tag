@@ -4,4 +4,4 @@
 <%@taglib uri="http://www.opensymphony.com/sitemesh/decorator" prefix="decorator" %>
 <%@taglib prefix="srs_utils" uri="http://srs.slac.stanford.edu/utils" %>
 
-THIS IS THE HEADER
+<a href="https://confluence.slac.stanford.edu/display/LSSTCAM/eTraveler+and+data+portal+User+Guide" title="User Guide" style=""><strong>eTraveler/data Portal User Guide</strong></a>

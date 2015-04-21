@@ -19,4 +19,14 @@
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
     <function-signature>java.lang.String getTravelerStatus(org.lsst.camera.portal.data.TravelerStatus,java.lang.String)</function-signature>
   </function>
+  <function>
+    <name>getHardwareStatusTable</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.util.List getHardwareStatusTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.String)</function-signature>
+  </function>
+    <function>
+    <name>getHardwareStatus</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.lang.String getHardwareStatus(org.lsst.camera.portal.data.HardwareStatus,java.lang.String)</function-signature>
+  </function>
 </taglib>
