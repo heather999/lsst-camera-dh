@@ -5,7 +5,7 @@
             30
         </session-timeout>
     </session-config>
-    <display-name>LSST Camera Portal</display-name>
+    <display-name>LSST Camera Data Portal</display-name>
 
     <context-param>
         <param-name>
@@ -32,7 +32,7 @@
             applicationTitle
         </param-name>
         <param-value>
-            Portal
+            DataPortal
         </param-value>
     </context-param>
     

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context path="/Portal">
+<Context path="/DataPortal">
   <ResourceLink global="jdbc/config-prod" name="jdbc/config-prod" type="javax.sql.DataSource"/>
   <ResourceLink global="jdbc/config-srs" name="jdbc/config-srs" type="javax.sql.DataSource"/>
   <ResourceLink global="jdbc/rd-lsst-cam" name="jdbc/rd-lsst-cam" type="javax.sql.DataSource" />
