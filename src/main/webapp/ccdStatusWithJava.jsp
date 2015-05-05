@@ -81,6 +81,7 @@
     <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column>
     <display:column title="Current Status" sortable="true" >${hdl.status}</display:column>
     <display:column title="Current Location" sortable="true" >${hdl.location}</display:column>
+    <display:column title="Current Site" sortable="true" >${hdl.site}</display:column>
 </display:table>
 
    

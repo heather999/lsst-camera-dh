@@ -13,6 +13,7 @@ public class HdwStatusLoc {
     private String lsstId;
     private String status;
     private String location;
+    private String site;
     
    
     public void setLsstId(String id) {
@@ -24,10 +25,15 @@ public class HdwStatusLoc {
     public void setLocation(String l) {
         location = l == null || "".equals(l) ? "NA" : l; 
     }
-    public void setValues(String id, String stat, String loc) {
+    public void setSite(String l) {
+        location = l == null || "".equals(l) ? "NA" : l; 
+    }
+    
+    public void setValues(String id, String stat, String loc, String s) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
         status = stat == null || "".equals(stat) ? "NA" : stat; 
         location = loc == null || "".equals(loc) ? "NA" : loc; 
+        site = s == null || "".equals(s) ? "NA" : s;
     }
     public String getLsstId() {
         return lsstId;
@@ -37,6 +43,9 @@ public class HdwStatusLoc {
     }
     public String getLocation() {
         return location;
+    }
+    public String getSite() { 
+        return site;
     }
     
     

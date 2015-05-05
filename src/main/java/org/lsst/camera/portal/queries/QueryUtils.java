@@ -158,6 +158,7 @@ public class QueryUtils {
             Map<Integer, String> compIds = getComponentIds(session, hardwareTypeId);
 
             for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
+                // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
                 PreparedStatement hdwStatusStatement = connection.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
                         + "HardwareStatusHistory.hardwareStatusId from Hardware, HardwareStatusHistory, HardwareStatus "
                         + "where Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
@@ -168,16 +169,17 @@ public class QueryUtils {
                 ResultSet statusResult = hdwStatusStatement.executeQuery();
                 statusResult.first();
 
-                PreparedStatement hdwLocStatement = connection.prepareStatement("SELECT Hardware.lsstId, Location.name, "
-                        + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location "
-                        + "where Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId "
+                // Retrieve the list of locations associated with this CCD, ordered by creation time in descending order
+                PreparedStatement hdwLocStatement = connection.prepareStatement("SELECT Hardware.lsstId, Location.name, Site.name AS sname, "
+                        + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location, Site "
+                        + "where Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
                         + "and Hardware.lsstId=? and Hardware.hardwareTypeId=? order By HardwareLocationHistory.creationTS DESC");
                 hdwLocStatement.setString(1,lsstId);
                 hdwLocStatement.setInt(2, Integer.valueOf(hardwareTypeId));
                 ResultSet locResult = hdwLocStatement.executeQuery();
                 locResult.first();
                 HdwStatusLoc hsl = new HdwStatusLoc();
-                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"));
+                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"), locResult.getString("sname"));
                 result.add(hsl);
 
             }
