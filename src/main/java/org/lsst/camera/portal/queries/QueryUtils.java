@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,14 +49,24 @@ public class QueryUtils {
         HashMap<Integer,String> result = new HashMap<>();
         
        try ( Connection connection = ConnectionManager.getConnection(session) ) {
-           
+           // Construct Query selection using the list of input hardware types
+           //String str="";
+           //Iterator itr = hdwTypeCol.iterator();
+           //while(itr.hasNext()) {
+           //    Integer i = itr.next();
+           //    str+="Hardware.hardwareTypeId=" + Integer.toString(i);
+           //    if (itr.hasNext()) str += " OR ";
+          // }
            PreparedStatement idStatement = connection.prepareStatement("select Hardware.id,Hardware.lsstId "+
-                   "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and HardwareType.id=? ");
+                   "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and (HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)");
+          // PreparedStatement idStatement = connection.prepareStatement("SELECT Hardware.id,Hardware.lsstId "+
+           //        "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND " + str);
            idStatement.setInt(1, hdwType);
            ResultSet r = idStatement.executeQuery();
            while (r.next() ) {
                result.put(r.getInt("id"), r.getString("lsstId"));
-           }            
+           }
+          
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -162,7 +173,7 @@ public class QueryUtils {
                 PreparedStatement hdwStatusStatement = connection.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
                         + "HardwareStatusHistory.hardwareStatusId from Hardware, HardwareStatusHistory, HardwareStatus "
                         + "where Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
-                        + "and Hardware.lsstId=? and Hardware.hardwareTypeId=? order By HardwareStatusHistory.creationTS DESC");
+                        + "and Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=9 OR Hardware.hardwareTypeId=10) order By HardwareStatusHistory.creationTS DESC");
                 hdwStatusStatement.setString(1, lsstId);
                 hdwStatusStatement.setInt(2, Integer.valueOf(hardwareTypeId));
 
@@ -173,7 +184,7 @@ public class QueryUtils {
                 PreparedStatement hdwLocStatement = connection.prepareStatement("SELECT Hardware.lsstId, Location.name, Site.name AS sname, "
                         + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location, Site "
                         + "where Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
-                        + "and Hardware.lsstId=? and Hardware.hardwareTypeId=? order By HardwareLocationHistory.creationTS DESC");
+                        + "and Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=9 OR Hardware.hardwareTypeId=10) order By HardwareLocationHistory.creationTS DESC");
                 hdwLocStatement.setString(1,lsstId);
                 hdwLocStatement.setInt(2, Integer.valueOf(hardwareTypeId));
                 ResultSet locResult = hdwLocStatement.executeQuery();

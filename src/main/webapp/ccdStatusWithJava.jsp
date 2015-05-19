@@ -28,40 +28,52 @@
 <%-- <display:table name="${ccdList.rows}" export="true" class="datatable"/> --%>
 
 
-<h1>CCD Most Recent Process Status</h1>
+<h1>CCD Most Recent Process Step Status</h1>
 
 
 <jsp:useBean id="aL" class="org.lsst.camera.portal.data.DataList" scope="page" />
 
 
-    <%-- Note use of concat in the query, the AS statement was not working otherwise 
-    http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
+<%-- Note use of concat in the query, the AS statement was not working otherwise 
+http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
+--%>
+
+<c:forEach items="${ccdList.rows}" var="ccd">
+    <%--        <sql:query var="activityQuery">
+                SELECT Hardware.lsstId, concat(Process.name,'') as Process, Activity.inNCR,
+                Process.version AS version,Activity.begin,Activity.end,concat(ActivityFinalStatus.name,'') AS Status from Activity,
+                TravelerType,Process,Hardware,ActivityFinalStatus WHERE Activity.processId=TravelerType.rootProcessId and 
+                Process.id=TravelerType.rootProcessId and Hardware.id=Activity.hardwareId and 
+                Hardware.lsstId="${ccd.lsstId}" and Hardware.hardwareTypeId="${ccdHdwTypeId}" ORDER BY Activity.begin DESC
+            </sql:query>
     --%>
 
-    <c:forEach items="${ccdList.rows}" var="ccd">
-        <sql:query var="activityQuery">
-            SELECT Hardware.lsstId, concat(Process.name,'') as Process, Activity.inNCR,
-            Process.version AS version,Activity.begin,Activity.end,concat(ActivityFinalStatus.name,'') AS Status from Activity,
-            TravelerType,Process,Hardware,ActivityFinalStatus where Activity.processId=TravelerType.id and 
-            Process.id=TravelerType.rootProcessId and Hardware.id=Activity.hardwareId and 
-            Hardware.lsstId="${ccd.lsstId}" and ActivityFinalStatus.id=Activity.activityFinalStatusId and Hardware.hardwareTypeId="${ccdHdwTypeId}" ORDER BY Activity.begin DESC
-        </sql:query>
+    <sql:query var="activityQuery">
+        SELECT H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR,
+        P.version AS version,A.begin,A.end,concat(AFS.name,'') as status
+        FROM Hardware H, Process P, 
+        Activity A INNER JOIN ActivityStatusHistory on ActivityStatusHistory.activityId=A.id and 
+        ActivityStatusHistory.id=(select max(id) from ActivityStatusHistory where activityId=A.id)
+        INNER JOIN ActivityFinalStatus AFS on AFS.id=ActivityStatusHistory.activityStatusId
+        WHERE H.id=A.hardwareId AND H.lsstId="${ccd.lsstId}" AND H.hardwareTypeId="${ccdHdwTypeId}" AND P.id=A.processId
+        ORDER BY A.id DESC LIMIT 1
+    </sql:query>
 
-        <c:forEach items="${activityQuery.rows}" var="row" begin="0" end="0"> 
-                <jsp:setProperty name="aL" property="child" value="${row}" />
-        </c:forEach> 
+    <c:forEach items="${activityQuery.rows}" var="row" begin="0" end="0"> 
+        <jsp:setProperty name="aL" property="child" value="${row}" />
+    </c:forEach> 
 
-    </c:forEach>
-    
+</c:forEach>
+
 
 <display:table name="${aL}" export="true" class="datatable" id="mainTable"> 
-     <display:column title="LsstId" sortable="true"> <c:out value="${mainTable.lsstId}"/> </display:column> 
-     <display:column title="Most Recent Process" sortable="true"> <c:out value="${mainTable.Process}"/> </display:column> 
-     <display:column title="Version" sortable="true"> <c:out value="${mainTable.version}"/> </display:column> 
-     <display:column title="Status" sortable="true"> <c:out value="${mainTable.Status}"/> </display:column> 
-     <display:column title="Start Time" sortable="true"> <c:out value="${mainTable.begin}"/> </display:column>
-     <display:column title="End Time" sortable="true"> <c:out value="${mainTable.end}"/> </display:column>
-     <display:column title="inNCR" sortable="true"> <c:out value="${mainTable.inNCR}"/> </display:column>
+    <display:column title="LsstId" sortable="true"> <c:out value="${mainTable.lsstId}"/> </display:column> 
+    <display:column title="Most Recent Process" sortable="true"> <c:out value="${mainTable.process}"/> </display:column> 
+    <display:column title="Version" sortable="true"> <c:out value="${mainTable.version}"/> </display:column> 
+    <display:column title="Status" sortable="true"> <c:out value="${mainTable.status}"/> </display:column> 
+    <display:column title="Start Time" sortable="true"> <c:out value="${mainTable.begin}"/> </display:column>
+    <display:column title="End Time" sortable="true"> <c:out value="${mainTable.end}"/> </display:column>
+    <display:column title="inNCR" sortable="true"> <c:out value="${mainTable.inNCR}"/> </display:column>
 </display:table>
 
 

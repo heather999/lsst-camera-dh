@@ -25,6 +25,8 @@
             <li><a href="/DataPortal/ccdStatusWithJava.jsp" title="CCD Status" style=""><strong>Overview All CCDs</strong></a></li>
                 
             <li><a href="/DataPortal/oneComponent.jsp" title="CCD Status" style=""><strong>CCD Explorer</strong></a></li>
+            
+            <li><a href="/DataPortal/eTravelerPortal.jsp" title "eTraveler Portal" style=""><strong>eTraveler Portal</strong></a></li>
              
             </ul>
 
