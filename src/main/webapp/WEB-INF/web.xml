@@ -36,6 +36,25 @@
         </param-value>
     </context-param>
     
+    <context-param>
+      <param-name>
+        titleHeight
+      </param-name>
+      <param-value>
+        60
+      </param-value>
+    </context-param>
+   
+   <!--Size of LSST Logo -->
+    <context-param>
+      <param-name>
+        imageHeight
+      </param-name>
+      <param-value>
+        100
+      </param-value>
+    </context-param>
+    
     <filter>
         <filter-name>ModeSwitcherFilter</filter-name>
         <filter-class>org.srs.web.base.filters.modeswitcher.ModeSwitcherFilter</filter-class>

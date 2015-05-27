@@ -21,12 +21,24 @@
 <%-- Select CCD as the HardwareType for this page, scope session means all the pages? set scope to page --%>
 <c:set var="ccdHdwTypeId" value="1" scope="page"/>  
 <sql:query  var="ccdList"  >
-    select  Hardware.id,Hardware.lsstId from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and HardwareType.id=? 
+    select  Hardware.id,Hardware.lsstId from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and (HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10) 
     <sql:param value="${ccdHdwTypeId}"/>
 </sql:query>
 
 <%-- <display:table name="${ccdList.rows}" export="true" class="datatable"/> --%>
 
+<h1>CCD Current Status and Location</h1>
+<c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
+
+<display:table name="${hdwStatLocTable}" export="true" class="datatable" id="hdl" >
+    <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column>
+    <display:column title="Status" sortable="true" >${hdl.status}</display:column>
+    <display:column title="Site" sortable="true" >${hdl.site}</display:column>
+    <display:column title="Location" sortable="true" >${hdl.location}</display:column>
+    <display:column title="Date Registered" sortable="true" >${hdl.creationDate}</display:column>
+</display:table>
+
+   
 
 <h1>CCD Most Recent Process Step Status</h1>
 
@@ -39,15 +51,6 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 --%>
 
 <c:forEach items="${ccdList.rows}" var="ccd">
-    <%--        <sql:query var="activityQuery">
-                SELECT Hardware.lsstId, concat(Process.name,'') as Process, Activity.inNCR,
-                Process.version AS version,Activity.begin,Activity.end,concat(ActivityFinalStatus.name,'') AS Status from Activity,
-                TravelerType,Process,Hardware,ActivityFinalStatus WHERE Activity.processId=TravelerType.rootProcessId and 
-                Process.id=TravelerType.rootProcessId and Hardware.id=Activity.hardwareId and 
-                Hardware.lsstId="${ccd.lsstId}" and Hardware.hardwareTypeId="${ccdHdwTypeId}" ORDER BY Activity.begin DESC
-            </sql:query>
-    --%>
-
     <sql:query var="activityQuery">
         SELECT H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR,
         P.version AS version,A.begin,A.end,concat(AFS.name,'') as status
@@ -55,7 +58,8 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
         Activity A INNER JOIN ActivityStatusHistory on ActivityStatusHistory.activityId=A.id and 
         ActivityStatusHistory.id=(select max(id) from ActivityStatusHistory where activityId=A.id)
         INNER JOIN ActivityFinalStatus AFS on AFS.id=ActivityStatusHistory.activityStatusId
-        WHERE H.id=A.hardwareId AND H.lsstId="${ccd.lsstId}" AND H.hardwareTypeId="${ccdHdwTypeId}" AND P.id=A.processId
+        WHERE H.id=A.hardwareId AND H.lsstId="${ccd.lsstId}" AND 
+        (H.hardwareTypeId="${ccdHdwTypeId}" OR H.hardwareTypeId=9 OR H.hardwareTypeId=10) AND P.id=A.processId
         ORDER BY A.id DESC LIMIT 1
     </sql:query>
 
@@ -78,22 +82,3 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 
 
 
-
-<%--
-<c:set var="componentIdTable" value="${portal:getComponentIds(pageContext.session,ccdHdwTypeId)}"/>
-
-<display:table name="${componentIdTable}" export="true" class="datatable" id="ccdId" >
-</display:table>
---%>
-
-<h1>CCD Current Status and Location</h1>
-<c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
-
-<display:table name="${hdwStatLocTable}" export="true" class="datatable" id="hdl" >
-    <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column>
-    <display:column title="Status" sortable="true" >${hdl.status}</display:column>
-    <display:column title="Site" sortable="true" >${hdl.site}</display:column>
-    <display:column title="Location" sortable="true" >${hdl.location}</display:column>
-</display:table>
-
-   

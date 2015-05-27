@@ -181,7 +181,8 @@ public class QueryUtils {
                 statusResult.first();
 
                 // Retrieve the list of locations associated with this CCD, ordered by creation time in descending order
-                PreparedStatement hdwLocStatement = connection.prepareStatement("SELECT Hardware.lsstId, Location.name, Site.name AS sname, "
+                PreparedStatement hdwLocStatement = connection.prepareStatement("SELECT Hardware.lsstId, Hardware.creationTS,"
+                        + " Hardware.hardwareTypeId, Location.name, Site.name AS sname, "
                         + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location, Site "
                         + "where Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
                         + "and Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=9 OR Hardware.hardwareTypeId=10) order By HardwareLocationHistory.creationTS DESC");
@@ -190,7 +191,7 @@ public class QueryUtils {
                 ResultSet locResult = hdwLocStatement.executeQuery();
                 locResult.first();
                 HdwStatusLoc hsl = new HdwStatusLoc();
-                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"), locResult.getString("sname"));
+                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"), locResult.getString("sname"), locResult.getString("creationTS"));
                 result.add(hsl);
 
             }
@@ -201,5 +202,10 @@ public class QueryUtils {
 
         return result;
     }
+    
+    //
+//    public static Map getHdwGroup(HttpSession session, String lsstId) {
+        
+ //   }
 
 }
