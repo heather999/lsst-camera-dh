@@ -8,6 +8,7 @@ package org.lsst.camera.portal.queries;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
@@ -17,6 +18,7 @@ import javax.servlet.http.HttpSession;
 import org.lsst.camera.portal.data.TravelerStatus;
 import org.lsst.camera.portal.data.HardwareStatus;
 import org.lsst.camera.portal.data.HdwStatusLoc;
+import org.lsst.camera.portal.data.Activity;
 import org.srs.web.base.db.ConnectionManager;
 
 /**
@@ -41,6 +43,37 @@ public class QueryUtils {
         }
         
         return result;
+    }
+    
+    
+    
+    public static Map getActivityMap(HttpSession session, Integer hdwId){
+        Map<Integer,Activity> activityMap = new HashMap<>();
+         try ( Connection connection = ConnectionManager.getConnection(session) ) {
+       
+           PreparedStatement idStatement = connection.prepareStatement("SELECT A.id, "+
+                   "A.hardwareId, A.processId, A.parentActivityId, ASH.activityStatusId, "+
+                   "AFS.name FROM " +
+                   "Activity A INNER JOIN ActivityStatusHistory ASH ON ASH.activityId=A.id AND " +
+                   "ASH.id=(select max(id) FROM ActivityStatusHistory WHERE activityId=A.id) " +
+                   "INNER JOIN ActivityFinalStatus AFS ON AFS.id=ASH.activityStatusId " +
+                   "WHERE hardwareId=? ORDER BY A.id DESC");
+           idStatement.setInt(1, hdwId);
+           ResultSet r = idStatement.executeQuery();
+           int index = 0;
+           while (r.next() ) {
+               // Need to check for null values in the parentId column
+               int parentId = r.getInt("parentActivityId");
+               if (parentId == 0 && r.wasNull()) parentId = -999;
+               activityMap.put(r.getInt("id"), new Activity(r.getInt("id"), r.getInt("processId"), parentId, r.getInt("hardwareId"), 
+                       r.getInt("activityStatusId"),r.getString("name"),index++));
+           }
+          
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return activityMap;
     }
         
     // Retrieve all the LsstIds of a certain HardwareType
@@ -82,12 +115,13 @@ public class QueryUtils {
     
     
     
-    public static List getTravelerStatusTable(HttpSession session, String hardwareTypeId) {
+    public static List getTravelerStatusTable(HttpSession session, String hardwareTypeId) throws SQLException {
         List<TravelerStatus> result = new ArrayList<>();
         Map<String,TravelerStatus> travelerStatusMap = new HashMap<>();
-        try ( Connection connection = ConnectionManager.getConnection(session) ) {
-           
-           PreparedStatement travelerStatusStatement = connection.prepareStatement("select  Hardware.lsstId, Process.name,Process.version,Activity.begin,Activity.end,activityFinalStatusId "+
+        Connection c=null;
+        try {
+           c = ConnectionManager.getConnection(session);
+           PreparedStatement travelerStatusStatement = c.prepareStatement("select  Hardware.lsstId, Process.name,Process.version,Activity.begin,Activity.end,activityFinalStatusId "+
                    "from Activity,TravelerType,Process,Hardware where Activity.processId=TravelerType.id and Process.id=TravelerType.rootProcessId "+
                    "and Hardware.id=Activity.hardwareId and Hardware.hardwareTypeId=?");
            travelerStatusStatement.setInt(1, Integer.valueOf(hardwareTypeId));
@@ -105,14 +139,20 @@ public class QueryUtils {
                String travelerFinalStatus = r.getString("activityFinalStatusId");
                status.setTravelerStatus(uniqueTravelerName, travelerFinalStatus);
            }            
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
         
         for (TravelerStatus status : travelerStatusMap.values()) {
             result.add(status);
         }
         
+        
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+            //Close the connection
+                c.close();
+            }
+        }
         return result;
     }
     
@@ -181,7 +221,7 @@ public class QueryUtils {
                 statusResult.first();
 
                 // Retrieve the list of locations associated with this CCD, ordered by creation time in descending order
-                PreparedStatement hdwLocStatement = connection.prepareStatement("SELECT Hardware.lsstId, Hardware.creationTS,"
+                PreparedStatement hdwLocStatement = connection.prepareStatement("SELECT Hardware.lsstId, Hardware.id, Hardware.creationTS,"
                         + " Hardware.hardwareTypeId, Location.name, Site.name AS sname, "
                         + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location, Site "
                         + "where Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
@@ -190,8 +230,49 @@ public class QueryUtils {
                 hdwLocStatement.setInt(2, Integer.valueOf(hardwareTypeId));
                 ResultSet locResult = hdwLocStatement.executeQuery();
                 locResult.first();
+                
+                // Retrieve most recent Traveler
+                Map<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"));
+                String travelerName = "NA";
+                int processId=-1;
+                boolean found = false;
+                Activity a = null;
+                // Find the starting activity by searching for the one with index == 0
+                for (Map.Entry<Integer, Activity> entry : activityMap.entrySet()) {
+                    Activity act = entry.getValue();
+                    if (act.getIndex() == 0) {
+                        a = act;
+                        break;
+                    }
+                }
+                if (a != null) {
+                    // Starting with this child activity, find the parent activity and the processId
+                    while (!found) {
+                        if (a.isParent()) {
+                            found = true;
+                            processId = a.getProcessId();
+                            break;
+                        } else {
+                            int actId = a.getParentActivityId();
+                            a = activityMap.get(actId);
+                            if (a == null) {
+                                found = true;
+                            }
+
+                        }
+
+                    }
+                    PreparedStatement travelerStatement = connection.prepareStatement("SELECT Process.name FROM "+
+                            "Process WHERE Process.id=?"); 
+                    travelerStatement.setInt(1,Integer.valueOf(processId));
+                    ResultSet travelerResult = travelerStatement.executeQuery();
+                    travelerResult.first();
+                    if (travelerResult != null) travelerName = travelerResult.getString("name");
+                }
+                
                 HdwStatusLoc hsl = new HdwStatusLoc();
-                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"), locResult.getString("sname"), locResult.getString("creationTS"));
+                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"), locResult.getString("sname"), locResult.getString("creationTS"),travelerName);
+                //hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"), locResult.getString("sname"), locResult.getString("creationTS"));
                 result.add(hsl);
 
             }

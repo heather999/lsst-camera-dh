@@ -40,4 +40,9 @@
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
     <function-signature>java.lang.String getHardwareStatus(org.lsst.camera.portal.data.HardwareStatus,java.lang.String)</function-signature>
   </function>
+  <function>
+    <name>getActivityMap</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.util.Map getActivityMap(javax.servlet.http.HttpSession,java.lang.Integer)</function-signature>
+  </function>
 </taglib>

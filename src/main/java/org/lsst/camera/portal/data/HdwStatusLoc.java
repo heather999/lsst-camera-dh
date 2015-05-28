@@ -15,6 +15,7 @@ public class HdwStatusLoc {
     private String location;
     private String site;
     private String creationDate;
+    private String curTravelerName;
     
    
     public void setLsstId(String id) {
@@ -32,12 +33,16 @@ public class HdwStatusLoc {
     public void setCreationDate(String l) {
         creationDate = l == null || "".equals(l) ? "NA" : l; 
     }
-    public void setValues(String id, String stat, String loc, String s, String c) {
+    public void setCurTravelerName(String l) {
+        curTravelerName = l == null || "".equals(l) ? "NA" : l; 
+    }
+    public void setValues(String id, String stat, String loc, String s, String c, String name) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
         status = stat == null || "".equals(stat) ? "NA" : stat; 
         location = loc == null || "".equals(loc) ? "NA" : loc; 
         site = s == null || "".equals(s) ? "NA" : s;
         creationDate = c == null || "".equals(c) ? "NA" : c;
+        curTravelerName = name == null || "".equals(name) ? "NA" : name;
     }
     public String getLsstId() {
         return lsstId;
@@ -53,6 +58,9 @@ public class HdwStatusLoc {
     }
     public String getCreationDate() {
         return creationDate;
+    }
+    public String getCurTravelerName() {
+        return curTravelerName;
     }
     
 }
