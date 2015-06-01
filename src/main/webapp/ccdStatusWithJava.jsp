@@ -33,7 +33,7 @@
 <display:table name="${hdwStatLocTable}" export="true" class="datatable" id="hdl" >
     <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column>
     <display:column title="Current Traveler" sortable="true" >${hdl.curTravelerName}</display:column>
-    <display:column title="Status" sortable="true" >${hdl.status}</display:column>
+    <display:column title="Overall Component Status" sortable="true" >${hdl.status}</display:column>
     <display:column title="Site" sortable="true" >${hdl.site}</display:column>
     <display:column title="Location" sortable="true" >${hdl.location}</display:column>
     <display:column title="Date Registered" sortable="true" >${hdl.creationDate}</display:column>
