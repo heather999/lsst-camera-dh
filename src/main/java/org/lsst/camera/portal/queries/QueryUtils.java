@@ -10,10 +10,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import javax.servlet.http.HttpSession;
 import org.lsst.camera.portal.data.TravelerStatus;
 import org.lsst.camera.portal.data.HardwareStatus;
@@ -50,15 +52,15 @@ public class QueryUtils {
         return result;
     }
 
-    public static Map getActivityMap(HttpSession session, Integer hdwId) throws SQLException {
-        Map<Integer, Activity> activityMap = new HashMap<>();
+    public static TreeMap getActivityMap(HttpSession session, Integer hdwId) throws SQLException {
+        TreeMap<Integer, Activity> activityMap = new TreeMap<>();
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
 
             PreparedStatement idStatement = c.prepareStatement("SELECT A.id, "
                     + "A.hardwareId, A.processId, A.parentActivityId, ASH.activityStatusId, "
-                    + "AFS.name FROM "
+                    + "AFS.name, A.end, A.begin FROM "
                     + "Activity A INNER JOIN ActivityStatusHistory ASH ON ASH.activityId=A.id AND "
                     + "ASH.id=(select max(id) FROM ActivityStatusHistory WHERE activityId=A.id) "
                     + "INNER JOIN ActivityFinalStatus AFS ON AFS.id=ASH.activityStatusId "
@@ -72,8 +74,10 @@ public class QueryUtils {
                 if (parentId == 0 && r.wasNull()) {
                     parentId = -999;
                 }
+                // Use the keep track of order by activity Id
                 activityMap.put(r.getInt("id"), new Activity(r.getInt("id"), r.getInt("processId"), parentId, r.getInt("hardwareId"),
-                        r.getInt("activityStatusId"), r.getString("name"), index++));
+                        r.getInt("activityStatusId"), r.getString("name"), r.getTimestamp("begin"), r.getTimestamp("end"),index));
+                index++;
             }
 
         } catch (Exception e) {
@@ -255,31 +259,59 @@ public class QueryUtils {
                 locResult.first();
 
                 // Retrieve most recent Traveler
-                Map<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"));
+                TreeMap<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"));
+                
                 String travelerName = "NA";
+                String curActProcName = "NA";
+                String curActStatusName = "NA";
+                Date curActLastTime = null;
+                java.util.Date travStartTime = null;
                 int processId = -1;
                 boolean found = false;
                 Activity a = null;
                 // Find the starting activity by searching for the one with index == 0
-                for (Map.Entry<Integer, Activity> entry : activityMap.entrySet()) {
-                    Activity act = entry.getValue();
-                    if (act.getIndex() == 0) {
-                        a = act;
-                        break;
-                    }
+                // This loop isn't really necessary - since we know the first element in the map is index == 0
+                if (activityMap.size() > 0) {
+                    Integer lastKey = activityMap.lastKey();
+                    a = activityMap.get(lastKey);
                 }
+                //for (Map.Entry<Integer, Activity> entry : activityMap.entrySet()) {
+                //    Activity act = entry.getValue();
+                //    if (act.getIndex() == 0) {
+                //        a = act;
+                //        break;
+                //   }
+                //}
                 if (a != null) {
                     // Starting with this child activity, find the parent activity and the processId
+                    curActStatusName = a.getStatusName();
+                    //  curActLastTime = a.getEndTime() == null ? a.getBeginTime() : a.getEndTime();
+                    PreparedStatement curProcessStatement = c.prepareStatement("SELECT Process.name FROM "
+                            + "Process WHERE Process.id=?");
+                    curProcessStatement.setInt(1, Integer.valueOf(a.getProcessId()));
+                    ResultSet curProcessResult = curProcessStatement.executeQuery();
+                    curProcessResult.first();
+                    if (curProcessResult != null) {
+                        curActProcName = curProcessResult.getString("name");
+                    }
                     while (!found) {
+                        // Sometimes the last activity has null begin and end times - check to find the most recent 
+                        // non-null timestamp
+                        // Since we're working with a SortedMap, we know we are iterating on the actvities in reverse order
+                        // from most recent to earlier in time
+                        if (curActLastTime == null) {
+                            curActLastTime = a.getEndTime() == null ? a.getBeginTime() : a.getEndTime();
+                        }
                         if (a.isParent()) {
                             found = true;
                             processId = a.getProcessId();
+                            travStartTime = a.getBeginTime();
                             break;
                         } else {
                             int actId = a.getParentActivityId();
                             a = activityMap.get(actId);
                             if (a == null) {
-                                found = true;
+                                found = true; // bail out at this point, if we have a null activity
                             }
 
                         }
@@ -296,8 +328,9 @@ public class QueryUtils {
                 }
 
                 HdwStatusLoc hsl = new HdwStatusLoc();
-                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"), locResult.getString("sname"), locResult.getString("creationTS"), travelerName);
-                //hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"), locResult.getString("sname"), locResult.getString("creationTS"));
+                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
+                        locResult.getString("sname"), locResult.getString("creationTS"),
+                        travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime);
                 result.add(hsl);
 
             }
@@ -316,5 +349,5 @@ public class QueryUtils {
 
     //
 //    public static Map getHdwGroup(HttpSession session, String lsstId) {
- //   }
+    //   }
 }
