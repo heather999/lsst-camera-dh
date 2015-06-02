@@ -15,13 +15,14 @@ public class HdwStatusLoc {
     private String status;
     private String location;
     private String site;
-    private String creationDate;
+    private java.util.Date creationDate;
     private String curTravelerName;
     private String curActivityProcName;
     private String curActivityStatus;
     private java.util.Date curTravBeginTime;
     private java.util.Date curActivityLastTime;
     private long elapsedTravTime;
+    private Boolean inNCR;
     
    
     public void setLsstId(String id) {
@@ -36,8 +37,8 @@ public class HdwStatusLoc {
     public void setSite(String l) {
         location = l == null || "".equals(l) ? "NA" : l; 
     }
-    public void setCreationDate(String l) {
-        creationDate = l == null || "".equals(l) ? "NA" : l; 
+    public void setCreationDate(Date l) {
+        creationDate = l; 
     }
     public void setCurTravelerName(String l) {
         curTravelerName = l == null || "".equals(l) ? "NA" : l; 
@@ -56,18 +57,19 @@ public class HdwStatusLoc {
     }
     
     
-    public void setValues(String id, String stat, String loc, String s, String c, String name,
-            String actName, String actStat, Date actLastTime, Date travBeginTime) {
+    public void setValues(String id, String stat, String loc, String s, Date c, String name,
+            String actName, String actStat, Date actLastTime, Date travBeginTime, Boolean ncr) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
         status = stat == null || "".equals(stat) ? "NA" : stat; 
         location = loc == null || "".equals(loc) ? "NA" : loc; 
         site = s == null || "".equals(s) ? "NA" : s;
-        creationDate = c == null || "".equals(c) ? "NA" : c;
+        creationDate = c;
         curTravelerName = name == null || "".equals(name) ? "NA" : name;
         curActivityProcName = actName == null || "".equals(actName) ? "NA" : actName;
         curActivityStatus = actStat == null || "".equals(actStat) ? "NA" : actStat;
         curTravBeginTime = travBeginTime;
         curActivityLastTime = actLastTime;
+        inNCR = ncr;
     }
     public String getLsstId() {
         return lsstId;
@@ -81,7 +83,7 @@ public class HdwStatusLoc {
     public String getSite() { 
         return site;
     }
-    public String getCreationDate() {
+    public Date getCreationDate() {
         return creationDate;
     }
     public String getCurTravelerName() {
@@ -100,10 +102,18 @@ public class HdwStatusLoc {
         return curTravBeginTime;
     }
     public long getElapsedTravTime() {
+        long secondsInMilli = 1000;
         if (curTravBeginTime != null && curActivityLastTime != null) 
-            return (curActivityLastTime.getTime() - curTravBeginTime.getTime());
+            return ( (curActivityLastTime.getTime() - curTravBeginTime.getTime()) / secondsInMilli );
         else
             return -1;
                     
     }
+    public Boolean getInNCR() {
+        return inNCR;
+    }
+    public void setInNCR(Boolean ncr) {
+        inNCR = ncr;
+    }
+    
 }

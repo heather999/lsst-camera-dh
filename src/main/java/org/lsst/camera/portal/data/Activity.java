@@ -19,9 +19,10 @@ public class Activity {
     private String statusName;
     private java.util.Date beginTime;
     private java.util.Date endTime;
+    private Boolean inNCR;
     private Integer index;
 
-    public Activity(int id, int pId, int parentId, int hardwareId, int sId, String sName, Date b, Date e, int ind) {
+    public Activity(int id, int pId, int parentId, int hardwareId, int sId, String sName, Date b, Date e, Boolean ncr, int ind) {
         this.activityId = id;
         this.processId = pId;
         this.parentActivityId = parentId;
@@ -30,6 +31,7 @@ public class Activity {
         this.statusName = sName == null || "".equals(sName) ? "NA" : sName;
         this.beginTime = b;
         this.endTime = e;
+        this.inNCR = ncr;
         this.index = ind;
     }
 
@@ -114,5 +116,12 @@ public class Activity {
     }
     public Date getLastTime() {
         return (this.endTime == null ? this.beginTime : this.endTime);
+    }
+    
+    public Boolean getInNCR() {
+         return inNCR;
+    }
+    public void setInNCR(Boolean ncr) {
+        inNCR = ncr;
     }
 }

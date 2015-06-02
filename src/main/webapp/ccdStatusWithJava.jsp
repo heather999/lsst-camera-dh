@@ -39,21 +39,27 @@
     <display:column title="Current Traveler" sortable="true" >${hdl.curTravelerName}</display:column>
     <display:column title="Current Process Step" sortable="true" >${hdl.curActivityProcName}</display:column>
     <display:column title="Current Process Step Status" sortable="true" >${hdl.curActivityStatus}</display:column>
-    <display:column title="Traveler Elasped Time (ms)" sortable="true" >${hdl.elapsedTravTime}</display:column>
+    <display:column title="Most Recent Timestamp" sortable="true" >${hdl.curActivityLastTime}</display:column>
+    <display:column title="NCR" sortable="true" >${hdl.inNCR}</display:column>
 </display:table>
+<%--
+  <display:column title="Traveler Elasped Time (s)" sortable="true" >${hdl.elapsedTravTime}</display:column> 
+  --%>
+  
+  
 
-   
-
+  <%-- The table below is superceded by the content above
 <h1>CCD Most Recent Process Step Status</h1>
 
 
 <jsp:useBean id="aL" class="org.lsst.camera.portal.data.DataList" scope="page" />
-
+-%>
 
 <%-- Note use of concat in the query, the AS statement was not working otherwise 
 http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
 --%>
 
+<%--
 <c:forEach items="${ccdList.rows}" var="ccd">
     <sql:query var="activityQuery">
         SELECT H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR,
@@ -85,4 +91,4 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 </display:table>
 
 
-
+--%>
