@@ -60,7 +60,7 @@ public class QueryUtils {
 
             PreparedStatement idStatement = c.prepareStatement("SELECT A.id, "
                     + "A.hardwareId, A.processId, A.parentActivityId, ASH.activityStatusId, "
-                    + "AFS.name, A.end, A.begin FROM "
+                    + "AFS.name, A.end, A.begin, A.inNCR FROM "
                     + "Activity A INNER JOIN ActivityStatusHistory ASH ON ASH.activityId=A.id AND "
                     + "ASH.id=(select max(id) FROM ActivityStatusHistory WHERE activityId=A.id) "
                     + "INNER JOIN ActivityFinalStatus AFS ON AFS.id=ASH.activityStatusId "
@@ -76,7 +76,8 @@ public class QueryUtils {
                 }
                 // Use the keep track of order by activity Id
                 activityMap.put(r.getInt("id"), new Activity(r.getInt("id"), r.getInt("processId"), parentId, r.getInt("hardwareId"),
-                        r.getInt("activityStatusId"), r.getString("name"), r.getTimestamp("begin"), r.getTimestamp("end"),index));
+                        r.getInt("activityStatusId"), r.getString("name"), r.getTimestamp("begin"), r.getTimestamp("end"),
+                        r.getBoolean("inNCR"), index));
                 index++;
             }
 
@@ -264,6 +265,7 @@ public class QueryUtils {
                 String travelerName = "NA";
                 String curActProcName = "NA";
                 String curActStatusName = "NA";
+                Boolean inNCR = false;
                 Date curActLastTime = null;
                 java.util.Date travStartTime = null;
                 int processId = -1;
@@ -286,14 +288,17 @@ public class QueryUtils {
                     // Starting with this child activity, find the parent activity and the processId
                     curActStatusName = a.getStatusName();
                     //  curActLastTime = a.getEndTime() == null ? a.getBeginTime() : a.getEndTime();
-                    PreparedStatement curProcessStatement = c.prepareStatement("SELECT Process.name FROM "
+                    PreparedStatement curProcessStatement = c.prepareStatement("SELECT Process.name, Process.version FROM "
                             + "Process WHERE Process.id=?");
                     curProcessStatement.setInt(1, Integer.valueOf(a.getProcessId()));
                     ResultSet curProcessResult = curProcessStatement.executeQuery();
                     curProcessResult.first();
                     if (curProcessResult != null) {
-                        curActProcName = curProcessResult.getString("name");
+                        curActProcName = curProcessResult.getString("name")+"_v"+curProcessResult.getInt("version");
                     }
+                    
+                    inNCR = a.getInNCR();
+                    
                     while (!found) {
                         // Sometimes the last activity has null begin and end times - check to find the most recent 
                         // non-null timestamp
@@ -317,20 +322,20 @@ public class QueryUtils {
                         }
 
                     }
-                    PreparedStatement travelerStatement = c.prepareStatement("SELECT Process.name FROM "
+                    PreparedStatement travelerStatement = c.prepareStatement("SELECT Process.name, Process.version FROM "
                             + "Process WHERE Process.id=?");
                     travelerStatement.setInt(1, Integer.valueOf(processId));
                     ResultSet travelerResult = travelerStatement.executeQuery();
                     travelerResult.first();
                     if (travelerResult != null) {
-                        travelerName = travelerResult.getString("name");
+                        travelerName = travelerResult.getString("name")+"_v"+travelerResult.getInt("version");
                     }
                 }
 
                 HdwStatusLoc hsl = new HdwStatusLoc();
                 hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
-                        locResult.getString("sname"), locResult.getString("creationTS"),
-                        travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime);
+                        locResult.getString("sname"), locResult.getTimestamp("creationTS"),
+                        travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
                 result.add(hsl);
 
             }
