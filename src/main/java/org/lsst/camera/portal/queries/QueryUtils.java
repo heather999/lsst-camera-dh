@@ -352,6 +352,130 @@ public class QueryUtils {
         return result;
     }
 
+    
+    public static HdwStatusLoc getHdwStatLoc(HttpSession session, String lsstId) throws SQLException {
+        HdwStatusLoc result = new HdwStatusLoc();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            //Map<Integer, String> compIds = getComponentIds(session, hardwareTypeId);
+            //for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
+            // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
+            PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
+                    + "HardwareStatusHistory.hardwareStatusId from Hardware, HardwareStatusHistory, HardwareStatus "
+                    + "where Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
+                    + "and Hardware.lsstId=? and (Hardware.hardwareTypeId=1 OR Hardware.hardwareTypeId=9 OR Hardware.hardwareTypeId=10) order By HardwareStatusHistory.creationTS DESC");
+            hdwStatusStatement.setString(1, lsstId);
+            //  hdwStatusStatement.setInt(2, Integer.valueOf(hardwareTypeId));
+
+            ResultSet statusResult = hdwStatusStatement.executeQuery();
+            statusResult.first();
+
+            // Retrieve the list of locations associated with this CCD, ordered by creation time in descending order
+            PreparedStatement hdwLocStatement = c.prepareStatement("SELECT Hardware.lsstId, Hardware.id, Hardware.creationTS,"
+                    + " Hardware.hardwareTypeId, Location.name, Site.name AS sname, "
+                    + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location, Site "
+                    + "where Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
+                    + "and Hardware.lsstId=? and (Hardware.hardwareTypeId=1 OR Hardware.hardwareTypeId=9 OR Hardware.hardwareTypeId=10) order By HardwareLocationHistory.creationTS DESC");
+            hdwLocStatement.setString(1, lsstId);
+            //hdwLocStatement.setInt(2, Integer.valueOf(hardwareTypeId));
+            ResultSet locResult = hdwLocStatement.executeQuery();
+            locResult.first();
+
+            // Retrieve most recent Traveler
+            TreeMap<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"));
+
+            String travelerName = "NA";
+            String curActProcName = "NA";
+            String curActStatusName = "NA";
+            Boolean inNCR = false;
+            Date curActLastTime = null;
+            java.util.Date travStartTime = null;
+            int processId = -1;
+            boolean found = false;
+            Activity a = null;
+                // Find the starting activity by searching for the one with index == 0
+            // This loop isn't really necessary - since we know the first element in the map is index == 0
+            if (activityMap.size() > 0) {
+                Integer lastKey = activityMap.lastKey();
+                a = activityMap.get(lastKey);
+            }
+                //for (Map.Entry<Integer, Activity> entry : activityMap.entrySet()) {
+            //    Activity act = entry.getValue();
+            //    if (act.getIndex() == 0) {
+            //        a = act;
+            //        break;
+            //   }
+            //}
+            if (a != null) {
+                // Starting with this child activity, find the parent activity and the processId
+                curActStatusName = a.getStatusName();
+                //  curActLastTime = a.getEndTime() == null ? a.getBeginTime() : a.getEndTime();
+                PreparedStatement curProcessStatement = c.prepareStatement("SELECT Process.name, Process.version FROM "
+                        + "Process WHERE Process.id=?");
+                curProcessStatement.setInt(1, Integer.valueOf(a.getProcessId()));
+                ResultSet curProcessResult = curProcessStatement.executeQuery();
+                curProcessResult.first();
+                if (curProcessResult != null) {
+                    curActProcName = curProcessResult.getString("name") + "_v" + curProcessResult.getInt("version");
+                }
+
+                inNCR = a.getInNCR();
+
+                while (!found) {
+                        // Sometimes the last activity has null begin and end times - check to find the most recent 
+                    // non-null timestamp
+                    // Since we're working with a SortedMap, we know we are iterating on the actvities in reverse order
+                    // from most recent to earlier in time
+                    if (curActLastTime == null) {
+                        curActLastTime = a.getEndTime() == null ? a.getBeginTime() : a.getEndTime();
+                    }
+                    if (a.isParent()) {
+                        found = true;
+                        processId = a.getProcessId();
+                        travStartTime = a.getBeginTime();
+                        break;
+                    } else {
+                        int actId = a.getParentActivityId();
+                        a = activityMap.get(actId);
+                        if (a == null) {
+                            found = true; // bail out at this point, if we have a null activity
+                        }
+
+                    }
+
+                }
+                PreparedStatement travelerStatement = c.prepareStatement("SELECT Process.name, Process.version FROM "
+                        + "Process WHERE Process.id=?");
+                travelerStatement.setInt(1, Integer.valueOf(processId));
+                ResultSet travelerResult = travelerStatement.executeQuery();
+                travelerResult.first();
+                if (travelerResult != null) {
+                    travelerName = travelerResult.getString("name") + "_v" + travelerResult.getInt("version");
+                }
+            }
+
+            //HdwStatusLoc hsl = new HdwStatusLoc();
+            result.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
+                    locResult.getString("sname"), locResult.getTimestamp("creationTS"),
+                    travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
+            //result.add(hsl);
+
+            //}
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+    }
+
     //
 //    public static Map getHdwGroup(HttpSession session, String lsstId) {
     //   }

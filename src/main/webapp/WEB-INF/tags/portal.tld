@@ -35,6 +35,11 @@
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
     <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer)</function-signature>
   </function>
+  <function>
+    <name>getHdwStatLoc</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>org.lsst.camera.porta.data.HdwStatusLoc getHdwStatLoc(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
+  </function>
     <function>
     <name>getHardwareStatus</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>

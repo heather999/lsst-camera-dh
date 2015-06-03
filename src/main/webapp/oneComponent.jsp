@@ -16,7 +16,6 @@
         <h1>CCD Explorer</h1>
 
 
-
         <%-- Select CCD as the HardwareType for this page, scope session means all the pages? set scope to page --%>
         <c:set var="ccdHdwTypeId" value="1" scope="page"/>  
         <c:set var="ccdHdwTypeITL" value="9" scope="page"/> 
@@ -25,7 +24,6 @@
         <c:if test="${empty selectedLsstId}">
             <c:set var="selectedLsstId" value="" scope="page"/>            
         </c:if>
-
 
 
         <c:if test="${! empty param.lsstIdValue}">
@@ -43,7 +41,9 @@
         <c:set var="lsstIdQuery" value="${portal:getComponentIds(pageContext.session, ccdHdwTypeId)}"/>
 
         <%-- Retrieve full list of current hardware status and location for all CCDs --%>
+        <%--
         <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
+        --%>
 
         <%--
                 <display:table name="${lsstIdQuery}" export="true" class="datatable"/> 
@@ -70,7 +70,7 @@
             <c:otherwise>
                 <%-- Extract useful info from Hardware table --%>
                 <sql:query  var="hdwData"  >
-                    select  Hardware.manufacturer,Hardware.model, Hardware.manufactureDate, Hardware.creationTS from Hardware where Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=?) 
+                    select  Hardware.id,Hardware.manufacturer,Hardware.model, Hardware.manufactureDate from Hardware where Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=?) 
                     <sql:param value="${selectedLsstId}"/>
                     <sql:param value="${ccdHdwTypeId}"/>
                     <sql:param value="${ccdHdwTypeITL}"/>
@@ -78,32 +78,31 @@
                 </sql:query>
 
                 <section>
-                    <%-- searches list of CCDs to locate the status/loc record for this lsstId --%>
-                    <c:forEach items="${hdwStatLocTable}" var="ccd">
-                        <c:if test="${ccd.lsstId == selectedLsstId}">
+                    <%-- Retrieve full list of current hardware status and location for all CCDs --%>
+                    <c:set var="hdwStatLoc" value="${portal:getHdwStatLoc(pageContext.session,selectedLsstId)}"/>
 
-                            <h2>Current Status and Location</h2>
-                            <table style="width:50%">
-                                <%-- <caption><b>Current Status and Location</b></caption> --%>
-                                <tr>
-                                    <td>LsstId</td>
-                                    <td>Status</td>
-                                    <td>Site</td>
-                                    <td>Location</td>
-                                </tr>
-                                <tr>
-                                    <td>${ccd.lsstId}</td>
-                                    <td>${ccd.status}</td>
-                                    <td>${ccd.site}</td>
-                                    <td>${ccd.location}</td>
-                                </tr>
-                            </table>
+                    <display:table name="${hdwStatLoc}" export="true" class="datatable" id="hdl" >
+                        <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column>
+                        <display:column title="Date Registered" sortable="true" >${hdl.creationDate}</display:column>
+                        <display:column title="Overall Component Status" sortable="true" >${hdl.status}</display:column>
+                        <display:column title="Site" sortable="true" >${hdl.site}</display:column>
+                        <display:column title="Location" sortable="true" >${hdl.location}</display:column>
+                        <display:column title="Current Traveler" sortable="true" >${hdl.curTravelerName}</display:column>
+                        <display:column title="Current Process Step" sortable="true" >${hdl.curActivityProcName}</display:column>
+                        <display:column title="Current Process Step Status" sortable="true" >${hdl.curActivityStatus}</display:column>
+                        <display:column title="Most Recent Timestamp" sortable="true" >${hdl.curActivityLastTime}</display:column>
+                        <display:column title="NCR" sortable="true" >${hdl.inNCR}</display:column>
+                    </display:table>
 
-                        </c:if>
-                    </c:forEach>
+
+ 
+                    <%-- <display:table name="${hdwData.rows}" class="datatable"/>  --%>
+                    <display:table name="${hdwData.rows}" export="true" class="datatable" id="hdw"> 
+                        <display:column title="Manufacture Date"> <c:out value="${hdw.manufactureDate}"/> </display:column> 
+                        <display:column title="Manufacturer"> <c:out value="${hdw.manufacturer}"/> </display:column> 
+                        <display:column title="Model"> <c:out value="${hdw.model}"/> </display:column> 
+                    </display:table>       
                 </section>
-
-                <display:table name="${hdwData.rows}" class="datatable"/> 
 
 
                 <section>
