@@ -68,8 +68,9 @@
                 Please select a LSST Id from the above drop down menu. 
             </c:when>
             <c:otherwise>
+                
                 <%-- Extract useful info from Hardware table --%>
-                <sql:query  var="hdwData"  >
+                <sql:query  var="hdwData" scope="page" >
                     select  Hardware.id,Hardware.manufacturer,Hardware.model, Hardware.manufactureDate from Hardware where Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=?) 
                     <sql:param value="${selectedLsstId}"/>
                     <sql:param value="${ccdHdwTypeId}"/>
@@ -78,8 +79,8 @@
                 </sql:query>
 
                 <section>
-                    <%-- Retrieve full list of current hardware status and location for all CCDs --%>
-                    <c:set var="hdwStatLoc" value="${portal:getHdwStatLoc(pageContext.session,selectedLsstId)}"/>
+                    <%-- Retrieve full list of current hardware status and location this CCD --%>
+                    <c:set var="hdwStatLoc" value="${portal:getHdwStatLoc(pageContext.session,selectedLsstId)}" scope="page"/>
 
                     <display:table name="${hdwStatLoc}" export="true" class="datatable" id="hdl" >
                         <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column>
@@ -105,8 +106,18 @@
                 </section>
 
 
-                <section>
-
+                    <section>
+                        <c:forEach var="row" items="${hdwData.rows}" begin = "0" end="0" >
+                            <c:set var="hdwId" value="${row.id}" scope="page"/>
+                            <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}"/>
+                            <display:table name="${travelerList}" export="true" class="datatable" id="trav"> 
+                                <display:column title="Traveler" sortable="true" >${trav.name}</display:column>
+                                <display:column title="Status" sortable="true" >${trav.statusName}</display:column>
+                                <display:column title="Start Time" sortable="true" >${trav.beginTime}</display:column>
+                                <display:column title="End Time" sortable="true" >${trav.endTime}</display:column>
+                            </display:table>
+                        </c:forEach>
+                    
                     <sql:query var="activityQuery">
                         SELECT A.id, H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR,
                         P.version AS version,A.begin,A.end,concat(AFS.name,'') as status
@@ -120,6 +131,7 @@
                         ORDER BY A.id DESC
                     </sql:query>
 
+                        <%--
                     <h2>Travelers</h2>
 
                     <table style="width:50%">
@@ -145,10 +157,12 @@
                             </c:if>
                         </c:forEach>
                     </table>
-
-                    <h2>All Processes</h2>
+                   
+--%>
+                  <%--  <h2>All Processes</h2> --%>
+                    
                     <%-- <display:table name="${activityQuery.rows}" export="true" class="datatable"/> --%>
-
+<%--
                     <display:table name="${activityQuery.rows}" export="true" class="datatable" id="processes"> 
                         <display:column title="LsstId" sortable="true"> <c:out value="${processes.lsstId}"/> </display:column> 
                         <display:column title="Process" sortable="true"> <c:out value="${processes.Process}"/> </display:column> 
@@ -158,12 +172,14 @@
                         <display:column title="End Time" sortable="true"> <c:out value="${processes.end}"/> </display:column>
                         <display:column title="inNCR" sortable="true"> <c:out value="${processes.inNCR}"/> </display:column>
                     </display:table>
+                    
+                    --%>
 
                 </section>
 
                 <h2>Output Files</h2>
                 <c:forEach items="${activityQuery.rows}" var="actRow">
-                    <sql:query var="outQuery">
+                    <sql:query var="outQuery" scope="page">
                         SELECT creationTS, virtualPath, value from FilepathResultHarnessed 
                         where ${actRow.id}=FilepathResultHarnessed.activityId ORDER BY creationTS
                     </sql:query>

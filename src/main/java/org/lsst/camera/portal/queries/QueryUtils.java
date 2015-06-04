@@ -21,6 +21,7 @@ import org.lsst.camera.portal.data.TravelerStatus;
 import org.lsst.camera.portal.data.HardwareStatus;
 import org.lsst.camera.portal.data.HdwStatusLoc;
 import org.lsst.camera.portal.data.Activity;
+import org.lsst.camera.portal.data.TravelerInfo;
 import org.srs.web.base.db.ConnectionManager;
 
 /**
@@ -52,6 +53,7 @@ public class QueryUtils {
         return result;
     }
 
+    // Returns all the activities in the Activity Table associated with a HardwareId
     public static TreeMap getActivityMap(HttpSession session, Integer hdwId) throws SQLException {
         TreeMap<Integer, Activity> activityMap = new TreeMap<>();
         Connection c = null;
@@ -352,7 +354,7 @@ public class QueryUtils {
         return result;
     }
 
-    
+    // Return the summary Hardware Status Location for a particule LSST Id
     public static HdwStatusLoc getHdwStatLoc(HttpSession session, String lsstId) throws SQLException {
         HdwStatusLoc result = new HdwStatusLoc();
 
@@ -402,13 +404,7 @@ public class QueryUtils {
                 Integer lastKey = activityMap.lastKey();
                 a = activityMap.get(lastKey);
             }
-                //for (Map.Entry<Integer, Activity> entry : activityMap.entrySet()) {
-            //    Activity act = entry.getValue();
-            //    if (act.getIndex() == 0) {
-            //        a = act;
-            //        break;
-            //   }
-            //}
+           
             if (a != null) {
                 // Starting with this child activity, find the parent activity and the processId
                 curActStatusName = a.getStatusName();
@@ -457,13 +453,10 @@ public class QueryUtils {
                 }
             }
 
-            //HdwStatusLoc hsl = new HdwStatusLoc();
             result.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
                     locResult.getString("sname"), locResult.getTimestamp("creationTS"),
                     travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
-            //result.add(hsl);
-
-            //}
+           
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -476,7 +469,57 @@ public class QueryUtils {
         return result;
     }
 
-    //
-//    public static Map getHdwGroup(HttpSession session, String lsstId) {
-    //   }
+    
+    public static List getTravelerCol(HttpSession session, Integer hardwareId) throws SQLException {
+        List<TravelerInfo> result = new ArrayList<>();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            // Retrieve most recent Traveler
+            TreeMap<Integer, Activity> activityMap = getActivityMap(session, hardwareId);
+
+            String travelerName = "NA";
+            String curActProcName = "NA";
+            String curActStatusName = "NA";
+            Boolean inNCR = false;
+            Date curActLastTime = null;
+            java.util.Date travStartTime = null;
+            int processId = -1;
+            boolean found = false;
+
+            for (Map.Entry<Integer, Activity> entry : activityMap.entrySet()) {
+                Activity act = entry.getValue();
+
+                if (act != null) {
+
+                    if (act.isParent()) { // Found a Traveler
+                        String travName = null;
+                        PreparedStatement travStatement = c.prepareStatement("SELECT Process.name, Process.version FROM "
+                                + "Process WHERE Process.id=?");
+                        travStatement.setInt(1, Integer.valueOf(act.getProcessId()));
+                        ResultSet travResult = travStatement.executeQuery();
+                        travResult.first();
+                        if (travResult != null) {
+                            travName = travResult.getString("name") + "_v" + travResult.getInt("version");
+                        }
+                        TravelerInfo info = new TravelerInfo(travName, act.getHdwId(), act.getStatusId(), act.getStatusName(), act.getBeginTime(), act.getEndTime(), act.getInNCR());
+                        result.add(info);
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+    }
+
 }
