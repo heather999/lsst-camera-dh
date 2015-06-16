@@ -76,7 +76,7 @@ public class QueryUtils {
                 if (parentId == 0 && r.wasNull()) {
                     parentId = -999;
                 }
-                // Use the keep track of order by activity Id
+                // Use to keep track of order by activity Id
                 activityMap.put(r.getInt("id"), new Activity(r.getInt("id"), r.getInt("processId"), parentId, r.getInt("hardwareId"),
                         r.getInt("activityStatusId"), r.getString("name"), r.getTimestamp("begin"), r.getTimestamp("end"),
                         r.getBoolean("inNCR"), index));
@@ -504,12 +504,65 @@ public class QueryUtils {
                         if (travResult != null) {
                             travName = travResult.getString("name") + "_v" + travResult.getInt("version");
                         }
-                        TravelerInfo info = new TravelerInfo(travName, act.getHdwId(), act.getStatusId(), act.getStatusName(), act.getBeginTime(), act.getEndTime(), act.getInNCR());
+                        TravelerInfo info = new TravelerInfo(travName, act.getActivityId(), act.getHdwId(), act.getStatusId(), act.getStatusName(), act.getBeginTime(), act.getEndTime(), act.getInNCR());
                         result.add(info);
                     }
                 }
 
             }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+    }
+
+    
+    public static List getActivitiesForTraveler(HttpSession session, Integer travelerActId, Integer hardwareId) throws SQLException {
+        List<Integer> result = new ArrayList<>();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            TreeMap<Integer, Activity> activityMap = getActivityMap(session, hardwareId);
+            // Loop to match all activities to the appropriate Traveler
+            for (Map.Entry<Integer, Activity> activity : activityMap.entrySet()) {
+                Activity act = activity.getValue();
+                Integer childActivityId = act.getActivityId();
+                //java.util.Date childBeginTime = act.getBeginTime();
+
+                if (act != null) {
+                    // Find the parent traveler of this activity
+                    boolean found = false;
+                    while (!found) {
+                        if (act.isParent()) {
+                            found = true;
+                            int curActivityId = act.getActivityId();
+                            if (curActivityId == travelerActId) {
+                  //               result.put(childActivityId, childBeginTime)
+                                result.add(childActivityId);
+                             }
+                            break;
+                        } else { // otherwise keep searching
+                            int actId = act.getParentActivityId();
+                            act = activityMap.get(actId);
+                            if (act == null) {
+                                found = true; // bail out at this point, if we have a null activity
+                            }
+
+                        }
+                    }
+
+                }
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

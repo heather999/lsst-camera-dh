@@ -56,4 +56,10 @@
     <function-signature>java.util.List getTravelerCol(javax.servlet.http.HttpSession,java.lang.Integer)
     </function-signature>
   </function>
+  <function>
+    <name>getActivitiesForTraveler</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.util.List getActivitiesForTraveler(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Integer)
+    </function-signature>
+  </function>
 </taglib>

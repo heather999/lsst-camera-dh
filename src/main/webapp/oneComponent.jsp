@@ -68,7 +68,7 @@
                 Please select a LSST Id from the above drop down menu. 
             </c:when>
             <c:otherwise>
-                
+
                 <%-- Extract useful info from Hardware table --%>
                 <sql:query  var="hdwData" scope="page" >
                     select  Hardware.id,Hardware.manufacturer,Hardware.model, Hardware.manufactureDate from Hardware where Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=?) 
@@ -96,7 +96,7 @@
                     </display:table>
 
 
- 
+
                     <%-- <display:table name="${hdwData.rows}" class="datatable"/>  --%>
                     <display:table name="${hdwData.rows}" export="true" class="datatable" id="hdw"> 
                         <display:column title="Manufacture Date"> <c:out value="${hdw.manufactureDate}"/> </display:column> 
@@ -106,20 +106,65 @@
                 </section>
 
 
-                    <section>
-                        <c:forEach var="row" items="${hdwData.rows}" begin = "0" end="0" >
-                            <c:set var="hdwId" value="${row.id}" scope="page"/>
-                            <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}"/>
-                            <display:table name="${travelerList}" export="true" class="datatable" id="trav"> 
-                                <display:column title="Traveler" sortable="true" >${trav.name}</display:column>
-                                <display:column title="Status" sortable="true" >${trav.statusName}</display:column>
-                                <display:column title="Start Time" sortable="true" >${trav.beginTime}</display:column>
-                                <display:column title="End Time" sortable="true" >${trav.endTime}</display:column>
-                            </display:table>
+                <section>
+                    <c:forEach var="row" items="${hdwData.rows}" begin = "0" end="0" >
+                        <c:set var="hdwId" value="${row.id}" scope="page"/>
+                        <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}"/>
+                        <display:table name="${travelerList}" export="true" class="datatable" id="trav"> 
+                            <display:column title="Traveler" sortable="true" >${trav.name}</display:column>
+                            <display:column title="Status" sortable="true" >${trav.statusName}</display:column>
+                            <display:column title="Start Time" sortable="true" >${trav.beginTime}</display:column>
+                            <display:column title="End Time" sortable="true" >${trav.endTime}</display:column>
+                        </display:table>
+                    </c:forEach>
+                </section>
+
+                <section>
+
+                    <h2>Process Steps with Output Files</h2>
+                    <c:forEach var="curTraveler" items="${travelerList}">
+                        <%--<h3>${curTraveler.name} ${curTraveler.actId}</h3><br> --%>
+                        <c:set var="actList" value="${portal:getActivitiesForTraveler(pageContext.session,curTraveler.actId,hdwId)}"/>
+
+                        <c:forEach var="curAct" items="${actList}" varStatus="status">
+                            <c:if test="${status.first}">
+                                <h2><b>Traveler ${curTraveler.name}</b></h2>
+                                <%-- <table> --%>
+                            </c:if>
+
+                            <sql:query var="outQuery" scope="page">
+                                SELECT creationTS, virtualPath, value FROM FilepathResultHarnessed 
+                                WHERE ${curAct}=FilepathResultHarnessed.activityId ORDER BY creationTS
+                            </sql:query>
+                            <c:if test="${outQuery.rowCount>0}" >
+
+                                <sql:query var="moreProcessInfo" scope="page">
+                                    SELECT A.id, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
+                                    P.version AS version,A.begin,A.end
+                                    FROM Process P, Activity A  
+                                    WHERE P.id=A.processId AND A.id=${curAct}
+                                </sql:query>
+                                <c:forEach items="${moreProcessInfo.rows}" var="processRow" begin="0" end="0">
+                                    <c:url var="processLink" value="outputFiles.jsp">
+                                        <c:param name="activityId" value="${curAct}"/>
+                                        <c:param name="processName" value="${processRow.process}"/>
+                                        <c:param name="processVersion" value="${processRow.version}"/>
+                                    </c:url>
+                                    <h3><a href="${processLink}" >${processRow.process} version ${processRow.version} iteration ${processRow.iteration}</a></h3>
+                                    <br>
+                                </c:forEach>
+
+                            </c:if>
+                            <c:if test="${status.last}">
+                                <%--</table>--%>
+                            </c:if>
                         </c:forEach>
-                    
+                        <br>
+                        <br>
+                    </c:forEach>
+
                     <sql:query var="activityQuery">
-                        SELECT A.id, H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR,
+                        SELECT A.id, H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
                         P.version AS version,A.begin,A.end,concat(AFS.name,'') as status
                         FROM Hardware H, Process P, 
                         Activity A INNER JOIN ActivityStatusHistory on ActivityStatusHistory.activityId=A.id and 
@@ -131,62 +176,46 @@
                         ORDER BY A.id DESC
                     </sql:query>
 
-                        <%--
-                    <h2>Travelers</h2>
 
-                    <table style="width:50%">
-                        <tr>
-                            <td>LsstId</td>
-                            <td>Name</td>
-                            <td>Status</td>
-                            <td>In NCR</td>
-                        </tr>
+                    <%--  <h2>All Processes</h2> --%>
 
-                        <c:forEach items="${activityQuery.rows}" var="actRow">
-                            <sql:query var="tQuery">
-                                SELECT * FROM TravelerType 
-                                where TravelerType.rootProcessId="${actRow.processId}"
-                            </sql:query>
-                            <c:if test="${tQuery.rowCount>0}" >
-                                <tr>
-                                    <td>${actRow.lsstId}</td>
-                                    <td>${actRow.Process}</td>
-                                    <td>${actRow.Status}</td>
-                                    <td>${actRow.inNCR}</td>
-                                </tr>
-                            </c:if>
-                        </c:forEach>
-                    </table>
-                   
---%>
-                  <%--  <h2>All Processes</h2> --%>
-                    
                     <%-- <display:table name="${activityQuery.rows}" export="true" class="datatable"/> --%>
-<%--
-                    <display:table name="${activityQuery.rows}" export="true" class="datatable" id="processes"> 
-                        <display:column title="LsstId" sortable="true"> <c:out value="${processes.lsstId}"/> </display:column> 
-                        <display:column title="Process" sortable="true"> <c:out value="${processes.Process}"/> </display:column> 
-                        <display:column title="Version" sortable="true"> <c:out value="${processes.version}"/> </display:column> 
-                        <display:column title="Status" sortable="true"> <c:out value="${processes.Status}"/> </display:column> 
-                        <display:column title="Start Time" sortable="true"> <c:out value="${processes.begin}"/> </display:column>
-                        <display:column title="End Time" sortable="true"> <c:out value="${processes.end}"/> </display:column>
-                        <display:column title="inNCR" sortable="true"> <c:out value="${processes.inNCR}"/> </display:column>
-                    </display:table>
-                    
+                    <%--
+                                        <display:table name="${activityQuery.rows}" export="true" class="datatable" id="processes"> 
+                                            <display:column title="LsstId" sortable="true"> <c:out value="${processes.lsstId}"/> </display:column> 
+                                            <display:column title="Process" sortable="true"> <c:out value="${processes.Process}"/> </display:column> 
+                                            <display:column title="Version" sortable="true"> <c:out value="${processes.version}"/> </display:column> 
+                                            <display:column title="Status" sortable="true"> <c:out value="${processes.Status}"/> </display:column> 
+                                            <display:column title="Start Time" sortable="true"> <c:out value="${processes.begin}"/> </display:column>
+                                            <display:column title="End Time" sortable="true"> <c:out value="${processes.end}"/> </display:column>
+                                            <display:column title="inNCR" sortable="true"> <c:out value="${processes.inNCR}"/> </display:column>
+                                        </display:table>
+                                        
                     --%>
 
                 </section>
 
-                <h2>Output Files</h2>
+                <%--
+            <h2>Process Steps with Available Output Files</h2>
+
+
                 <c:forEach items="${activityQuery.rows}" var="actRow">
                     <sql:query var="outQuery" scope="page">
-                        SELECT creationTS, virtualPath, value from FilepathResultHarnessed 
-                        where ${actRow.id}=FilepathResultHarnessed.activityId ORDER BY creationTS
+                        SELECT creationTS, virtualPath, value FROM FilepathResultHarnessed 
+                        WHERE ${actRow.id}=FilepathResultHarnessed.activityId ORDER BY creationTS
                     </sql:query>
                     <c:if test="${outQuery.rowCount>0}" >
-                        <display:table name="${outQuery.rows}" export="true" class="datatable"/> 
+                        <c:url var="processLink" value="outputFiles.jsp">
+                            <c:param name="activityId" value="${actRow.id}"/>
+                            <c:param name="processName" value="${actRow.process}"/>
+                            <c:param name="processVersion" value="${actRow.version}"/>
+                        </c:url>
+                        <h3><a href="${processLink}" >${actRow.process} version ${actRow.version} iteration ${actRow.iteration}</a></h3>
+                        <br>
                     </c:if>
                 </c:forEach>
+                --%>
+
             </c:otherwise>
         </c:choose>
 
