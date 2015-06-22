@@ -5,8 +5,8 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@taglib prefix="display" uri="http://displaytag.sf.net" %>
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
+<%@taglib prefix="etraveler" tagdir="/WEB-INF/tags/eTrav"%>
 
 <html>
     <head>
@@ -77,6 +77,8 @@
                     <sql:param value="${ccdHdwTypeITL}"/>
                     <sql:param value="${ccdHdwTypeE2V}"/>
                 </sql:query>
+                    
+                <c:set var="curHdwData" value="${hdwData.rows[0]}"/>
 
                 <section>
                     <%-- Retrieve full list of current hardware status and location this CCD --%>
@@ -107,61 +109,138 @@
 
 
                 <section>
-                    <c:forEach var="row" items="${hdwData.rows}" begin = "0" end="0" >
-                        <c:set var="hdwId" value="${row.id}" scope="page"/>
+                   
+                    
+                    <%-- <c:forEach var="row" items="${hdwData.rows}" begin = "0" end="0" > --%>
+                        <c:set var="hdwId" value="${curHdwData.id}" scope="page"/> 
+                        <%--
                         <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}"/>
                         <display:table name="${travelerList}" export="true" class="datatable" id="trav"> 
                             <display:column title="Traveler" sortable="true" >${trav.name}</display:column>
                             <display:column title="Status" sortable="true" >${trav.statusName}</display:column>
                             <display:column title="Start Time" sortable="true" >${trav.beginTime}</display:column>
                             <display:column title="End Time" sortable="true" >${trav.endTime}</display:column>
-                        </display:table>
-                    </c:forEach>
+                        </display:table>--%>
+                   <%-- </c:forEach> --%>
+             
+        
+
+                    <h2>Summary of Traveler Status</h2>
+                    <etraveler:activityList travelersOnly="true" hardwareId="${hdwId}"/>
                 </section>
-
                 <section>
-
-                    <h2>Process Steps with Output Files</h2>
-                    <c:forEach var="curTraveler" items="${travelerList}">
+                    <%--
+                    <c:forEach var="curTraveler" items="${travelerList}"> --%>
                         <%--<h3>${curTraveler.name} ${curTraveler.actId}</h3><br> --%>
+                        <%--
                         <c:set var="actList" value="${portal:getActivitiesForTraveler(pageContext.session,curTraveler.actId,hdwId)}"/>
 
                         <c:forEach var="curAct" items="${actList}" varStatus="status">
-                            <c:if test="${status.first}">
-                                <h2><b>Traveler ${curTraveler.name}</b></h2>
-                                <%-- <table> --%>
-                            </c:if>
+                        --%>
+                            <%--
+                            <c:choose>
+                               
+                                <c:when test="${status.first}">
+                                    <h3><b>Traveler ${curTraveler.name}</b></h3>
+                                    <etraveler:expandActivity var="stepList" activityId="${curAct}"/>
 
-                            <sql:query var="outQuery" scope="page">
-                                SELECT creationTS, virtualPath, value FROM FilepathResultHarnessed 
-                                WHERE ${curAct}=FilepathResultHarnessed.activityId ORDER BY creationTS
-                            </sql:query>
-                            <c:if test="${outQuery.rowCount>0}" >
 
-                                <sql:query var="moreProcessInfo" scope="page">
-                                    SELECT A.id, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
-                                    P.version AS version,A.begin,A.end
-                                    FROM Process P, Activity A  
-                                    WHERE P.id=A.processId AND A.id=${curAct}
-                                </sql:query>
-                                <c:forEach items="${moreProcessInfo.rows}" var="processRow" begin="0" end="0">
-                                    <c:url var="processLink" value="outputFiles.jsp">
-                                        <c:param name="activityId" value="${curAct}"/>
-                                        <c:param name="processName" value="${processRow.process}"/>
-                                        <c:param name="processVersion" value="${processRow.version}"/>
-                                    </c:url>
-                                    <h3><a href="${processLink}" >${processRow.process} version ${processRow.version} iteration ${processRow.iteration}</a></h3>
-                                    <br>
-                                </c:forEach>
+                                    <etraveler:findCurrentStep varStepLink="currentStepLink" varStepEPath="currentStepEPath" 
+                                                               varStepId="currentStepActivityId" stepList="${stepList}"/>
 
-                            </c:if>
-                            <c:if test="${status.last}">
-                                <%--</table>--%>
-                            </c:if>
-                        </c:forEach>
+
+
+                                    <display:table id="step" name="${stepList}" class="datatable">
+                                        <display:column title="Step">
+                                            <c:if test="${! empty step.stepPath}">
+
+                                                <c:out value="${step.stepPath}"/>
+
+                                            </c:if>
+                                        </display:column>
+                                        <display:column title="Name">
+                                            <c:choose>
+                                                <c:when test="${! empty currentStepLink && step.edgePath == currentStepEPath && (step.activityId == currentStepActivityId || (currentStepActivityId == -1 && empty step.activityId))}">
+                                                    <c:set var="contentLink" value="${currentStepLink}"/>
+                                                </c:when>
+                                                <c:when test="${! empty step.activityId}">
+                                                    <c:url var="contentLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/activityPane.jsp">
+                                                        <c:param name="activityId" value="${step.activityId}"/>
+                                                    </c:url>
+                                                </c:when>
+                                                <c:otherwise>
+                                                    <c:url var="contentLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/processPane.jsp">
+                                                        <c:param name="processId" value="${step.processId}"/>
+                                                    </c:url>                
+                                                </c:otherwise>
+                                            </c:choose>
+                                            <a href="${contentLink}" target="content">${step.name}</a>
+                                        </display:column>
+
+                                        <display:column property="activityId"/>
+                                        <display:column property="end"/>
+                                        <display:column property="statusName" title="Status"/>
+
+                                    </display:table>
+                                </c:when>
+                            --%>
+                                <%--
+                            <c:otherwise>
+
+
+                                    <sql:query var="floatResults">
+                                        SELECT name, value, schemaName, schemaVersion FROM FloatResultHarnessed 
+                                        WHERE ${curAct}=FloatResultHarnessed.activityId AND name != "stat"
+                                        UNION ALL
+                                        SELECT name, value, schemaName, schemaVersion FROM IntResultHarnessed 
+                                        WHERE ${curAct}=IntResultHarnessed.activityId AND name != "stat"
+                                        UNION ALL
+                                        SELECT name, value, schemaName, schemaVersion FROM StringResultHarnessed 
+                                        WHERE ${curAct}=StringResultHarnessed.activityId AND name != "stat"
+                                    </sql:query>
+                                        
+                                    <sql:query var="moreProcessInfo" scope="page">
+                                        SELECT A.id, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
+                                        P.version AS version,A.begin,A.end
+                                        FROM Process P, Activity A  
+                                        WHERE P.id=A.processId AND A.id=${curAct}
+                                    </sql:query>
+                                        
+                                    <c:forEach items="${moreProcessInfo.rows}" var="processRow" begin="0" end="0">
+                                        <c:url var="activityLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/activityPane.jsp">
+                                            <c:param name="activityId" value="${curAct}"/>
+                                        </c:url>
+                                        <h3><a target="_blank" href="${activityLink}">${processRow.process} version ${processRow.version} iteration ${processRow.iteration}</a></h3>
+                                    </c:forEach>
+
+                                    <sql:query var="outQuery" scope="page">
+                                        SELECT creationTS, virtualPath, value FROM FilepathResultHarnessed 
+                                        WHERE ${curAct}=FilepathResultHarnessed.activityId ORDER BY creationTS
+                                    </sql:query>
+                                    <c:if test="${outQuery.rowCount>0}" >
+
+
+                                        <c:forEach items="${moreProcessInfo.rows}" var="processRow" begin="0" end="0">
+                                            <c:url var="processLink" value="outputFiles.jsp">
+                                                <c:param name="activityId" value="${curAct}"/>
+                                                <c:param name="processName" value="${processRow.process}"/>
+                                                <c:param name="processVersion" value="${processRow.version}"/>
+                                            </c:url>
+                                            <h4><a href="${processLink}" >${processRow.process} version ${processRow.version} iteration ${processRow.iteration} Output Files</a></h4>
+                                            <br>
+                                        </c:forEach>
+
+                                    </c:if>
+                             
+                                    <c:if test="${floatResults.rowCount>0}" >
+                                        <display:table name="${floatResults.rows}" export="true" class="datatable"/>
+                                    </c:if>
+                                </c:otherwise>
+                                --%>
+                            <%--</c:choose> --%>
+                      <%--  </c:forEach>--%> <%-- End Activity Loop --%>
                         <br>
-                        <br>
-                    </c:forEach>
+                    <%-- </c:forEach> --%> <%-- End Traveler Loop --%>
 
                     <sql:query var="activityQuery">
                         SELECT A.id, H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
