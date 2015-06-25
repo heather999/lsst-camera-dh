@@ -100,3 +100,4 @@
     <display:column property="end" sortable="true" headerClass="sortable"/>
     <display:column property="closedBy" sortable="true" headerClass="sortable"/>
 </display:table>        
+ 

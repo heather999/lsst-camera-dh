@@ -575,4 +575,39 @@ public class QueryUtils {
         return result;
     }
 
+    
+      public static String getActString(HttpSession session, Integer travelerActId, Integer hardwareId) throws SQLException {
+        String result = "";
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            List<Integer> actList = getActivitiesForTraveler(session, travelerActId, hardwareId);
+            Iterator<Integer> iterator = actList.iterator();
+            int counter=0;
+            while (iterator.hasNext()) {
+                result += (iterator.next());
+                if (counter==0)
+                    result+="(";
+                ++counter;
+              
+                if (counter == actList.size()) {
+                    result += ")";
+                } else {
+                    result += ", ";
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+    }
+
 }

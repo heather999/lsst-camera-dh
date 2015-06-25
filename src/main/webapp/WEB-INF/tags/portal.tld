@@ -62,4 +62,10 @@
     <function-signature>java.util.List getActivitiesForTraveler(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Integer)
     </function-signature>
   </function>
+  <function>
+    <name>getActString</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.lang.String getActString(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Integer)
+    </function-signature>
+  </function>
 </taglib>

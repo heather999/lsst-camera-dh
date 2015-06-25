@@ -77,14 +77,14 @@
                     <sql:param value="${ccdHdwTypeITL}"/>
                     <sql:param value="${ccdHdwTypeE2V}"/>
                 </sql:query>
-                    
+
                 <c:set var="curHdwData" value="${hdwData.rows[0]}"/>
 
                 <section>
                     <%-- Retrieve full list of current hardware status and location this CCD --%>
                     <c:set var="hdwStatLoc" value="${portal:getHdwStatLoc(pageContext.session,selectedLsstId)}" scope="page"/>
 
-                    <display:table name="${hdwStatLoc}" export="true" class="datatable" id="hdl" >
+                    <display:table name="${hdwStatLoc}" class="datatable" id="hdl" >
                         <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column>
                         <display:column title="Date Registered" sortable="true" >${hdl.creationDate}</display:column>
                         <display:column title="Overall Component Status" sortable="true" >${hdl.status}</display:column>
@@ -100,7 +100,7 @@
 
 
                     <%-- <display:table name="${hdwData.rows}" class="datatable"/>  --%>
-                    <display:table name="${hdwData.rows}" export="true" class="datatable" id="hdw"> 
+                    <display:table name="${hdwData.rows}" class="datatable" id="hdw"> 
                         <display:column title="Manufacture Date"> <c:out value="${hdw.manufactureDate}"/> </display:column> 
                         <display:column title="Manufacturer"> <c:out value="${hdw.manufacturer}"/> </display:column> 
                         <display:column title="Model"> <c:out value="${hdw.model}"/> </display:column> 
@@ -109,79 +109,55 @@
 
 
                 <section>
-                   
-                    
-                    <%-- <c:forEach var="row" items="${hdwData.rows}" begin = "0" end="0" > --%>
-                        <c:set var="hdwId" value="${curHdwData.id}" scope="page"/> 
-                        <%--
-                        <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}"/>
-                        <display:table name="${travelerList}" export="true" class="datatable" id="trav"> 
-                            <display:column title="Traveler" sortable="true" >${trav.name}</display:column>
-                            <display:column title="Status" sortable="true" >${trav.statusName}</display:column>
-                            <display:column title="Start Time" sortable="true" >${trav.beginTime}</display:column>
-                            <display:column title="End Time" sortable="true" >${trav.endTime}</display:column>
-                        </display:table>--%>
-                   <%-- </c:forEach> --%>
-             
-        
 
-                    <h2>Summary of Traveler Status</h2>
-                    <etraveler:activityList travelersOnly="true" hardwareId="${hdwId}"/>
-                </section>
-                <section>
+
+                    <%-- <c:forEach var="row" items="${hdwData.rows}" begin = "0" end="0" > --%>
+                    <c:set var="hdwId" value="${curHdwData.id}" scope="page"/> 
+
+                    <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}"/>
                     <%--
-                    <c:forEach var="curTraveler" items="${travelerList}"> --%>
-                        <%--<h3>${curTraveler.name} ${curTraveler.actId}</h3><br> --%>
+                    <display:table name="${travelerList}" export="true" class="datatable" id="trav"> 
+                        <display:column title="Traveler" sortable="true" >${trav.name}</display:column>
+                        <display:column title="Status" sortable="true" >${trav.statusName}</display:column>
+                        <display:column title="Start Time" sortable="true" >${trav.beginTime}</display:column>
+                        <display:column title="End Time" sortable="true" >${trav.endTime}</display:column>
+                    </display:table>--%>
+                    <%-- </c:forEach> --%>
+
+
+                    <div id=""theFold"/>
+                         <table>
+                            <tr>
+                                <td style="vertical-align:top;">
+                                    <h2>Summary of Traveler Status</h2>
+                            <etraveler:activityList travelersOnly="true" hardwareId="${hdwId}"/>
+                            </td>
+                            <td style="vertical-align:top">
+                                <c:url var="actResults" value="actResults.jsp">
+                                    <c:param name="hdwId" value="${curHdwData.id}"/>
+                                </c:url>
+                                <iframe name="content" src="${actResults}" width="800" height="4000"></iframe>
+                            </td>
+                            </tr>
+                        </table>
                         <%--
+                    <c:forEach var="curTraveler" items="${travelerList}"> 
+                        <h3>${curTraveler.name} ${curTraveler.actId}</h3><br>
+                        
                         <c:set var="actList" value="${portal:getActivitiesForTraveler(pageContext.session,curTraveler.actId,hdwId)}"/>
 
                         <c:forEach var="curAct" items="${actList}" varStatus="status">
+                            <etraveler:jhResultWidget activityId="${curAct}"/>
                         --%>
+                        
                             <%--
                             <c:choose>
                                
                                 <c:when test="${status.first}">
                                     <h3><b>Traveler ${curTraveler.name}</b></h3>
-                                    <etraveler:expandActivity var="stepList" activityId="${curAct}"/>
+                                    
 
-
-                                    <etraveler:findCurrentStep varStepLink="currentStepLink" varStepEPath="currentStepEPath" 
-                                                               varStepId="currentStepActivityId" stepList="${stepList}"/>
-
-
-
-                                    <display:table id="step" name="${stepList}" class="datatable">
-                                        <display:column title="Step">
-                                            <c:if test="${! empty step.stepPath}">
-
-                                                <c:out value="${step.stepPath}"/>
-
-                                            </c:if>
-                                        </display:column>
-                                        <display:column title="Name">
-                                            <c:choose>
-                                                <c:when test="${! empty currentStepLink && step.edgePath == currentStepEPath && (step.activityId == currentStepActivityId || (currentStepActivityId == -1 && empty step.activityId))}">
-                                                    <c:set var="contentLink" value="${currentStepLink}"/>
-                                                </c:when>
-                                                <c:when test="${! empty step.activityId}">
-                                                    <c:url var="contentLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/activityPane.jsp">
-                                                        <c:param name="activityId" value="${step.activityId}"/>
-                                                    </c:url>
-                                                </c:when>
-                                                <c:otherwise>
-                                                    <c:url var="contentLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/processPane.jsp">
-                                                        <c:param name="processId" value="${step.processId}"/>
-                                                    </c:url>                
-                                                </c:otherwise>
-                                            </c:choose>
-                                            <a href="${contentLink}" target="content">${step.name}</a>
-                                        </display:column>
-
-                                        <display:column property="activityId"/>
-                                        <display:column property="end"/>
-                                        <display:column property="statusName" title="Status"/>
-
-                                    </display:table>
+                                    
                                 </c:when>
                             --%>
                                 <%--
@@ -238,9 +214,9 @@
                                 </c:otherwise>
                                 --%>
                             <%--</c:choose> --%>
-                      <%--  </c:forEach>--%> <%-- End Activity Loop --%>
+                     <%-- </c:forEach> --%> <%-- End Activity Loop --%>
                         <br>
-                    <%-- </c:forEach> --%> <%-- End Traveler Loop --%>
+                     <%-- </c:forEach> --%>  <%-- End Traveler Loop --%>
 
                     <sql:query var="activityQuery">
                         SELECT A.id, H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
