@@ -81,6 +81,10 @@
             <param-name>configDb</param-name>
             <param-value>${experiment.configuration.database}</param-value>
         </init-param>
+        <init-param>
+            <param-name>requireLogin</param-name>
+            <param-value>true</param-value>
+        </init-param>
     </filter>
     <filter-mapping>
         <filter-name>LoginFilter</filter-name>
@@ -88,13 +92,13 @@
     </filter-mapping>
     
     <!-- GroupManager -->
-   
+   <!--
     <filter>
         <filter-name>GroupCheckerFilter</filter-name>
         <filter-class>org.srs.groupmanager.filter.GroupCheckerFilter</filter-class>
         <init-param>
             <param-name>groups</param-name>
-            <param-value>LSSTCAM-MEMBERS</param-value>
+            <param-value>LSSTCAMUSERS</param-value>
         </init-param>
     </filter>
     <filter-mapping>
@@ -102,7 +106,7 @@
         <url-pattern>*.jsp</url-pattern>
     </filter-mapping>
 
-
+-->
 
     <filter>
         <filter-name>sitemesh</filter-name>

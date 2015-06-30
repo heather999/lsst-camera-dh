@@ -21,41 +21,61 @@ where activityId=?<sql:param value="${activityId}"/>
 union
 --%>
 <sql:query var="resultsQ">
-select name, value, null as catalogKey, schemaName, schemaVersion, schemaInstance, id, 2 as section
-from FloatResultHarnessed
-where activityId=?<sql:param value="${activityId}"/>
-union
-select name, value, null as catalogKey, schemaName, schemaVersion, schemaInstance, id, 2 as section
-from IntResultHarnessed
-where activityId=?<sql:param value="${activityId}"/>
-union
-select name, value, null as catalogKey, schemaName, schemaVersion, schemaInstance, id, 2 as section
-from StringResultHarnessed
-where activityId=?<sql:param value="${activityId}"/>
-order by section, schemaName, schemaVersion, schemaInstance, name
-;
-    </sql:query>
+    select name, value, schemaName, schemaVersion, schemaInstance, id, 2 as section
+    from FloatResultHarnessed
+    where activityId=?<sql:param value="${activityId}"/>
+    union
+    select name, value, schemaName, schemaVersion, schemaInstance, id, 2 as section
+    from IntResultHarnessed
+    where NOT (name="stat") AND activityId=?<sql:param value="${activityId}"/>
+    union
+    select name, value, schemaName, schemaVersion, schemaInstance, id, 2 as section
+    from StringResultHarnessed
+    where activityId=?<sql:param value="${activityId}"/>
+    order by section, schemaName, schemaVersion, schemaInstance, name
+    ;
+</sql:query>
+
+<sql:query var="statusQ">
+    select name, value
+    from IntResultHarnessed
+    where name="stat" AND activityId=?<sql:param value="${activityId}"/>
+    ;
+</sql:query>
     
-<c:if test="${! empty resultsQ.rows}">
-    <h4>Job Harness Results ${processName}_v${version}</h4>
-    <display:table name="${resultsQ.rows}" id="row" class="datatable">
-        <display:column property="schemaName" title="Schema" sortable="true" headerClass="sortable"/>
-        <display:column property="schemaVersion" title="Version" sortable="true" headerClass="sortable"/>
-        <display:column property="name" title="Name" sortable="true" headerClass="sortable"/>
-        <display:column property="schemaInstance" title="Instance" sortable="true" headerClass="sortable"/>
-        <display:column title="Value" sortable="true" headerClass="sortable">
-            <c:choose>
-                <c:when test="${empty row.catalogKey}">
-                    <c:out value="${row.value}"/>
-                </c:when>
-                <c:otherwise>
-                    <c:url var="dcLink" value="http://srs.slac.stanford.edu/DataCatalog/">
-                        <c:param name="dataset" value="${row.catalogKey}"/>
-                        <c:param name="experiment" value="LSST-CAMERA"/>
-                    </c:url>
-                    <a href="${dcLink}" target="_blank"><c:out value="${row.value}"/></a>
-                </c:otherwise>
-            </c:choose>
-        </display:column>
-    </display:table>
-</c:if>
+<c:choose>
+    <c:when test="${! empty resultsQ.rows}">
+        <h4>Job Harness Results ${processName}_v${version}
+        <c:if test="${! empty statusQ.rows}"> 
+            <c:set var="status" value="${statusQ.rows[0]}"/>
+            ${status.name} ${status.value}</h4>
+        </c:if>
+        <display:table name="${resultsQ.rows}" id="row" export="true" class="datatable">
+            <display:column property="schemaName" title="Schema" sortable="true" headerClass="sortable"/>
+            <display:column property="schemaVersion" title="Version" sortable="true" headerClass="sortable"/>
+            <display:column property="name" title="Name" sortable="true" headerClass="sortable"/>
+            <display:column property="schemaInstance" title="Instance" sortable="true" headerClass="sortable"/>
+            <display:column property="value" title="Value" sortable="true" headerClass="sortable"/>
+                <%-- <c:choose>
+                    <c:when test="${empty row.catalogKey}">
+                        <c:out value="${row.value}"/> --%>
+                        <%--
+                    </c:when>
+                    <c:otherwise>
+                        <c:url var="dcLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                            <c:param name="dataset" value="${row.catalogKey}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                        </c:url>
+                        <a href="${dcLink}" target="_blank"><c:out value="${row.value}"/></a>
+                    </c:otherwise>
+                </c:choose> 
+            </display:column> --%>
+        </display:table>
+    </c:when>
+    <c:otherwise>
+        <c:if test="${! empty statusQ.rows}"> 
+            <c:set var="status" value="${statusQ.rows[0]}"/>
+            <h4>Job Harness Results ${processName}_v${version} ${status.name} ${status.value}</h4>
+        </c:if>
+    </c:otherwise>
+</c:choose>

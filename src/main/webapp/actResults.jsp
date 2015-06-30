@@ -11,6 +11,11 @@
 <html>
     <head>
         <title>Results</title>
+         <style type="text/css">
+table.datatable th, table.datatable td {
+	text-align: left;
+}
+            </style>
     </head>
     <body> 
         <h1>Results</h1>
@@ -44,14 +49,14 @@
                 SELECT name, value, catalogKey, schemaName, schemaVersion, schemaInstance, virtualPath FROM FilepathResultHarnessed 
                 WHERE FilepathResultHarnessed.activityId=?<sql:param value="${curAct}"/>
             </sql:query>
-            <c:if test="${outQ.rowCount>0}" >
+            <c:if test="${outQ.rowCount>0}">
                 <c:url var="processLink" value="outputFiles.jsp">
                     <c:param name="activityId" value="${curAct}"/>
                     <c:param name="travName" value="${curTraveler.name}"/>
                     <c:param name="processName" value="${processInfo.process}"/>
                     <c:param name="processVersion" value="${processInfo.version}"/>
                 </c:url>
-                <h4><a target="_blank" href="${processLink}" >Link to ${processInfo.process} version ${processInfo.version} iteration ${processInfo.iteration} Output Files</a></h4>
+                <h4><a target="_blank" href="${processLink}">Link to ${processInfo.process} version ${processInfo.version} iteration ${processInfo.iteration} Output Files</a></h4>
             </c:if>
         </c:forEach> <%-- End Activity Loop --%>
 

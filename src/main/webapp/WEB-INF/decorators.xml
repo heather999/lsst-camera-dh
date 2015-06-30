@@ -1,12 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <decorators defaultdir="/decorators">
-  <decorator name="basicDecorator" page="basicDecorator.jsp">
-       <pattern>/*</pattern>
-  </decorator>
     <excludes>
        <pattern>*updateTestResult.jsp*</pattern>
        <pattern>*plotTree.jsp*</pattern>
        <pattern>*plotMain.jsp*</pattern>
-    <!--   <pattern>*actResults.jsp*</pattern> -->
+       <!--<pattern>*actResults.jsp*</pattern>-->
     </excludes>
+    
+  <decorator name="basicDecorator" page="basicDecorator.jsp">
+       <pattern>/*</pattern>
+  </decorator>
+  
+  <decorator name="noDecorator" page="noDecorator.jsp">
+       <pattern>*actResults.jsp*</pattern>
+  </decorator>
+  
+    
 </decorators>
