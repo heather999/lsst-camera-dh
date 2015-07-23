@@ -75,7 +75,7 @@
         <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
             <c:param name="activityId" value="${row.activityId}"/>
         </c:url>
-        <a href="${actLink}" target="_blank">${row.processName}</a>
+        <a href="${actLink}" target="_blank">${row.processName} ${row.activityId}</a>
     </display:column>
 
     <%--  href="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp" paramId="activityId" paramProperty="activityId"/> --%>

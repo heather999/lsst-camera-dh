@@ -31,7 +31,13 @@
 <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
 
 <display:table name="${hdwStatLocTable}" export="true" class="datatable" id="hdl" >
-    <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column>
+    <%-- <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column> --%>
+    <display:column title="LsstId" sortable="true">
+        <c:url var="explorerLink" value="oneComponent.jsp">
+            <c:param name="lsstIdValue" value="${hdl.lsstId}"/>
+        </c:url>                
+        <a href="${explorerLink}"><c:out value="${hdl.lsstId}"/></a>
+    </display:column>
     <display:column title="Date Registered" sortable="true" >${hdl.creationDate}</display:column>
     <display:column title="Overall Component Status" sortable="true" >${hdl.status}</display:column>
     <display:column title="Site" sortable="true" >${hdl.site}</display:column>

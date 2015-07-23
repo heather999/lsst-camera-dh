@@ -8,6 +8,7 @@
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
 <%@taglib prefix="etraveler" tagdir="/WEB-INF/tags/eTrav"%>
 
+
 <html>
     <head>
         <title>CCD Explorer</title>
@@ -218,6 +219,7 @@
                         <br>
                      <%-- </c:forEach> --%>  <%-- End Traveler Loop --%>
 
+                     <%--
                     <sql:query var="activityQuery">
                         SELECT A.id, H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
                         P.version AS version,A.begin,A.end,concat(AFS.name,'') as status
@@ -230,7 +232,7 @@
                         AND P.id=A.processId
                         ORDER BY A.id DESC
                     </sql:query>
-
+--%>
 
                     <%--  <h2>All Processes</h2> --%>
 
