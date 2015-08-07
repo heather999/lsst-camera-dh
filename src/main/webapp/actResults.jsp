@@ -27,7 +27,7 @@ table.datatable th, table.datatable td {
 
 
         <c:forEach var="curTraveler" items="${travelerList}"> 
-            <h3>${curTraveler.name} activityId: ${curTraveler.actId}</h3><br>
+            
 
             <c:set var="actList" value="${portal:getActivitiesForTraveler(pageContext.session,curTraveler.actId,hdwId)}"/> 
 
@@ -36,34 +36,36 @@ table.datatable th, table.datatable td {
             <h4>String "${actListStr}" </h4>
             --%>
 
-            <c:forEach var="curAct" items="${actList}" varStatus="status">
+            <c:set var="firstTime" value="true"/>
+            <c:set var="actListWithOutput" value="${portal:getActivityListWithOutput(pageContext.session,actList)}"/>
+            <c:forEach var="curAct" items="${actListWithOutput}" varStatus="status">
+                <%--<c:set var="actId" value="${curAct}"/> --%>
+<%--                <c:set var="hasOutput" value="${portal:doesActivityHaveOutput(pageContext.session,actId)}"/> --%>
+
+                 
+                    <c:if test="${firstTime==true}">
+                    <h3>${curTraveler.name} activityId: ${curTraveler.actId}</h3><br>
+                    <c:set var="firstTime" value="false"/>
+                    </c:if>
                 <sql:query var="moreProcessInfo" scope="page">
-                    SELECT A.id, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
-                    P.version AS version,A.begin,A.end
+                    SELECT A.id, concat(P.name,'') as process, A.processId, A.iteration,
+                    P.version AS version
                     FROM Process P, Activity A  
                     WHERE P.id=A.processId AND A.id=${curAct}
                 </sql:query>
                 <c:set var="processInfo" value="${moreProcessInfo.rows[0]}"/>    
-            <etraveler:jhResultWidget activityId="${curAct}" processName="${processInfo.process}" version="${processInfo.version}"/>
-            <sql:query var="outQ" scope="page">
-                SELECT name, value, catalogKey, schemaName, schemaVersion, schemaInstance, virtualPath FROM FilepathResultHarnessed 
-                WHERE FilepathResultHarnessed.activityId=?<sql:param value="${curAct}"/>
-            </sql:query>
-            <c:if test="${outQ.rowCount>0}">
-                <c:url var="processLink" value="outputFiles.jsp">
+                 <c:url var="resultsLink" value="procResults.jsp">
                     <c:param name="activityId" value="${curAct}"/>
+                    <c:param name="process" value="${processInfo.process}"/>
+                    <c:param name="version" value="${processInfo.version}"/>
                     <c:param name="travName" value="${curTraveler.name}"/>
-                    <c:param name="processName" value="${processInfo.process}"/>
-                    <c:param name="processVersion" value="${processInfo.version}"/>
                 </c:url>
-                <h4><a target="_blank" href="${processLink}">Link to ${processInfo.process} version ${processInfo.version} iteration ${processInfo.iteration} Output Files</a></h4>
-            </c:if>
+                <h4><a target="_blank" href="${resultsLink}">Link to ${processInfo.process} version ${processInfo.version} iteration ${processInfo.iteration} activityId: ${curAct}</a></h4>
+                
         </c:forEach> <%-- End Activity Loop --%>
 
-        <br>
+       
     </c:forEach>  <%-- End Traveler Loop --%>
-
-
 
 
 </body>

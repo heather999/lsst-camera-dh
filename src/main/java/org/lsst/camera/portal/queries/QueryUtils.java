@@ -10,11 +10,14 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import javax.servlet.http.HttpSession;
 import org.lsst.camera.portal.data.TravelerStatus;
@@ -54,8 +57,13 @@ public class QueryUtils {
     }
 
     // Returns all the activities in the Activity Table associated with a HardwareId
-    public static TreeMap getActivityMap(HttpSession session, Integer hdwId) throws SQLException {
-        TreeMap<Integer, Activity> activityMap = new TreeMap<>();
+    public static TreeMap getActivityMap(HttpSession session, Integer hdwId, Boolean reverseOrder) throws SQLException {
+        TreeMap<Integer, Activity> activityMap;
+        if (reverseOrder)
+            activityMap = new TreeMap<>(Collections.reverseOrder());
+        else
+            activityMap = new TreeMap<>();
+                    
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
@@ -262,7 +270,7 @@ public class QueryUtils {
                 locResult.first();
 
                 // Retrieve most recent Traveler
-                TreeMap<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"));
+                TreeMap<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"),false);
                 
                 String travelerName = "NA";
                 String curActProcName = "NA";
@@ -387,7 +395,7 @@ public class QueryUtils {
             locResult.first();
 
             // Retrieve most recent Traveler
-            TreeMap<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"));
+            TreeMap<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"),false);
 
             String travelerName = "NA";
             String curActProcName = "NA";
@@ -478,7 +486,7 @@ public class QueryUtils {
             c = ConnectionManager.getConnection(session);
 
             // Retrieve most recent Traveler
-            TreeMap<Integer, Activity> activityMap = getActivityMap(session, hardwareId);
+            TreeMap<Integer, Activity> activityMap = getActivityMap(session, hardwareId,true);
 
             String travelerName = "NA";
             String curActProcName = "NA";
@@ -523,6 +531,149 @@ public class QueryUtils {
         return result;
     }
 
+    public static Boolean doesActivityHaveOutput(HttpSession session, Integer activityId) throws SQLException {
+        Boolean result = false;
+        
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            PreparedStatement floatHarnessedStatement = c.prepareStatement("SELECT activityId FROM FloatResultHarnessed "
+                        + "WHERE activityId=?");
+                floatHarnessedStatement.setInt(1, Integer.valueOf(activityId));
+                ResultSet floatHResult = floatHarnessedStatement.executeQuery();
+                if (floatHResult.next()) return true;
+                PreparedStatement intHarnessedStatement = c.prepareStatement("SELECT activityId FROM IntResultHarnessed "
+                        + "WHERE activityId=?");
+                intHarnessedStatement.setInt(1, Integer.valueOf(activityId));
+                ResultSet intHResult = intHarnessedStatement.executeQuery();
+                if (intHResult.next()) return true;
+            PreparedStatement fileHarnessedStatement = c.prepareStatement("SELECT activityId FROM FilepathResultHarnessed "
+                        + "WHERE activityId=?");
+                fileHarnessedStatement.setInt(1, Integer.valueOf(activityId));
+                ResultSet fileHResult = fileHarnessedStatement.executeQuery();
+                if (fileHResult.next()) return true;
+            PreparedStatement fileManualStatement = c.prepareStatement("SELECT activityId FROM FilepathResultManual "
+                        + "WHERE activityId=?");
+                fileManualStatement.setInt(1, Integer.valueOf(activityId));
+                ResultSet fileMResult = fileManualStatement.executeQuery();
+                if (fileMResult.next()) return true;
+                PreparedStatement floatManualStatement = c.prepareStatement("SELECT activityId FROM FloatResultManual "
+                        + "WHERE activityId=?");
+                floatManualStatement.setInt(1, Integer.valueOf(activityId));
+                ResultSet floatMResult = floatManualStatement.executeQuery();
+                if (floatMResult.next()) return true;
+                PreparedStatement intManualStatement = c.prepareStatement("SELECT activityId FROM InttResultManual "
+                        + "WHERE activityId=?");
+                intManualStatement.setInt(1, Integer.valueOf(activityId));
+                ResultSet intMResult = intManualStatement.executeQuery();
+                if (intMResult.next()) return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return result;
+    }
+    
+    public static Set getActivityListWithOutput(HttpSession session, List actList) throws SQLException {
+        Set<Integer> result = new LinkedHashSet();
+        Connection c = null;
+        PreparedStatement floatHarnessedStatement=null, floatManualStatement=null, intHarnessedStatement=null, intManualStatement=null;
+        PreparedStatement fileHarnessedStatement=null, fileManualStatement=null, stringHarnessedStatement=null, stringManualStatement=null;
+        ResultSet fileHResult=null, fileMResult=null, floatHResult=null, floatMResult=null, intHResult=null, intMResult=null;
+        ResultSet stringHResult=null, stringMResult=null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            // Create String to use in Queries
+            Iterator<Integer> iterator = actList.iterator();
+            int counter=0;
+            String str="";
+            while (iterator.hasNext()) {
+                if (counter==0)
+                    str+="(";
+                ++counter;
+                str += (iterator.next());
+                if (counter == actList.size()) {
+                    str += ")";
+                } else {
+                    str += ", ";
+                }
+            }
+           
+               floatHarnessedStatement = c.prepareStatement("SELECT activityId FROM FloatResultHarnessed "
+                        + "WHERE activityId IN " + str);
+                floatHResult = floatHarnessedStatement.executeQuery();
+                while(floatHResult.next()) 
+                    result.add(floatHResult.getInt("activityId"));
+                    
+                intHarnessedStatement = c.prepareStatement("SELECT activityId FROM IntResultHarnessed "
+                        + "WHERE activityId IN "+str);
+                intHResult = intHarnessedStatement.executeQuery();
+                while(intHResult.next()) 
+                    result.add(intHResult.getInt("activityId"));
+                    
+                fileHarnessedStatement = c.prepareStatement("SELECT activityId FROM FilepathResultHarnessed "
+                        + "WHERE activityId IN " + str);
+                fileHResult = fileHarnessedStatement.executeQuery();
+                while(fileHResult.next()) 
+                    result.add(fileHResult.getInt("activityId"));
+ 
+                fileManualStatement = c.prepareStatement("SELECT activityId FROM FilepathResultManual "
+                        + "WHERE activityId IN " + str);
+                fileMResult = fileManualStatement.executeQuery();
+                while(fileMResult.next()) 
+                    result.add(fileMResult.getInt("activityId"));
+                    
+                floatManualStatement = c.prepareStatement("SELECT activityId FROM FloatResultManual "
+                        + "WHERE activityId IN "+str);
+                floatMResult = floatManualStatement.executeQuery();
+                while(floatMResult.next())
+                    result.add(floatMResult.getInt("activityId"));
+                
+                intManualStatement = c.prepareStatement("SELECT activityId FROM IntResultManual "
+                        + "WHERE activityId IN "+str);
+                intMResult = intManualStatement.executeQuery();
+                while(intMResult.next()) 
+                    result.add(intMResult.getInt("activityId"));
+                
+                stringManualStatement = c.prepareStatement("SELECT activityId FROM stringResultManual "
+                        + "WHERE activityId IN "+str);
+                stringMResult = stringManualStatement.executeQuery();
+                while(stringMResult.next()) 
+                    result.add(stringMResult.getInt("activityId"));
+                
+                stringHarnessedStatement = c.prepareStatement("SELECT activityId FROM stringResultHarnessed "
+                        + "WHERE activityId IN "+str);
+                stringHResult = stringHarnessedStatement.executeQuery();
+                while(stringHResult.next()) 
+                    result.add(stringHResult.getInt("activityId"));
+            
+             } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            } 
+            if (floatHResult != null) floatHResult.close();
+            if (floatHarnessedStatement != null) floatHarnessedStatement.close();
+            if (floatMResult != null) floatMResult.close();
+            if (floatManualStatement != null) floatManualStatement.close();
+            if (intMResult != null) intMResult.close();
+            if (intManualStatement != null) intManualStatement.close();
+            if (intHResult != null) intHResult.close();
+            if (intHarnessedStatement != null) intHarnessedStatement.close();
+            if (fileHResult != null) fileHResult.close();
+            if (fileHarnessedStatement != null) fileHarnessedStatement.close();
+            if (fileMResult != null) fileMResult.close();
+            if (fileManualStatement != null) fileManualStatement.close();
+        }
+
+        return result;
+    }
     
     public static List getActivitiesForTraveler(HttpSession session, Integer travelerActId, Integer hardwareId) throws SQLException {
         List<Integer> result = new ArrayList<>();
@@ -531,7 +682,7 @@ public class QueryUtils {
         try {
             c = ConnectionManager.getConnection(session);
 
-            TreeMap<Integer, Activity> activityMap = getActivityMap(session, hardwareId);
+            TreeMap<Integer, Activity> activityMap = getActivityMap(session, hardwareId,false);
             // Loop to match all activities to the appropriate Traveler
             for (Map.Entry<Integer, Activity> activity : activityMap.entrySet()) {
                 Activity act = activity.getValue();
