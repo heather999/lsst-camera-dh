@@ -53,7 +53,7 @@
    <function>
     <name>getTravelerCol</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getTravelerCol(javax.servlet.http.HttpSession,java.lang.Integer)
+    <function-signature>java.util.List getTravelerCol(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Boolean)
     </function-signature>
   </function>
   <function>

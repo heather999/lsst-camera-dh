@@ -114,8 +114,11 @@
 
                     <%-- <c:forEach var="row" items="${hdwData.rows}" begin = "0" end="0" > --%>
                     <c:set var="hdwId" value="${curHdwData.id}" scope="page"/> 
-
-                    <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}"/>
+ 
+                    <%-- HMK Aug 7 2015 --%>
+                   <%-- <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}"/> --%>
+                    
+                    
                     <%--
                     <display:table name="${travelerList}" export="true" class="datatable" id="trav"> 
                         <display:column title="Traveler" sortable="true" >${trav.name}</display:column>
@@ -141,79 +144,9 @@
                             </td>
                             </tr>
                         </table>
-                        <%--
-                    <c:forEach var="curTraveler" items="${travelerList}"> 
-                        <h3>${curTraveler.name} ${curTraveler.actId}</h3><br>
-                        
-                        <c:set var="actList" value="${portal:getActivitiesForTraveler(pageContext.session,curTraveler.actId,hdwId)}"/>
-
-                        <c:forEach var="curAct" items="${actList}" varStatus="status">
-                            <etraveler:jhResultWidget activityId="${curAct}"/>
-                        --%>
-                        
-                            <%--
-                            <c:choose>
-                               
-                                <c:when test="${status.first}">
-                                    <h3><b>Traveler ${curTraveler.name}</b></h3>
-                                    
-
-                                    
-                                </c:when>
-                            --%>
-                                <%--
-                            <c:otherwise>
 
 
-                                    <sql:query var="floatResults">
-                                        SELECT name, value, schemaName, schemaVersion FROM FloatResultHarnessed 
-                                        WHERE ${curAct}=FloatResultHarnessed.activityId AND name != "stat"
-                                        UNION ALL
-                                        SELECT name, value, schemaName, schemaVersion FROM IntResultHarnessed 
-                                        WHERE ${curAct}=IntResultHarnessed.activityId AND name != "stat"
-                                        UNION ALL
-                                        SELECT name, value, schemaName, schemaVersion FROM StringResultHarnessed 
-                                        WHERE ${curAct}=StringResultHarnessed.activityId AND name != "stat"
-                                    </sql:query>
-                                        
-                                    <sql:query var="moreProcessInfo" scope="page">
-                                        SELECT A.id, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
-                                        P.version AS version,A.begin,A.end
-                                        FROM Process P, Activity A  
-                                        WHERE P.id=A.processId AND A.id=${curAct}
-                                    </sql:query>
-                                        
-                                    <c:forEach items="${moreProcessInfo.rows}" var="processRow" begin="0" end="0">
-                                        <c:url var="activityLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/activityPane.jsp">
-                                            <c:param name="activityId" value="${curAct}"/>
-                                        </c:url>
-                                        <h3><a target="_blank" href="${activityLink}">${processRow.process} version ${processRow.version} iteration ${processRow.iteration}</a></h3>
-                                    </c:forEach>
-
-                                    <sql:query var="outQuery" scope="page">
-                                        SELECT creationTS, virtualPath, value FROM FilepathResultHarnessed 
-                                        WHERE ${curAct}=FilepathResultHarnessed.activityId ORDER BY creationTS
-                                    </sql:query>
-                                    <c:if test="${outQuery.rowCount>0}" >
-
-
-                                        <c:forEach items="${moreProcessInfo.rows}" var="processRow" begin="0" end="0">
-                                            <c:url var="processLink" value="outputFiles.jsp">
-                                                <c:param name="activityId" value="${curAct}"/>
-                                                <c:param name="processName" value="${processRow.process}"/>
-                                                <c:param name="processVersion" value="${processRow.version}"/>
-                                            </c:url>
-                                            <h4><a href="${processLink}" >${processRow.process} version ${processRow.version} iteration ${processRow.iteration} Output Files</a></h4>
-                                            <br>
-                                        </c:forEach>
-
-                                    </c:if>
                              
-                                    <c:if test="${floatResults.rowCount>0}" >
-                                        <display:table name="${floatResults.rows}" export="true" class="datatable"/>
-                                    </c:if>
-                                </c:otherwise>
-                                --%>
                             <%--</c:choose> --%>
                      <%-- </c:forEach> --%> <%-- End Activity Loop --%>
                         <br>
@@ -252,26 +185,7 @@
 
                 </section>
 
-                <%--
-            <h2>Process Steps with Available Output Files</h2>
-
-
-                <c:forEach items="${activityQuery.rows}" var="actRow">
-                    <sql:query var="outQuery" scope="page">
-                        SELECT creationTS, virtualPath, value FROM FilepathResultHarnessed 
-                        WHERE ${actRow.id}=FilepathResultHarnessed.activityId ORDER BY creationTS
-                    </sql:query>
-                    <c:if test="${outQuery.rowCount>0}" >
-                        <c:url var="processLink" value="outputFiles.jsp">
-                            <c:param name="activityId" value="${actRow.id}"/>
-                            <c:param name="processName" value="${actRow.process}"/>
-                            <c:param name="processVersion" value="${actRow.version}"/>
-                        </c:url>
-                        <h3><a href="${processLink}" >${actRow.process} version ${actRow.version} iteration ${actRow.iteration}</a></h3>
-                        <br>
-                    </c:if>
-                </c:forEach>
-                --%>
+             
 
             </c:otherwise>
         </c:choose>

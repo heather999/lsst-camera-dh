@@ -30,7 +30,7 @@
             <display:column property="schemaVersion" title="Version" sortable="true" headerClass="sortable"/>
             <display:column property="name" title="Name" sortable="true" headerClass="sortable"/>
             <display:column property="schemaInstance" title="Instance" sortable="true" headerClass="sortable"/>
-            <display:column title="Value" sortable="true" headerClass="sortable">
+            <display:column title="Path" sortable="true" headerClass="sortable">
                 <c:choose>
                     <c:when test="${empty row.catalogKey}">
                         <c:out value="${row.value}"/>
@@ -40,7 +40,7 @@
                             <c:param name="dataset" value="${row.catalogKey}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
-                        <a href="${dcLink}" target="_blank"><c:out value="${row.value}"/></a>
+                        <a href="${dcLink}" target="_blank"><c:out value="${row.virtualPath}"/></a>
                     </c:otherwise>
                 </c:choose>
             </display:column>
@@ -57,7 +57,7 @@
     <c:if test="${outManualQuery.rowCount>0}" >
         <display:table name="${outManualQuery.rows}" id="row" export="true" class="datatable">
             <display:column property="name" title="Name" sortable="true" headerClass="sortable"/>
-            <display:column title="Value" sortable="true" headerClass="sortable">
+            <display:column title="virtualPath" sortable="true" headerClass="sortable">
                 <c:choose>
                     <c:when test="${empty row.catalogKey}">
                         <c:out value="${row.value}"/>

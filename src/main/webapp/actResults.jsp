@@ -23,7 +23,7 @@ table.datatable th, table.datatable td {
 
         <c:set var="hdwId" value="${param.hdwId}" scope="page"/> 
 
-        <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}" scope="page"/>
+        <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId,true)}" scope="page"/>
 
 
         <c:forEach var="curTraveler" items="${travelerList}"> 

@@ -478,9 +478,9 @@ public class QueryUtils {
     }
 
     
-    public static List getTravelerCol(HttpSession session, Integer hardwareId) throws SQLException {
+    public static List getTravelerCol(HttpSession session, Integer hardwareId, Boolean removeDups) throws SQLException {
         List<TravelerInfo> result = new ArrayList<>();
-
+        List<Integer> processList = new ArrayList<>();
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
@@ -503,8 +503,12 @@ public class QueryUtils {
                 if (act != null) {
 
                     if (act.isParent()) { // Found a Traveler
+                        if (removeDups && processList.contains(act.getProcessId()))
+                            continue;
+
                         String travName = null;
-                        PreparedStatement travStatement = c.prepareStatement("SELECT Process.name, Process.version FROM "
+                        PreparedStatement travStatement = c.prepareStatement("SELECT Process.name, Process.version, Process.originalId "
+                                + "FROM "
                                 + "Process WHERE Process.id=?");
                         travStatement.setInt(1, Integer.valueOf(act.getProcessId()));
                         ResultSet travResult = travStatement.executeQuery();
@@ -513,6 +517,7 @@ public class QueryUtils {
                             travName = travResult.getString("name") + "_v" + travResult.getInt("version");
                         }
                         TravelerInfo info = new TravelerInfo(travName, act.getActivityId(), act.getHdwId(), act.getStatusId(), act.getStatusName(), act.getBeginTime(), act.getEndTime(), act.getInNCR());
+                        processList.add(act.getProcessId());
                         result.add(info);
                     }
                 }
