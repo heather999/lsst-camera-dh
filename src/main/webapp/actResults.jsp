@@ -44,7 +44,7 @@ table.datatable th, table.datatable td {
 
                  
                     <c:if test="${firstTime==true}">
-                    <h3>${curTraveler.name} activityId: ${curTraveler.actId}</h3><br>
+                    <h3>${curTraveler.name} activityId: ${curTraveler.actId}</h3>
                     <c:set var="firstTime" value="false"/>
                     </c:if>
                 <sql:query var="moreProcessInfo" scope="page">

@@ -477,6 +477,19 @@ public class QueryUtils {
         return result;
     }
 
+    public static Integer getTestReportActivityId(HttpSession session, Integer hardwareId) throws SQLException {
+        Integer result;
+        List<TravelerInfo> travCol = getTravelerCol(session, hardwareId, true);
+        Iterator<TravelerInfo> iterator = travCol.iterator();
+        String testReport="SR-EOT-02";
+        while (iterator.hasNext()) {
+         TravelerInfo t = iterator.next();
+         String name = t.getName();
+         if (name.contains(testReport)) 
+             return t.getActId();
+        }
+        return -1;
+    }
     
     public static List getTravelerCol(HttpSession session, Integer hardwareId, Boolean removeDups) throws SQLException {
         List<TravelerInfo> result = new ArrayList<>();

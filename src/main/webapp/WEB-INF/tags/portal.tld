@@ -80,4 +80,10 @@
     <function-signature>java.util.Set getActivityListWithOutput(javax.servlet.http.HttpSession,java.util.List)
     </function-signature>
   </function>
+    <function>
+    <name>getTestReportActivityId</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.lang.Integer getTestReportActivityId(javax.servlet.http.HttpSession,java.lang.Integer)
+    </function-signature>
+  </function>
 </taglib>
