@@ -2,5 +2,4 @@
 Initial implementation of LSST data portal
 
  TO DO
-  finish first portal page
 
