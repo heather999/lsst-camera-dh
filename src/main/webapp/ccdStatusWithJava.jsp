@@ -25,12 +25,11 @@
     <sql:param value="${ccdHdwTypeId}"/>
 </sql:query>
 
-<%-- <display:table name="${ccdList.rows}" export="true" class="datatable"/> --%>
 
 <h1>CCD Current Status and Location</h1>
 <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
 
-<display:table name="${hdwStatLocTable}" export="true" class="datatable" id="hdl" >
+<display:table name="${hdwStatLocTable}" export="true" defaultsort="9" defaultorder="descending" class="datatable" id="hdl" >
     <%-- <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column> --%>
     <display:column title="LsstId" sortable="true">
         <c:url var="explorerLink" value="oneComponent.jsp">
@@ -47,6 +46,9 @@
     <display:column title="Current Process Step Status" sortable="true" >${hdl.curActivityStatus}</display:column>
     <display:column title="Most Recent Timestamp" sortable="true" >${hdl.curActivityLastTime}</display:column>
     <display:column title="NCR" sortable="true" >${hdl.inNCR}</display:column>
+    <display:setProperty name="export.excel.filename" value="sensorStatus.xls"/> 
+    <display:setProperty name="export.csv.filename" value="sensorStatus.csv"/> 
+    <display:setProperty name="export.xml.filename" value="sensorStatus.xml"/> 
 </display:table>
 <%--
   <display:column title="Traveler Elasped Time (s)" sortable="true" >${hdl.elapsedTravTime}</display:column> 

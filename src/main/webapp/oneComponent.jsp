@@ -46,9 +46,6 @@
         <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
         --%>
 
-        <%--
-                <display:table name="${lsstIdQuery}" export="true" class="datatable"/> 
-        --%>
 
         <br>
         <br>

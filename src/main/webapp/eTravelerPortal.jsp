@@ -54,9 +54,7 @@
         <%-- Retrieve full list of current hardware status and location for all CCDs --%>
         <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}" scope="page"/>
 
-        <%--
-                <display:table name="${lsstIdQuery}" export="true" class="datatable"/> 
-        --%>
+      
 
         <br>
         <br>

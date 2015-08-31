@@ -17,14 +17,17 @@
 
     <etraveler:jhResultWidget activityId="${param.activityId}" processName="${param.process}" version="${param.version}"/>
 
+    
     <h1>Output ${param.travName} ${param.process} Version ${param.version}</h1>
-
+<%-- Find Data Catalog Files --%>
     <sql:query var="outQuery" scope="page">
         SELECT creationTS, name, value, catalogKey, schemaName, schemaVersion, schemaInstance, virtualPath FROM FilepathResultHarnessed 
         WHERE FilepathResultHarnessed.activityId=?<sql:param value="${param.activityId}"/>
     </sql:query>
     <c:if test="${outQuery.rowCount>0}" >
-
+        <c:set var="exportFileNameXls" scope="page" value="${param.process}_v${param.version}_jhFiles.xml"/>
+        <c:set var="exportFileNameCsv" scope="page" value="${param.process}_v${param.version}_jhFiles.csv"/>
+        <c:set var="exportFileNameXls" scope="page" value="${param.process}_v${param.version}_jhFiles.xml"/>
         <display:table name="${outQuery.rows}" id="row" export="true" class="datatable">
             <display:column property="schemaName" title="Schema" sortable="true" headerClass="sortable"/>
             <display:column property="schemaVersion" title="Version" sortable="true" headerClass="sortable"/>
@@ -45,16 +48,23 @@
                 </c:choose>
             </display:column>
             <display:column property="creationTS" title="Timestamp" sortable="true" headerClass="sortable"/>
+            <display:setProperty name="export.excel.filename" value="${exportFileNameXls}"/> 
+            <display:setProperty name="export.csv.filename" value="${exportFileNameCsv}"/> 
+            <display:setProperty name="export.xml.filename" value="${exportFileNameXml}"/> 
         </display:table>
 
     </c:if>
 
-
+<%-- Locate any other output files --%>
     <sql:query var="outManualQuery" scope="page">
         SELECT creationTS, name, value, catalogKey, virtualPath FROM FilepathResultManual
         WHERE FilepathResultManual.activityId=?<sql:param value="${param.activityId}"/>
     </sql:query>
     <c:if test="${outManualQuery.rowCount>0}" >
+        <c:set var="exportFileNameManualXls" scope="page" value="${param.process}_v${param.version}_manualFiles.xml"/>
+        <c:set var="exportFileNameManualCsv" scope="page" value="${param.process}_v${param.version}_manualFiles.csv"/>
+        <c:set var="exportFileNameManualXls" scope="page" value="${param.process}_v${param.version}_manualFiles.xml"/>
+        
         <display:table name="${outManualQuery.rows}" id="row" export="true" class="datatable">
             <display:column property="name" title="Name" sortable="true" headerClass="sortable"/>
             <display:column title="virtualPath" sortable="true" headerClass="sortable">
@@ -72,6 +82,9 @@
                 </c:choose>
             </display:column>
             <display:column property="creationTS" title="Timestamp" sortable="true" headerClass="sortable"/>
+            <display:setProperty name="export.excel.filename" value="${exportFileNameManualXls}"/> 
+            <display:setProperty name="export.csv.filename" value="${exportFileNameManualCsv}"/> 
+            <display:setProperty name="export.xml.filename" value="${exportFileNameManualXml}"/> 
         </display:table>
 
     </c:if>
@@ -87,9 +100,16 @@
         WHERE StringResultManual.activityId=?<sql:param value="${param.activityId}"/>
     </sql:query>
     <c:if test="${manualQuery.rowCount>0}" >
+        <c:set var="exportFileNameLiteralsXls" scope="page" value="${param.process}_v${param.version}_literals.xml"/>
+        <c:set var="exportFileNameLiteralsCsv" scope="page" value="${param.process}_v${param.version}_literals.csv"/>
+        <c:set var="exportFileNameLiteralsXls" scope="page" value="${param.process}_v${param.version}_literals.xml"/>
+        
         <display:table name="${manualQuery.rows}" id="row" export="true" class="datatable">
             <display:column property="name" title="Name" sortable="true" headerClass="sortable" nulls="true"/>
             <display:column title="Value" sortable="true" headerClass="sortable"/>
+            <display:setProperty name="export.excel.filename" value="${exportFileNameLiteralsXls}"/> 
+            <display:setProperty name="export.csv.filename" value="${exportFileNameLiteralsCsv}"/> 
+            <display:setProperty name="export.xml.filename" value="${exportFileNameLiteralsXml}"/> 
         </display:table>
     </c:if>
 
