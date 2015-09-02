@@ -4,4 +4,6 @@
 <%@taglib uri="http://www.opensymphony.com/sitemesh/decorator" prefix="decorator" %>
 <%@taglib prefix="srs_utils" uri="http://srs.slac.stanford.edu/utils" %>
 
-<a href="https://confluence.slac.stanford.edu/display/LSSTCAM/eTraveler+and+data+portal+User+Guide" title="User Guide" style=""><strong>eTraveler/data Portal User Guide</strong></a>
+<a href="https://confluence.slac.stanford.edu/display/LSSTCAM/eTraveler+and+data+portal+User+Guide" target="_blank" title="User Guide" style=""><strong>eTraveler/data Portal User Guide</strong></a>
+<br><a href="https://jira.slac.stanford.edu/browse/LSSTTD" target="_blank" title="JIRA Request" style=""><strong>JIRA for Bug & Feature Requests</strong></a>
+or <a href="mailto:lsstcam-et-help@slac.stanford.edu" title="email" style=""><strong>Email Developers</strong></a>

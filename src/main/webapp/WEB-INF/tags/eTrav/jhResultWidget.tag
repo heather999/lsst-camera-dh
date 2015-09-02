@@ -47,7 +47,7 @@
             <c:set var="status" value="${statusQ.rows[0]}"/>
             ${status.name} ${status.value}</h4>  
         </c:if>
-        <display:table name="${resultsQ.rows}" id="row" export="true" class="datatable">
+        <display:table name="${resultsQ.rows}" id="row" defaultsort="3" export="true" class="datatable">
             <display:column property="schemaName" title="Schema" sortable="true" headerClass="sortable"/>
             <display:column property="schemaVersion" title="Version" sortable="true" headerClass="sortable"/>
             <display:column property="name" title="Name" sortable="true" headerClass="sortable"/>
