@@ -69,8 +69,9 @@
     order by A.id desc
     ;
 </sql:query>
+    <%-- should reuse eT preferences.jsp --%> 
 <display:table name="${result.rows}" id="row" class="datatable" sort="list"
-               pagesize="${fn:length(result.rows) > preferences.pageLength ? preferences.pageLength : 0}">
+               pagesize="${fn:length(result.rows) > 10 ? 10 : 0}">
     <display:column title="Name" sortable="true" headerClass="sortable">
         <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
             <c:param name="activityId" value="${row.activityId}"/>
