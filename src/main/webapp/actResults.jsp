@@ -42,7 +42,10 @@ table.datatable th, table.datatable td {
                 <%--<c:set var="actId" value="${curAct}"/> --%>
 <%--                <c:set var="hasOutput" value="${portal:doesActivityHaveOutput(pageContext.session,actId)}"/> --%>
 
-                 
+                 <%-- Note use of concat in the query, the AS statement was not working otherwise 
+http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
+                 --%>
+
                     <c:if test="${firstTime==true}">
                     <h3>${curTraveler.name} activityId: ${curTraveler.actId}</h3>
                     <c:set var="firstTime" value="false"/>
