@@ -160,6 +160,10 @@
                         <br>
                         <%-- </c:forEach> --%>  <%-- End Traveler Loop --%>
 
+                        <%-- Note use of concat in the query, the AS statement was not working otherwise 
+http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
+--%>
+                        
                         <%--
                        <sql:query var="activityQuery">
                            SELECT A.id, H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,

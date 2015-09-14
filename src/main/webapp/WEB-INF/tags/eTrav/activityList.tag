@@ -21,6 +21,10 @@
 <%@attribute name="perHw"%>
 <c:if test="${empty perHw}"><c:set var="perHw" value="false"/></c:if>
 
+<%-- Note use of concat in the query, the AS statement was not working otherwise 
+http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
+--%>
+    
 <sql:query var="result" >
     select concat(A.id,'') as activityId, A.begin, A.end, A.createdBy, A.closedBy,
     concat(AFS.name,'') as status,
