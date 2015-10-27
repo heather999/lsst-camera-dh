@@ -90,14 +90,14 @@
     </c:if>
 
     <sql:query var="manualQuery" scope="page">
-        SELECT name, value FROM IntResultManual
-        WHERE IntResultManual.activityId=?<sql:param value="${param.activityId}"/>
+        SELECT InputPattern.label, value FROM IntResultManual INNER JOIN InputPattern
+        WHERE IntResultManual.inputPatternId = InputPattern.id AND IntResultManual.activityId=?<sql:param value="${param.activityId}"/>
         UNION ALL
-        SELECT name, value FROM FloatResultManual
-        WHERE FloatResultManual.activityId=?<sql:param value="${param.activityId}"/>
+        SELECT InputPattern.label, value FROM FloatResultManual INNER JOIN InputPattern
+        WHERE FloatResultManual.inputPatternId = InputPattern.id AND FloatResultManual.activityId=?<sql:param value="${param.activityId}"/>
         UNION ALL
-        SELECT name, value FROM StringResultManual
-        WHERE StringResultManual.activityId=?<sql:param value="${param.activityId}"/>
+        SELECT InputPattern.label, value FROM StringResultManual INNER JOIN InputPattern
+        WHERE StringResultManual.inputPatternId = InputPattern.id AND StringResultManual.activityId=?<sql:param value="${param.activityId}"/>
     </sql:query>
     <c:if test="${manualQuery.rowCount>0}" >
         <c:set var="exportFileNameLiteralsXls" scope="page" value="${param.process}_v${param.version}_literals.xml"/>
@@ -105,8 +105,8 @@
         <c:set var="exportFileNameLiteralsXls" scope="page" value="${param.process}_v${param.version}_literals.xml"/>
         
         <display:table name="${manualQuery.rows}" id="row" export="true" class="datatable">
-            <display:column property="name" title="Name" sortable="true" headerClass="sortable" nulls="true"/>
-            <display:column title="Value" sortable="true" headerClass="sortable"/>
+            <display:column property="label" title="Description" sortable="true" headerClass="sortable" nulls="true"/>
+            <display:column property="value" title="Value" sortable="true" headerClass="sortable"/>
             <display:setProperty name="export.excel.filename" value="${exportFileNameLiteralsXls}"/> 
             <display:setProperty name="export.csv.filename" value="${exportFileNameLiteralsCsv}"/> 
             <display:setProperty name="export.xml.filename" value="${exportFileNameLiteralsXml}"/> 
