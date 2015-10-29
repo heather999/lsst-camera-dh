@@ -77,6 +77,7 @@
                 </sql:query>
 
                 <c:set var="curHdwData" value="${hdwData.rows[0]}"/>
+                <c:set var="vendor" value="${curHdwData.manufacturer}"/>
 
                 <section>
                     <%-- Retrieve full list of current hardware status and location this CCD --%>
@@ -147,6 +148,8 @@
                             <td style="vertical-align:top">
                                 <c:url var="actResults" value="actResults.jsp">
                                     <c:param name="hdwId" value="${curHdwData.id}"/>
+                                    <c:param name="lsstId" value="${selectedLsstId}"/>
+                                    <c:param name="vendor" value="${vendor}"/>
                                 </c:url>
                                 <iframe name="content" src="${actResults}" width="800" height="4000"></iframe>
                             </td>

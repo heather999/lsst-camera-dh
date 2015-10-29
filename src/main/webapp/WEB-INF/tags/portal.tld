@@ -80,6 +80,12 @@
     <function-signature>java.util.Set getActivityListWithOutput(javax.servlet.http.HttpSession,java.util.List)
     </function-signature>
   </function>
+  <function>
+    <name>getVendorIngestActivityId</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.util.List getVendorIngestActivityId(javax.servlet.http.HttpSession,java.util.List)
+    </function-signature>
+  </function>
     <function>
     <name>getTestReportActivityId</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>

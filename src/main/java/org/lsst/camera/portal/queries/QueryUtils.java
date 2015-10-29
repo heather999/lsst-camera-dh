@@ -596,6 +596,55 @@ public class QueryUtils {
         return result;
     }
     
+    public static List getVendorIngestActivityId(HttpSession session, List actList) throws SQLException {
+        List<Integer> result = new ArrayList<>();
+        PreparedStatement vendorIngestStatement=null;
+        ResultSet vendorIngestResult = null;
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            // Create String to use in Queries
+            Iterator<Integer> iterator = actList.iterator();
+            int counter=0;
+            String str="";
+            while (iterator.hasNext()) {
+                if (counter==0)
+                    str+="(";
+                ++counter;
+                str += (iterator.next());
+                if (counter == actList.size()) {
+                    str += ")";
+                } else {
+                    str += ", ";
+                }
+            }
+            // Search for all processes with the name "vendorIngest" that ended with a final status of Success (1)
+            vendorIngestStatement = c.prepareStatement("SELECT Activity.id FROM Activity "
+                    + "INNER JOIN Process ON Activity.processId = Process.id "
+                    + "INNER JOIN ActivityStatusHistory ASH ON Activity.id = ASH.activityId " 
+                    + "AND ASH.id=(select max(id) FROM ActivityStatusHistory WHERE activityId=Activity.id) " 
+                    + "INNER JOIN ActivityFinalStatus AFS ON AFS.id=ASH.activityStatusId " 
+                    + "WHERE Activity.Id IN " + str + " AND Process.name LIKE ? "
+                    + "AND ASH.activityStatusId = 1");
+            vendorIngestStatement.setString(1, "vendorIngest");
+                   
+            vendorIngestResult = vendorIngestStatement.executeQuery();
+            while (vendorIngestResult.next()) {
+                result.add(vendorIngestResult.getInt("Activity.id"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+            if (vendorIngestResult != null) vendorIngestResult.close();
+            if (vendorIngestStatement != null) vendorIngestStatement.close();
+        }
+        return result;
+    }
+    
     public static Set getActivityListWithOutput(HttpSession session, List actList) throws SQLException {
         Set<Integer> result = new LinkedHashSet();
         Connection c = null;
