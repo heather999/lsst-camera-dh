@@ -20,50 +20,46 @@
     <body> 
         <h1>Data and Results</h1>
 
-        <a href="${venDataLink}" target="_blank"><c:out value="Vendor Data"/></a>
-
         <c:set var="hdwId" value="${param.hdwId}" scope="page"/> 
+
 
         <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId,true)}" scope="page"/>
 
+
+        <c:set var="vendActList" value="${portal:getOutputActivityFromTraveler(pageContext.session,travelerList,'SR-RCV-1','vendorIngest', hdwId)}" scope="page"/>
+
+        <%-- Determine the data source: Prod, Dev, or Test --%>
+        <c:choose>
+            <c:when test="${'Prod' == appVariables.dataSourceMode}">
+                <c:set var="dataSourceFolder" value="Prod"/>
+            </c:when>
+            <c:when test="${'Dev' == appVariables.dataSourceMode}">
+                <c:set var="dataSourceFolder" value="Dev"/>
+            </c:when>
+            <c:otherwise>
+                <c:set var="dataSourceFolder" value="Test"/>
+            </c:otherwise>
+        </c:choose>
+
+        <c:forEach var="vendAct" items="${vendActList}">
+            <c:set var="vendPath" value="/LSST/vendorData"/>
+            <c:set var="vendPath" value="${vendPath}/${param.vendor}/${param.lsstId}/${dataSourceFolder}/${vendAct}"/>
+            <c:url var="vendDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                <c:param name="folderPath" value="${vendPath}"/>
+                <c:param name="experiment" value="LSST-CAMERA"/>--%
+                <%-- <c:param name="showFileList" value="true"/> --%>
+            </c:url>
+                <a href="${vendDataLink}" target="_blank"><c:out value="Vendor Data"/></a> 
+        </c:forEach>
 
         <c:forEach var="curTraveler" items="${travelerList}"> 
 
             <c:set var="actList" value="${portal:getActivitiesForTraveler(pageContext.session,curTraveler.actId,hdwId)}"/> 
 
-            <%-- Temporary means for providing link to vendor data --%>
-            <c:if test="${fn:containsIgnoreCase(curTraveler.name, 'SR-RCV-1')}">
-                <%-- Determine the data source: Prod, Dev, or Test --%>
-                <c:choose>
-                    <c:when test="${'Prod' == appVariables.dataSourceMode}">
-                        <c:set var="dataSourceFolder" value="Prod"/>
-                    </c:when>
-                    <c:when test="${'Dev' == appVariables.dataSourceMode}">
-                        <c:set var="dataSourceFolder" value="Dev"/>
-                    </c:when>
-                    <c:otherwise>
-                        <c:set var="dataSourceFolder" value="Test"/>
-                    </c:otherwise>
-                </c:choose>
-
-                <c:set var="vendorDataList" value="${portal:getVendorIngestActivityId(pageContext.session,actList)}"/> 
-                <c:forEach var="vendActivity" items="${vendorDataList}">
-                    <c:set var="path" value="/LSST/vendorData"/>
-                    <c:set var="path" value="${path}/${param.vendor}/${param.lsstId}/${dataSourceFolder}/${vendActivity}"/>
-                    <c:url var="venDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">
-                        <c:param name="folderPath" value="${path}"/>
-                        <c:param name="experiment" value="LSST-CAMERA"/>
-                       <%-- <c:param name="showFileList" value="true"/> --%>
-                    </c:url>
-                  <%--  <a href="${venDataLink}" target="_blank"><c:out value="Vendor Data"/></a> --%>
-                </c:forEach>
-            </c:if>
-
-         
             <c:set var="firstTime" value="true"/>
             <c:set var="actListWithOutput" value="${portal:getActivityListWithOutput(pageContext.session,actList)}"/>
             <c:forEach var="curAct" items="${actListWithOutput}" varStatus="status">
-                
+
                 <%-- Note use of concat in the query, the AS statement was not working otherwise 
 http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
                 --%>

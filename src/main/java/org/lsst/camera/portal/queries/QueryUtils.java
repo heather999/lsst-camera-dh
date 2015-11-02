@@ -596,7 +596,31 @@ public class QueryUtils {
         return result;
     }
     
-    public static List getVendorIngestActivityId(HttpSession session, List actList) throws SQLException {
+    public static List getOutputActivityFromTraveler(HttpSession session, List travelerList, String travName, String actName, Integer hdwId) throws SQLException {
+        List<Integer> result = new ArrayList<>();
+        try {
+            // Find all travelers with this name "actName"
+            Iterator<TravelerInfo> iterator = travelerList.iterator();
+            while (iterator.hasNext()) {
+                 TravelerInfo t = iterator.next();
+                 String name = t.getName();
+                 if (name.contains(travName)) {
+                     List<Integer> curActList = getActivitiesForTraveler(session,t.getActId(),hdwId);
+                     result.addAll(getOutputActivityId(session, curActList, actName));
+                 }
+            }
+           
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+     
+           
+        }
+        return result;    
+    }
+    
+    public static List getOutputActivityId(HttpSession session, List actList, String actName) throws SQLException {
         List<Integer> result = new ArrayList<>();
         PreparedStatement vendorIngestStatement=null;
         ResultSet vendorIngestResult = null;
@@ -626,7 +650,7 @@ public class QueryUtils {
                     + "INNER JOIN ActivityFinalStatus AFS ON AFS.id=ASH.activityStatusId " 
                     + "WHERE Activity.Id IN " + str + " AND Process.name LIKE ? "
                     + "AND ASH.activityStatusId = 1");
-            vendorIngestStatement.setString(1, "vendorIngest");
+            vendorIngestStatement.setString(1, actName);
                    
             vendorIngestResult = vendorIngestStatement.executeQuery();
             while (vendorIngestResult.next()) {

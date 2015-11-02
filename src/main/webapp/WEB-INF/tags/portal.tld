@@ -81,9 +81,15 @@
     </function-signature>
   </function>
   <function>
-    <name>getVendorIngestActivityId</name>
+    <name>getOutputActivityId</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getVendorIngestActivityId(javax.servlet.http.HttpSession,java.util.List)
+    <function-signature>java.util.List getOutputActivityId(javax.servlet.http.HttpSession,java.util.List,java.lang.String)
+    </function-signature>
+  </function>
+  <function>
+    <name>getOutputActivityFromTraveler</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.util.List getOutputActivityFromTraveler(javax.servlet.http.HttpSession,java.util.List,java.lang.String,java.lang.String,java.lang.Integer)
     </function-signature>
   </function>
     <function>
