@@ -10,8 +10,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -25,6 +27,8 @@ import org.lsst.camera.portal.data.HardwareStatus;
 import org.lsst.camera.portal.data.HdwStatusLoc;
 import org.lsst.camera.portal.data.Activity;
 import org.lsst.camera.portal.data.TravelerInfo;
+import org.lsst.camera.portal.data.ReportData;
+import org.lsst.camera.portal.data.ComponentData;
 import org.srs.web.base.db.ConnectionManager;
 
 /**
@@ -102,6 +106,40 @@ public class QueryUtils {
 
         return activityMap;
     }
+    
+    
+     // Retrieve all the LsstIds of a certain HardwareType
+    // Return a Map of id, LsstId
+    public static List getComponentList(HttpSession session, Integer hdwType) throws SQLException {
+        List<ComponentData> result = new ArrayList<>();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            PreparedStatement idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId, Hardware.manufacturer, "
+                    + "Hardware.creationTS "
+                    + "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and (HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)");
+            idStatement.setInt(1, hdwType);
+            ResultSet r = idStatement.executeQuery();
+            while (r.next()) {
+                ComponentData comp = new ComponentData(r.getString("lsstId"), r.getString("manufacturer"), r.getInt("id"), r.getTimestamp("creationTS"));
+                result.add(comp);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+
+    }
+
+    
 
     // Retrieve all the LsstIds of a certain HardwareType
     // Return a Map of id, LsstId
@@ -111,18 +149,8 @@ public class QueryUtils {
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
-           // Construct Query selection using the list of input hardware types
-            //String str="";
-            //Iterator itr = hdwTypeCol.iterator();
-            //while(itr.hasNext()) {
-            //    Integer i = itr.next();
-            //    str+="Hardware.hardwareTypeId=" + Integer.toString(i);
-            //    if (itr.hasNext()) str += " OR ";
-            // }
             PreparedStatement idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId "
                     + "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and (HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)");
-          // PreparedStatement idStatement = connection.prepareStatement("SELECT Hardware.id,Hardware.lsstId "+
-            //        "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND " + str);
             idStatement.setInt(1, hdwType);
             ResultSet r = idStatement.executeQuery();
             while (r.next()) {
@@ -832,11 +860,65 @@ public class QueryUtils {
                 if (counter==0)
                     result+="(";
                 ++counter;
-              
+               
                 if (counter == actList.size()) {
                     result += ")";
                 } else {
                     result += ", ";
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+    }
+
+    public static List getReportsTable(HttpSession session, Integer hardwareTypeId, String dataSourceFolder) throws SQLException {
+        List<ReportData> result = new ArrayList<>();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            // Need to ignore vendor data before August 4, 2015 due to change in DC organization
+            java.util.Calendar cal = new java.util.GregorianCalendar();
+            cal.set(Calendar.YEAR, 2015);
+            cal.set(Calendar.MONTH, 7); // 7 == August
+            cal.set(Calendar.DAY_OF_MONTH, 4);
+            long millisecond= cal.getTimeInMillis();
+            java.util.Date goodVendorDataPathDate = new java.util.Date(millisecond);
+            
+            // List of Sensors
+            List<ComponentData> compIds = getComponentList(session, hardwareTypeId);
+            Iterator<ComponentData> compIt = compIds.iterator();
+            while (compIt.hasNext()) {
+                ComponentData comp = compIt.next();
+                String lsst_num = comp.getLsst_num();
+                Integer hdwId = comp.getHdwId();
+                java.util.Date registrationDate = comp.getRegistrationDate();
+                if (registrationDate.compareTo(goodVendorDataPathDate) < 0) continue;
+                
+                List<TravelerInfo> travelerList = getTravelerCol(session, hdwId, true);
+
+                List<Integer> vendActList = getOutputActivityFromTraveler(session,
+                        travelerList, "SR-RCV-1", "vendorIngest", hdwId);
+
+                Iterator<Integer> vendAct = vendActList.iterator();
+
+                while (vendAct.hasNext()) {
+                    Integer act = (vendAct.next());
+                    String vendPath = "/LSST/vendorData/";
+                    vendPath += comp.getManufacturer() + "/" + lsst_num + "/" + dataSourceFolder + "/" + act;
+                    
+                    ReportData repData = new ReportData(lsst_num, registrationDate, vendPath);
+                    result.add(repData);
                 }
             }
 

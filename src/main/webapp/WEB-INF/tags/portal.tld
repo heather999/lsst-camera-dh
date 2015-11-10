@@ -10,6 +10,12 @@
     </function-signature>
   </function>
   <function>
+    <name>getComponentList</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.util.List getComponentList(javax.servlet.http.HttpSession,java.lang.Integer)
+    </function-signature>
+  </function>
+  <function>
     <name>getComponentIds</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
     <function-signature>java.util.Map getComponentIds(javax.servlet.http.HttpSession,java.lang.Integer)
@@ -92,10 +98,16 @@
     <function-signature>java.util.List getOutputActivityFromTraveler(javax.servlet.http.HttpSession,java.util.List,java.lang.String,java.lang.String,java.lang.Integer)
     </function-signature>
   </function>
-    <function>
+  <function>
     <name>getTestReportActivityId</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
     <function-signature>java.lang.Integer getTestReportActivityId(javax.servlet.http.HttpSession,java.lang.Integer)
+    </function-signature>
+  </function>
+  <function>
+    <name>getReportsTable</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.util.List getReportsTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String)
     </function-signature>
   </function>
 </taglib>

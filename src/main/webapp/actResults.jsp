@@ -46,7 +46,7 @@
             <c:set var="vendPath" value="${vendPath}/${param.vendor}/${param.lsstId}/${dataSourceFolder}/${vendAct}"/>
             <c:url var="vendDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">
                 <c:param name="folderPath" value="${vendPath}"/>
-                <c:param name="experiment" value="LSST-CAMERA"/>--%
+                <c:param name="experiment" value="LSST-CAMERA"/>
                 <%-- <c:param name="showFileList" value="true"/> --%>
             </c:url>
                 <a href="${vendDataLink}" target="_blank"><c:out value="Vendor Data"/></a> 

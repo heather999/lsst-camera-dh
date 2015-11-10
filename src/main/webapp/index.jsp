@@ -12,7 +12,7 @@
         <title>Home</title>
     </head>
     <body> 
-        <h1>Quick Links</h1>
+        <h1>Sensor Quick Links</h1>
         
 
          <ul>
@@ -27,7 +27,7 @@
             <li><a href="/DataPortal/oneComponent.jsp" title="CCD Explorer" style=""><strong>CCD Explorer</strong></a></li>
             
             <%-- <li><a href="/DataPortal/eTravelerPortal.jsp" title "eTraveler Portal" style=""><strong>eTraveler Portal</strong></a></li> --%>
-              
+            <li> <a href="/DataPortal/reports.jsp" title "Data and Reports" style=""><strong>Data and Reports</strong></a></li>
             
             <li><a href="/DataPortal/activityStatus.jsp" title="Activity Status" style=""><strong>All eTraveler Activity Status</strong></a></li>
            
