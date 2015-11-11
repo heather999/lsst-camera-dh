@@ -12,7 +12,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="display" uri="http://displaytag.sf.net" %>
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
-
+<%@taglib prefix="srs_utils" uri="http://srs.slac.stanford.edu/utils" %>
 
 <head>
     <title>CCD Overview</title>
@@ -27,11 +27,12 @@
 
 
 <h1>CCD Current Status and Location</h1>
+<srs_utils:refresh />
 <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
 
 <display:table name="${hdwStatLocTable}" export="true" defaultsort="9" defaultorder="descending" class="datatable" id="hdl" >
     <%-- <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column> --%>
-    <display:column title="LsstId" sortable="true">
+    <display:column title="LSST_NUM" sortable="true">
         <c:url var="explorerLink" value="oneComponent.jsp">
             <c:param name="lsstIdValue" value="${hdl.lsstId}"/>
         </c:url>                

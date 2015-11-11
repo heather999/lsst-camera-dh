@@ -63,7 +63,7 @@
 
         <c:choose>
             <c:when test="${empty selectedLsstId}">
-                Please select a LSST Id from the above drop down menu. 
+                Please select a LSST_NUM from the above drop down menu. 
             </c:when>
             <c:otherwise>
 

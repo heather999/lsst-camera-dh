@@ -22,7 +22,7 @@
                 
                 
                 
-            <li><a href="/DataPortal/ccdStatusWithJava.jsp" title="CCD Status" style=""><strong>Overview All CCDs</strong></a></li>
+            <li><a href="/DataPortal/ccdStatus.jsp" title="CCD Status" style=""><strong>Overview All CCDs</strong></a></li>
                 
             <li><a href="/DataPortal/oneComponent.jsp" title="CCD Explorer" style=""><strong>CCD Explorer</strong></a></li>
             
