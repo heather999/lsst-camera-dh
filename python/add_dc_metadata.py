@@ -37,9 +37,9 @@ class MyDataCatalog(DataCatalog):
         if prefix is not None:
             results = [x for x in results if x.find(prefix) != -1]
         return results
-    def find_eotest_reports(self, ccd_type, sensor_id):
+    def find_eotest_reports(self, ccd_type, sensor_id, ext='pdf'):
         folder = '/LSST/mirror/SLAC-test/test/%(ccd_type)s/%(sensor_id)s/test_report_offline/v0' % locals()
-        return self.find_files(folder)
+        return self.find_files(folder, ext=ext)
 
 eotest_report_md = lambda ccd_manu, sensor_id : {'CCD_MANU' : ccd_manu,
                                                  'LSST_NUM' : sensor_id,
@@ -88,4 +88,4 @@ if __name__ == '__main__':
             reports = dc.find_vendor_reports(vendor, sensor_id)
             for report in reports:
                 print report
-                apply_metadata(report, vendor_md[vendor](sensor_id))
+#                apply_metadata(report, vendor_md[vendor](sensor_id))
