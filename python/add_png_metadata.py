@@ -42,7 +42,8 @@ if __name__ == '__main__':
         print ccd_type
         ccd_manu = ccd_type.split('-')[0]
         for sensor_id in sensor_ids:
-            reports = dc.find_eotest_reports(ccd_type, sensor_id, ext='.png')
+            reports = dc.find_eotest_reports(ccd_type, sensor_id,
+                                             fnpattern='*.png')
             for report in reports:
                 print report
                 try:
@@ -50,4 +51,4 @@ if __name__ == '__main__':
                 except UnboundLocalError:
                     print "skipping"
                     continue
-                apply_metadata(report, md)
+                #apply_metadata(report, md)

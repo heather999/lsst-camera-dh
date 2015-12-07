@@ -26,7 +26,7 @@ for sensor_id in sensor_ids:
             'DATA_PRODUCT=="%(data_product)s"',
             'LSST_NUM=="%(sensor_id)s"',
             'ORIGIN=="%(origin)s"',
-#            'SCHEMA_NAME=="%(schema_name)s"',
+            'SCHEMA_NAME=="%(schema_name)s"',
             'TEST_CATEGORY=="%(test_category)s"',
             'TESTTYPE=="%(testtype)s"'
             ])
