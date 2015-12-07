@@ -9,8 +9,8 @@ def find_datasets(sensor_id, dataId, folder_patterns, show=None):
                   key/value pairs for identifying the desired data files.
     @param folder_patterns A list or tuple of Data Catalog folder patterns
                   to search.
-    @param show[None] A list or tuple of metadata key/value pairs to return
-                  that are associated with each dataset.
+    @param show[None] A list or tuple of metadata key names for the key/value pairs
+                  to return that are associated with each dataset.
     """
     query_components = ['LSST_NUM=="%(sensor_id)s"' % locals()]
     query_components.extend(['%(key)s=="%(value)s"' % locals() 
