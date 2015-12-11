@@ -62,6 +62,7 @@
                         <td>${dataset.path}</td>
                         <td>${masterLocation.site}</td>
                         <td>${searchMetadata}</td> <%-- Note: This is a map! --%>
+                        <td><img src="http://srs.slac.stanford.edu/DataCatalog/get?datasetLocation=${masterLocation.pk}"/></td>
                     </tr>
                 </c:forEach>
             </tbody>
@@ -89,6 +90,7 @@
                         <td>${dataset.path}</td>
                         <td>${masterLocation.site}</td>
                         <td>${searchMetadata}</td> <%-- Note: This is a map! --%>
+                        <td><img src="http://srs.slac.stanford.edu/DataCatalog/get?datasetLocation=${masterLocation.pk}"/></td>
                     </tr>
                 </c:forEach>
             </tbody>
