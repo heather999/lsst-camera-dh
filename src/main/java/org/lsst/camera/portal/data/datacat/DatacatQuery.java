@@ -73,8 +73,7 @@ public class DatacatQuery {
                 for(String origin: origins){
                     String queryFormat = "DATA_PRODUCT=='%s' && TEST_CATEGORY=='%s' && ORIGIN=='%s' && LSST_NUM=='%s'";
 
-                    String query = String.
-                            format(queryFormat, dataProduct, testCategory, origin, sensorId);
+                    String query = String.format(queryFormat, dataProduct, testCategory, origin, sensorId);
 
                     List<DatasetModel> results = new ArrayList<>();
                     for(String pattern: folderPatterns.get(vendor)){
@@ -105,7 +104,7 @@ public class DatacatQuery {
         query.append(String.format("LSST_NUM=='%s'", sensorId));
         for(Entry<String, String> e: dataId.entrySet()){
             query.append(" && ")
-                    .append(String.format("%s=='s'", e.getKey(), e.getValue()));
+                    .append(String.format("%s=='%s'", e.getKey(), e.getValue()));
         }
         List<DatasetModel> allResults = new ArrayList<>();
         String[] showArr = show != null && !show.isEmpty() ? show.toArray(new String[0]) : null;

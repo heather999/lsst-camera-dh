@@ -14,6 +14,7 @@
         <title>JSP Page</title>
     </head>
     <body>
+        <h1>Basic  Datasets</h1>
         <c:set var="datasets" value="${portal:getDatasets(pageContext.request)}"/>
         <table>
 
@@ -39,7 +40,7 @@
             </tbody>
         </table>
         
-        
+        <h1>Mosaic Datasets</h1>
         <c:set var="datasets" value="${portal:getMosaicDatasets(pageContext.request)}"/>
         <table>
 
@@ -66,6 +67,7 @@
             </tbody>
         </table>
         
+        <h1>Amp Result Datasets</h1>
         <c:set var="datasets" value="${portal:getAmpResultDatasets(pageContext.request)}"/>
         <table>
 
