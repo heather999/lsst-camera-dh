@@ -1,20 +1,19 @@
 import os
 import datacat
 
-def find_datasets(sensor_id, dataId, folder_patterns, show=None):
+def find_datasets(dataId, folder_patterns, show=None):
     """
-    @return A list of datasets for a given sensor and set of key value pairs.
-    @param sensor_id The LSST_NUM for the sensor.
+    @return A list of datasets for a given set of key value pairs.
     @param dataId A dictionary containing the Data Catalog metadata
                   key/value pairs for identifying the desired data files.
     @param folder_patterns A list or tuple of Data Catalog folder patterns
                   to search.
-    @param show[None] A list or tuple of metadata key names for the key/value pairs
-                  to return that are associated with each dataset.
+    @param show[None] A list or tuple of metadata key names for the 
+                  key/value pairs to return that are associated with each
+                  dataset.
     """
-    query_components = ['LSST_NUM=="%(sensor_id)s"' % locals()]
-    query_components.extend(['%(key)s=="%(value)s"' % locals() 
-                             for key, value in dataId.items()])
+    query_components = ['%(key)s=="%(value)s"' % locals() 
+                        for key, value in dataId.items()]
     query = ' && '.join(query_components)
     client = datacat.client_from_config_file()
     results = []
@@ -32,8 +31,8 @@ if __name__ == '__main__':
     #
     # Find test reports for an e2v sensor
     #
-    report_datasets = find_datasets(e2v_sensor,
-                                    dict(DATA_PRODUCT='TEST_REPORT',
+    report_datasets = find_datasets(dict(LSST_NUM=e2v_sensor,
+                                         DATA_PRODUCT='TEST_REPORT',
                                          TEST_CATEGORY='EO'),
                                     folder_patterns,
                                     show=('ORIGIN',))
@@ -44,8 +43,8 @@ if __name__ == '__main__':
     #
     # Find test report plots for SLAC offline analysis for an e2v sensor.
     #
-    mosaic_datasets = find_datasets(e2v_sensor,
-                                    dict(DATA_PRODUCT='CCD_MOSAIC',
+    mosaic_datasets = find_datasets(dict(LSST_NUM=e2v_sensor,
+                                         DATA_PRODUCT='CCD_MOSAIC',
                                          ORIGIN='SLAC',
                                          PRODUCER='SR-EOT-02',
                                          TEST_CATEGORY='EO'),
@@ -57,8 +56,8 @@ if __name__ == '__main__':
             ':', dataset.path
     print
 
-    amp_result_datasets = find_datasets(e2v_sensor,
-                                        dict(DATA_PRODUCT='AMP_RESULTS',
+    amp_result_datasets = find_datasets(dict(LSST_NUM=e2v_sensor,
+                                             DATA_PRODUCT='AMP_RESULTS',
                                              ORIGIN='SLAC',
                                              PRODUCER='SR-EOT-02',
                                              TEST_CATEGORY='EO'),
