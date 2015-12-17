@@ -1,113 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?> 
 <taglib version="2.0" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/ xml/ns/j2ee/web-jsptaglibrary_2_0.xsd">
-  <tlib-version>1.0</tlib-version>
-  <short-name>portal</short-name>
-  <uri>http://org.lsst.camera/portal</uri>
-  <function>
-    <name>getHardwareTypes</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.Map getHardwareTypes(javax.servlet.http.HttpSession)
-    </function-signature>
-  </function>
-  <function>
-    <name>getComponentList</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getComponentList(javax.servlet.http.HttpSession,java.lang.Integer)
-    </function-signature>
-  </function>
-  <function>
-    <name>getComponentIds</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.Map getComponentIds(javax.servlet.http.HttpSession,java.lang.Integer)
-    </function-signature>
-  </function>
-  <function>
-    <name>getTravelerStatusTable</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getTravelerStatusTable(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
-  </function>
-  <function>
-    <name>getTravelerStatus</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.lang.String getTravelerStatus(org.lsst.camera.portal.data.TravelerStatus,java.lang.String)</function-signature>
-  </function>
-  <function>
-    <name>getHardwareStatusTable</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getHardwareStatusTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.String)</function-signature>
-  </function>
-  <function>
-    <name>getHdwStatLocTable</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer)</function-signature>
-  </function>
-  <function>
-    <name>getHdwStatLoc</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>org.lsst.camera.porta.data.HdwStatusLoc getHdwStatLoc(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
-  </function>
+    <tlib-version>1.0</tlib-version>
+    <short-name>portal</short-name>
+    <uri>http://org.lsst.camera/portal</uri>
     <function>
-    <name>getHardwareStatus</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.lang.String getHardwareStatus(org.lsst.camera.portal.data.HardwareStatus,java.lang.String)</function-signature>
-  </function>
-  <function>
-    <name>getActivityMap</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.Map getActivityMap(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Boolean)</function-signature>
-  </function>
-   <function>
-    <name>getTravelerCol</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getTravelerCol(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Boolean)
-    </function-signature>
-  </function>
-  <function>
-    <name>getActivitiesForTraveler</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getActivitiesForTraveler(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Integer)
-    </function-signature>
-  </function>
-  <function>
-    <name>getActString</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.lang.String getActString(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Integer)
-    </function-signature>
-  </function>
-  <function>
-    <name>doesActivityHaveOutput</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.lang.Boolean doesActivityHaveOutput(javax.servlet.http.HttpSession,java.lang.Integer)
-    </function-signature>
-  </function>
+        <name>getHardwareTypes</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.Map getHardwareTypes(javax.servlet.http.HttpSession)
+        </function-signature>
+    </function>
     <function>
-    <name>getActivityListWithOutput</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.Set getActivityListWithOutput(javax.servlet.http.HttpSession,java.util.List)
-    </function-signature>
-  </function>
-  <function>
-    <name>getOutputActivityId</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getOutputActivityId(javax.servlet.http.HttpSession,java.util.List,java.lang.String)
-    </function-signature>
-  </function>
-  <function>
-    <name>getOutputActivityFromTraveler</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getOutputActivityFromTraveler(javax.servlet.http.HttpSession,java.util.List,java.lang.String,java.lang.String,java.lang.Integer)
-    </function-signature>
-  </function>
-  <function>
-    <name>getTestReportActivityId</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.lang.Integer getTestReportActivityId(javax.servlet.http.HttpSession,java.lang.Integer)
-    </function-signature>
-  </function>
-  <function>
-    <name>getReportsTable</name>
-    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getReportsTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String)
-    </function-signature>
-  </function>
+        <name>getComponentList</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getComponentList(javax.servlet.http.HttpSession,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
+        <name>getComponentIds</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.Map getComponentIds(javax.servlet.http.HttpSession,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
+        <name>getTravelerStatusTable</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getTravelerStatusTable(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>getTravelerStatus</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.lang.String getTravelerStatus(org.lsst.camera.portal.data.TravelerStatus,java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>getHardwareStatusTable</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getHardwareStatusTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>getHdwStatLocTable</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer)</function-signature>
+    </function>
+    <function>
+        <name>getHdwStatLoc</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>org.lsst.camera.porta.data.HdwStatusLoc getHdwStatLoc(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>getHardwareStatus</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.lang.String getHardwareStatus(org.lsst.camera.portal.data.HardwareStatus,java.lang.String)</function-signature>
+    </function>
+    <function>
+        <name>getActivityMap</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.Map getActivityMap(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Boolean)</function-signature>
+    </function>
+    <function>
+        <name>getTravelerCol</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getTravelerCol(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Boolean)
+        </function-signature>
+    </function>
+    <function>
+        <name>getActivitiesForTraveler</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getActivitiesForTraveler(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
+        <name>getActString</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.lang.String getActString(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
+        <name>doesActivityHaveOutput</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.lang.Boolean doesActivityHaveOutput(javax.servlet.http.HttpSession,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
+        <name>getActivityListWithOutput</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.Set getActivityListWithOutput(javax.servlet.http.HttpSession,java.util.List)
+        </function-signature>
+    </function>
+    <function>
+        <name>getOutputActivityId</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getOutputActivityId(javax.servlet.http.HttpSession,java.util.List,java.lang.String)
+        </function-signature>
+    </function>
+    <function>
+        <name>getOutputActivityFromTraveler</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getOutputActivityFromTraveler(javax.servlet.http.HttpSession,java.util.List,java.lang.String,java.lang.String,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
+        <name>getTestReportActivityId</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.lang.Integer getTestReportActivityId(javax.servlet.http.HttpSession,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
+        <name>getReportsTable</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getReportsTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String)
+        </function-signature>
+    </function>
+    <function>
+        <name>getDatasets</name>
+        <function-class>org.lsst.camera.portal.data.datacat.DatacatQuery</function-class>
+        <function-signature>java.util.List getDatasets(javax.servlet.http.HttpServletRequest)</function-signature>
+    </function>
+    <function>
+        <name>getMosaicDatasets</name>
+        <function-class>org.lsst.camera.portal.data.datacat.DatacatQuery</function-class>
+        <function-signature>java.util.List getMosaicDatasets(javax.servlet.http.HttpServletRequest)</function-signature>
+    </function>
+    <function>
+        <name>getAmpResultDatasets</name>
+        <function-class>org.lsst.camera.portal.data.datacat.DatacatQuery</function-class>
+        <function-signature>java.util.List getAmpResultDatasets(javax.servlet.http.HttpServletRequest)</function-signature>
+    </function>
 </taglib>
