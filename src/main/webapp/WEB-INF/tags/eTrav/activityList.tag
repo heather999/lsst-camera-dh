@@ -85,7 +85,7 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 
     <%--  href="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp" paramId="activityId" paramProperty="activityId"/> --%>
     <c:if test="${empty hardwareId or preferences.showFilteredColumns}">
-        <display:column property="lsstId" title="${appVariables.experiment} Serial Number" sortable="true" headerClass="sortable"
+        <display:column property="lsstId" title="LSST_NUM" sortable="true" headerClass="sortable"
                         href="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp" paramId="hardwareId" paramProperty="hardwareId"/>
         <display:column property="manufacturerId" title="Manufacturer Serial Number" sortable="true" headerClass="sortable"
                         href="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp" paramId="hardwareId" paramProperty="hardwareId"/>

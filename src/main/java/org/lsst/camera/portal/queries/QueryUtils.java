@@ -169,6 +169,72 @@ public class QueryUtils {
         return result;
 
     }
+    
+    
+    // Retrieve all the LsstIds of a certain HardwareType
+    // Return a Map of id, LsstId
+    public static Map getFilteredComponentIds(HttpSession session, Integer hdwType, String lsst_num, String manu) throws SQLException {
+        HashMap<Integer, String> result = new HashMap<>();
+
+        String lower_lsst_num = lsst_num.toLowerCase();
+        String lower_manu = manu.toLowerCase();
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            PreparedStatement idStatement;
+            if (lower_manu.equals("any")) {
+                if (lower_lsst_num.equals("")) {
+                    idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId "
+                    + "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and (HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)");
+                    idStatement.setInt(1,hdwType);
+                }
+                else {
+                    idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId "
+                    + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND "
+                    + "LOWER(Hardware.lsstId) LIKE concat('%', ?, '%') AND "
+                    + "(HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)" );
+                    idStatement.setString(1, lower_lsst_num);
+                    idStatement.setInt(2, hdwType);
+                }
+            } 
+            else {
+                if (lsst_num.equals("")) {
+                    idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId "
+                    + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND LOWER(Hardware.manufacturer) = ? AND "
+                    + "(HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)");
+                    idStatement.setString(1, lower_manu);
+                    idStatement.setInt(2, hdwType);
+                }
+                else {
+                    idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId "
+                    + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND LOWER(Hardware.manufacturer) = ? AND "
+                    + "LOWER(Hardware.lsstId) LIKE concat('%', ${lower_lsst_num}, '%') AND "
+                    + "(HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)" );
+                
+                    idStatement.setString(1, lower_manu);
+                    idStatement.setInt(2, hdwType);
+                }
+            }
+           
+            ResultSet r = idStatement.executeQuery();
+            while (r.next()) {
+                result.put(r.getInt("id"), r.getString("lsstId"));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+
+    }
+    
+    
 
     public static String getTravelerStatus(TravelerStatus status, String travelerUniqueId) {
         String s = status.getTravelerStatus(travelerUniqueId);
@@ -264,7 +330,7 @@ public class QueryUtils {
         return result;
     }
 
-    public static List getHdwStatLocTable(HttpSession session, Integer hardwareTypeId) throws SQLException {
+    public static List getHdwStatLocTable(HttpSession session, Integer hardwareTypeId, String lsst_num, String manu) throws SQLException {
         List<HdwStatusLoc> result = new ArrayList<>();
         // Map<String,HdwStatLoc> travelerStatusMap = new HashMap<>(); 
 
@@ -272,7 +338,7 @@ public class QueryUtils {
         try {
             c = ConnectionManager.getConnection(session);
 
-            Map<Integer, String> compIds = getComponentIds(session, hardwareTypeId);
+            Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu);
 
             for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
                 // Retrieve list of statuses for this CCD, ordered by creation time, in descending order

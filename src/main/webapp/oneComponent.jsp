@@ -7,7 +7,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
 <%@taglib prefix="etraveler" tagdir="/WEB-INF/tags/eTrav"%>
-
+<%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
 <html>
     <head>
@@ -16,7 +16,21 @@
     <body> 
         <h1>CCD Explorer</h1>
 
+        <sql:query var="manuQ">
+            SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND (HardwareType.id = 1 OR HardwareType.id = 9 OR HardwareType.id = 10) ORDER BY manufacturer;
+        </sql:query>
 
+
+    <filter:filterTable>
+        <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
+        <filter:filterSelection title="Manufacturer" var="manu" defaultValue="any">
+            <filter:filterOption value="any">Any</filter:filterOption>
+                <c:forEach var="hdw" items="${manuQ.rows}">
+                <filter:filterOption value="${hdw.manufacturer}"><c:out value="${hdw.manufacturer}"/></filter:filterOption>
+                </c:forEach>
+        </filter:filterSelection>
+    </filter:filterTable>
+    
         <%-- Select CCD as the HardwareType for this page, scope session means all the pages? set scope to page --%>
         <c:set var="ccdHdwTypeId" value="1" scope="page"/>  
         <c:set var="ccdHdwTypeITL" value="9" scope="page"/> 
@@ -39,7 +53,7 @@
         <%-- Selected HdwType: ${ccdHdwTypeId} --%>
 
         <%-- List of CCD ids --%>
-        <c:set var="lsstIdQuery" value="${portal:getComponentIds(pageContext.session, ccdHdwTypeId)}"/>
+        <c:set var="lsstIdQuery" value="${portal:getFilteredComponentIds(pageContext.session, ccdHdwTypeId, lsst_num, manu)}"/>
 
         <%-- Retrieve full list of current hardware status and location for all CCDs --%>
         <%--

@@ -13,10 +13,16 @@
 <%@taglib prefix="display" uri="http://displaytag.sf.net" %>
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
 <%@taglib prefix="srs_utils" uri="http://srs.slac.stanford.edu/utils" %>
+<%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
 <head>
     <title>CCD Overview</title>
 </head>
+
+
+<sql:query var="manufacturerQ">
+    SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND (HardwareType.id = 1 OR HardwareType.id = 9 OR HardwareType.id = 10) ORDER BY manufacturer;
+</sql:query>
 
 <%-- Select CCD as the HardwareType for this page, scope session means all the pages? set scope to page --%>
 <c:set var="ccdHdwTypeId" value="1" scope="page"/>  
@@ -26,9 +32,22 @@
 </sql:query>
 
 
+
 <h1>CCD Current Status and Location</h1>
+
+
+<filter:filterTable>
+    <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
+    <filter:filterSelection title="Manufacturer" var="manu" defaultValue="any">
+        <filter:filterOption value="any">Any</filter:filterOption>
+            <c:forEach var="hdw" items="${manufacturerQ.rows}">
+            <filter:filterOption value="${hdw.manufacturer}"><c:out value="${hdw.manufacturer}"/></filter:filterOption>
+            </c:forEach>
+    </filter:filterSelection>
+</filter:filterTable>
+
 <srs_utils:refresh />
-<c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
+<c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId, lsst_num, manu)}"/>
 
 <display:table name="${hdwStatLocTable}" export="true" defaultsort="9" defaultorder="descending" class="datatable" id="hdl" >
     <%-- <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column> --%>

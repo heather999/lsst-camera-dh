@@ -22,6 +22,12 @@
     </function-signature>
   </function>
   <function>
+    <name>getFilteredComponentIds</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.util.Map getFilteredComponentIds(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String)
+    </function-signature>
+  </function>
+  <function>
     <name>getTravelerStatusTable</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
     <function-signature>java.util.List getTravelerStatusTable(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
@@ -39,7 +45,7 @@
   <function>
     <name>getHdwStatLocTable</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer)</function-signature>
+    <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String)</function-signature>
   </function>
   <function>
     <name>getHdwStatLoc</name>
