@@ -110,9 +110,7 @@ public class DatacatQuery {
         String[] showArr = show != null && !show.isEmpty() ? show.toArray(new String[0]) : null;
         for(String folderPattern: folderPatterns){
             allResults.addAll(
-                    dcClient.
-                    searchForDatasets(folderPattern, null, null, query.toString(), null, showArr).
-                    getResults()
+                    dcClient.searchForDatasets(folderPattern, null, null, query.toString(), null, showArr).getResults()
             );
         }
         return allResults;

@@ -13,11 +13,6 @@
     </head>
     <body> 
         <h1>QUERY</h1>
-
-        
-        
-              
-        
         
         <c:if test="${empty selectedHdwTypeId}">
             <c:set var="selectedHdwTypeId" value="1" scope="session"/>            

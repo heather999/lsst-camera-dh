@@ -28,6 +28,7 @@
 
         <c:set var="vendActList" value="${portal:getOutputActivityFromTraveler(pageContext.session,travelerList,'SR-RCV-1','vendorIngest', hdwId)}" scope="page"/>
 
+        
         <%-- Determine the data source: Prod, Dev, or Test --%>
         <c:choose>
             <c:when test="${'Prod' == appVariables.dataSourceMode}">
@@ -40,6 +41,10 @@
                 <c:set var="dataSourceFolder" value="Test"/>
             </c:otherwise>
         </c:choose>
+        
+         <h3>travelerList: ${travelerList}</h3>
+         <h3>vendorList: ${vendActList}</h3>
+         <h3>dataSourceMode: ${appVariables.dataSourceMode}, dataSourceFolder: ${dataSourceFolder}</h3>
 
         <c:forEach var="vendAct" items="${vendActList}">
             <c:set var="vendPath" value="/LSST/vendorData"/>
