@@ -28,7 +28,6 @@
 
         <c:set var="vendActList" value="${portal:getOutputActivityFromTraveler(pageContext.session,travelerList,'SR-RCV-1','vendorIngest', hdwId)}" scope="page"/>
 
-        
         <%-- Determine the data source: Prod, Dev, or Test --%>
         <c:choose>
             <c:when test="${'Prod' == appVariables.dataSourceMode}">

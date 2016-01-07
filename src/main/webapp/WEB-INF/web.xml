@@ -7,10 +7,6 @@
     </session-config>
     <display-name>LSST Camera Data Portal</display-name>
 
-    <welcome-file-list>
-        <welcome-file>TestReportPage.jsp</welcome-file>
-    </welcome-file-list>
-    
     <context-param>
         <param-name>
             version
@@ -20,7 +16,7 @@
         </param-value>
     </context-param>
 
-    <!-- Default database connection  -->
+    <!-- Default database connection -->
     <context-param>
         <param-name>
             javax.servlet.jsp.jstl.sql.dataSource
@@ -30,6 +26,7 @@
         </param-value>
     </context-param>
  
+
     <context-param>
         <param-name>
             applicationTitle
