@@ -19,17 +19,19 @@
     <title>CCD Overview</title>
 </head>
 
-
+<c:set var="ccdTypeString" value="${portal:getCCDHardwareTypes(pageContext.session)}"/>
 <sql:query var="manufacturerQ">
-    SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND (HardwareType.id = 1 OR HardwareType.id = 9 OR HardwareType.id = 10) ORDER BY manufacturer;
+    SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${ccdTypeString} ORDER BY manufacturer;
 </sql:query>
 
 <%-- Select CCD as the HardwareType for this page, scope session means all the pages? set scope to page --%>
 <c:set var="ccdHdwTypeId" value="1" scope="page"/>  
+<%-- HMK Jan 7 2016 Appears unused
 <sql:query  var="ccdList"  >
     select  Hardware.id,Hardware.lsstId from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and (HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10) 
     <sql:param value="${ccdHdwTypeId}"/>
 </sql:query>
+--%>
 
 
 

@@ -28,6 +28,7 @@ import org.lsst.camera.portal.data.HdwStatusLoc;
 import org.lsst.camera.portal.data.Activity;
 import org.lsst.camera.portal.data.TravelerInfo;
 import org.lsst.camera.portal.data.ReportData;
+import org.lsst.camera.portal.data.TestReportPathData;
 import org.lsst.camera.portal.data.ComponentData;
 import org.srs.web.base.db.ConnectionManager;
 
@@ -48,6 +49,51 @@ public class QueryUtils {
             ResultSet r = localHardwareTypesStatement.executeQuery();
             while (r.next()) {
                 result.put(r.getInt("id"), r.getString("name"));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return result;
+    }
+    
+    public static String getCCDHardwareTypes(HttpSession session) throws SQLException {
+        List<Integer> typeList = new ArrayList<>();
+        String result = "";
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            PreparedStatement findGroupStatement = c.prepareStatement("SELECT id, name FROM "
+                    + "HardwareGroup WHERE name = 'Generic-CCD'");
+            ResultSet r = findGroupStatement.executeQuery();
+            while (r.next()) {
+                Integer groupId = r.getInt("id");
+                PreparedStatement findHdwTypeStatement = c.prepareStatement("SELECT hardwareTypeId FROM "
+                        + "HardwareTypeGroupMapping WHERE hardwareGroupId = ?");
+                findHdwTypeStatement.setInt(1, groupId);
+                ResultSet r2 = findHdwTypeStatement.executeQuery();
+                while (r2.next())
+                    typeList.add(r2.getInt("hardwareTypeId"));
+            }
+            // Create String to use in Queries
+            Iterator<Integer> iterator = typeList.iterator();
+            int counter=0;
+            while (iterator.hasNext()) {
+                if (counter==0)
+                    result+="(";
+                ++counter;
+                result += (iterator.next());
+                if (counter == typeList.size()) {
+                    result += ")";
+                } else {
+                    result += ", ";
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -116,10 +162,12 @@ public class QueryUtils {
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
-            PreparedStatement idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId, Hardware.manufacturer, "
+            String hdwTypeSet = getCCDHardwareTypes(session);
+            PreparedStatement idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId, Hardware.manufacturer, "
                     + "Hardware.creationTS "
-                    + "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and (HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)");
-            idStatement.setInt(1, hdwType);
+                    + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id and "
+                    + "HardwareType.id IN " + hdwTypeSet);
+            //idStatement.setInt(1, hdwType);
             ResultSet r = idStatement.executeQuery();
             while (r.next()) {
                 ComponentData comp = new ComponentData(r.getString("lsstId"), r.getString("manufacturer"), r.getInt("id"), r.getTimestamp("creationTS"));
@@ -149,9 +197,11 @@ public class QueryUtils {
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
+            String hdwTypeSet = getCCDHardwareTypes(session);
             PreparedStatement idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId "
-                    + "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and (HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)");
-            idStatement.setInt(1, hdwType);
+                    + "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and "
+                    + "HardwareType.id IN " + hdwTypeSet);
+            //idStatement.setInt(1, hdwType);
             ResultSet r = idStatement.executeQuery();
             while (r.next()) {
                 result.put(r.getInt("id"), r.getString("lsstId"));
@@ -181,38 +231,41 @@ public class QueryUtils {
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
+            String hdwTypeSet = getCCDHardwareTypes(session);
             PreparedStatement idStatement;
             if (lower_manu.equals("any")) {
                 if (lower_lsst_num.equals("")) {
-                    idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId "
-                    + "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and (HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)");
-                    idStatement.setInt(1,hdwType);
+                    idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId "
+                    + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND "
+                    + " HardwareType.id IN " + hdwTypeSet);
+                    //idStatement.setInt(1,hdwType);
                 }
                 else {
                     idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId "
                     + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND "
                     + "LOWER(Hardware.lsstId) LIKE concat('%', ?, '%') AND "
-                    + "(HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)" );
+                    + "HardwareType.id IN " + hdwTypeSet);
                     idStatement.setString(1, lower_lsst_num);
-                    idStatement.setInt(2, hdwType);
+                    //idStatement.setInt(2, hdwType);
                 }
             } 
             else {
                 if (lsst_num.equals("")) {
                     idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId "
                     + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND LOWER(Hardware.manufacturer) = ? AND "
-                    + "(HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)");
+                    + "HardwareType.id IN " + hdwTypeSet);
                     idStatement.setString(1, lower_manu);
-                    idStatement.setInt(2, hdwType);
+                    //idStatement.setInt(2, hdwType);
                 }
                 else {
                     idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId "
                     + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND LOWER(Hardware.manufacturer) = ? AND "
-                    + "LOWER(Hardware.lsstId) LIKE concat('%', ${lower_lsst_num}, '%') AND "
-                    + "(HardwareType.id=? OR HardwareType.id=9 OR HardwareType.id=10)" );
+                    + "LOWER(Hardware.lsstId) LIKE concat('%', ?, '%') AND "
+                    + "HardwareType.id IN " + hdwTypeSet );
                 
                     idStatement.setString(1, lower_manu);
-                    idStatement.setInt(2, hdwType);
+                    idStatement.setString(2, lower_lsst_num);
+                    //idStatement.setInt(3, hdwType);
                 }
             }
            
@@ -339,15 +392,16 @@ public class QueryUtils {
             c = ConnectionManager.getConnection(session);
 
             Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu);
-
+            String hdwTypeSet = getCCDHardwareTypes(session);
             for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
                 // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
                 PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
-                        + "HardwareStatusHistory.hardwareStatusId from Hardware, HardwareStatusHistory, HardwareStatus "
-                        + "where Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
-                        + "and Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=9 OR Hardware.hardwareTypeId=10) order By HardwareStatusHistory.creationTS DESC");
+                        + "HardwareStatusHistory.hardwareStatusId FROM Hardware, HardwareStatusHistory, HardwareStatus "
+                        + "WHERE Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
+                        + "AND Hardware.lsstId=? AND "
+                        + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareStatusHistory.creationTS DESC");
                 hdwStatusStatement.setString(1, lsstId);
-                hdwStatusStatement.setInt(2, Integer.valueOf(hardwareTypeId));
+                //hdwStatusStatement.setInt(2, Integer.valueOf(hardwareTypeId));
 
                 ResultSet statusResult = hdwStatusStatement.executeQuery();
                 statusResult.first();
@@ -356,10 +410,11 @@ public class QueryUtils {
                 PreparedStatement hdwLocStatement = c.prepareStatement("SELECT Hardware.lsstId, Hardware.id, Hardware.creationTS,"
                         + " Hardware.hardwareTypeId, Location.name, Site.name AS sname, "
                         + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location, Site "
-                        + "where Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
-                        + "and Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=9 OR Hardware.hardwareTypeId=10) order By HardwareLocationHistory.creationTS DESC");
+                        + "WHERE Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
+                        + "AND Hardware.lsstId=? AND "
+                        + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareLocationHistory.creationTS DESC");
                 hdwLocStatement.setString(1, lsstId);
-                hdwLocStatement.setInt(2, Integer.valueOf(hardwareTypeId));
+                //hdwLocStatement.setInt(2, Integer.valueOf(hardwareTypeId));
                 ResultSet locResult = hdwLocStatement.executeQuery();
                 locResult.first();
 
@@ -463,14 +518,15 @@ public class QueryUtils {
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
-
+            String hdwTypeSet = getCCDHardwareTypes(session);
             //Map<Integer, String> compIds = getComponentIds(session, hardwareTypeId);
             //for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
             // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
             PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
                     + "HardwareStatusHistory.hardwareStatusId from Hardware, HardwareStatusHistory, HardwareStatus "
-                    + "where Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
-                    + "and Hardware.lsstId=? and (Hardware.hardwareTypeId=1 OR Hardware.hardwareTypeId=9 OR Hardware.hardwareTypeId=10) order By HardwareStatusHistory.creationTS DESC");
+                    + "WHERE Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
+                    + "AND Hardware.lsstId=? AND "
+                    + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareStatusHistory.creationTS DESC");
             hdwStatusStatement.setString(1, lsstId);
             //  hdwStatusStatement.setInt(2, Integer.valueOf(hardwareTypeId));
 
@@ -481,8 +537,9 @@ public class QueryUtils {
             PreparedStatement hdwLocStatement = c.prepareStatement("SELECT Hardware.lsstId, Hardware.id, Hardware.creationTS,"
                     + " Hardware.hardwareTypeId, Location.name, Site.name AS sname, "
                     + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location, Site "
-                    + "where Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
-                    + "and Hardware.lsstId=? and (Hardware.hardwareTypeId=1 OR Hardware.hardwareTypeId=9 OR Hardware.hardwareTypeId=10) order By HardwareLocationHistory.creationTS DESC");
+                    + "WHERE Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
+                    + "AND Hardware.lsstId=? AND "
+                    + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareLocationHistory.creationTS DESC");
             hdwLocStatement.setString(1, lsstId);
             //hdwLocStatement.setInt(2, Integer.valueOf(hardwareTypeId));
             ResultSet locResult = hdwLocStatement.executeQuery();
@@ -977,6 +1034,11 @@ public class QueryUtils {
                         travelerList, "SR-RCV-1", "vendorIngest", hdwId);
 
                 Iterator<Integer> vendAct = vendActList.iterator();
+                
+                List<Integer> offlineTestRepList = getOutputActivityFromTraveler(session,
+                        travelerList, "SR-EOT-02", "test_report_offline", hdwId);
+                
+                TestReportPathData reportPaths = getTestReportPaths(session, offlineTestRepList, false);
 
                 while (vendAct.hasNext()) {
                     Integer act = (vendAct.next());
@@ -984,10 +1046,52 @@ public class QueryUtils {
                     vendPath += comp.getManufacturer() + "/" + lsst_num + "/" + dataSourceFolder + "/" + act;
                     
                     ReportData repData = new ReportData(lsst_num, registrationDate, vendPath);
+                    repData.setOfflineReportCatKey(reportPaths.getCatalogKey());
+                    repData.setTestReportOfflinePath(reportPaths.getTestReportPath());
+                    repData.setTestReportOfflineDirPath(reportPaths.getTestReportDirPath());
                     result.add(repData);
                 }
             }
 
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+    }
+    
+     public static TestReportPathData getTestReportPaths(HttpSession session, List<Integer> actIdList, Boolean getAll) throws SQLException {
+        TestReportPathData result = new TestReportPathData();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            Integer mostRecentTestReport = Collections.max(actIdList, null);
+            // Pull out the most recent PDF associated with this activity ID
+            PreparedStatement fileStatement = c.prepareStatement("SELECT virtualPath, "
+                    + "catalogKey, creationTS FROM "
+                    + "FilepathResultHarnessed "
+                    + "WHERE activityId=? AND virtualPath LIKE concat('%', 'pdf', '%') "
+                    + "ORDER BY creationTS DESC");
+            fileStatement.setInt(1, mostRecentTestReport);
+            ResultSet r = fileStatement.executeQuery();
+            r.first();
+            if ((r != null) && (getAll == false)) {
+                String vPath = r.getString("virtualPath");
+                java.util.Date creation = r.getTimestamp("creationTS");
+                Integer lastSlash = vPath.lastIndexOf('/');
+                String dirPath = vPath.substring(0, lastSlash);
+                Integer catKey = r.getInt("catalogKey");
+                result.setValues("", creation, mostRecentTestReport, catKey, vPath, dirPath);
+            } else if (r!=null) {
+                
+            }
+            
         } catch (Exception e) {
             e.printStackTrace();
         } finally {

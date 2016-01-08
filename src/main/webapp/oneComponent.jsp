@@ -16,8 +16,9 @@
     <body> 
         <h1>CCD Explorer</h1>
 
+        <c:set var="ccdManuString" value="${portal:getCCDHardwareTypes(pageContext.session)}"/>
         <sql:query var="manuQ">
-            SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND (HardwareType.id = 1 OR HardwareType.id = 9 OR HardwareType.id = 10) ORDER BY manufacturer;
+            SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${ccdManuString} ORDER BY manufacturer;
         </sql:query>
 
 

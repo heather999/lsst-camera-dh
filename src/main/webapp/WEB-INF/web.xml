@@ -22,7 +22,7 @@
             javax.servlet.jsp.jstl.sql.dataSource
         </param-name>
         <param-value>
-            jdbc/rd-lsst-cam-dev
+            jdbc/rd-lsst-cam-ro
         </param-value>
     </context-param>
 
@@ -168,7 +168,7 @@
     </context-param>
     <context-param>
         <param-name>org.srs.web.base.datasource.variable</param-name>
-        <param-value>etravelerDb</param-value>  
+        <param-value>etravelerDb-ro</param-value>  
     </context-param>
     
     <listener>

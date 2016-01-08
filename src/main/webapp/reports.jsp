@@ -52,11 +52,31 @@
         </c:url>
         <a href="${vendDataLink}" target="_blank"><c:out value="${rep.vendDataPath}"/></a> 
     </display:column>
+    <display:column title="Most Recent Offline Test Report" sortable="true" >
+        <c:choose>
+            <c:when test="${rep.testReportOfflineDirPath == 'NA'}">
+                <c:out value="NA"/>
+            </c:when>
+            <c:otherwise>
+                <c:url var="offlineReportLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                    <c:param name="dataset" value="${rep.offlineReportCatKey}"/>
+                    <c:param name="experiment" value="LSST-CAMERA"/>
+                </c:url>
+                <a href="${offlineReportLink}" target="_blank"><c:out value="${rep.testReportOfflinePath}"/></a> 
+                <br>
+                <c:url var="offlineDirLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                    <c:param name="folderPath" value="${rep.testReportOfflineDirPath}"/>
+                    <c:param name="experiment" value="LSST-CAMERA"/>
+                </c:url>
+                <a href="${offlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
+            </c:otherwise>
+        </c:choose>
+    </display:column>
     <display:setProperty name="export.excel.filename" value="sensorData.xls"/> 
     <display:setProperty name="export.csv.filename" value="sensorData.csv"/> 
     <display:setProperty name="export.xml.filename" value="sensorData.xml"/> 
 </display:table>
-                
-    
-</body>
+
+
+    </body>
 </html>

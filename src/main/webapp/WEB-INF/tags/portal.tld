@@ -10,6 +10,12 @@
     </function-signature>
   </function>
   <function>
+    <name>getCCDHardwareTypes</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>java.lang.String getCCDHardwareTypes(javax.servlet.http.HttpSession)
+    </function-signature>
+  </function>
+  <function>
     <name>getComponentList</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
     <function-signature>java.util.List getComponentList(javax.servlet.http.HttpSession,java.lang.Integer)
@@ -50,7 +56,7 @@
   <function>
     <name>getHdwStatLoc</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-    <function-signature>org.lsst.camera.porta.data.HdwStatusLoc getHdwStatLoc(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
+    <function-signature>org.lsst.camera.portal.data.HdwStatusLoc getHdwStatLoc(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
   </function>
     <function>
     <name>getHardwareStatus</name>
@@ -114,6 +120,12 @@
     <name>getReportsTable</name>
     <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
     <function-signature>java.util.List getReportsTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String)
+    </function-signature>
+  </function>
+  <function>
+    <name>getTestReportPaths</name>
+    <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+    <function-signature>org.lsst.camera.portal.data TestReportData getTestReportPaths(javax.servlet.http.HttpSession,java.util.List,java.lang.Boolean)
     </function-signature>
   </function>
 </taglib>
