@@ -41,10 +41,6 @@
             </c:otherwise>
         </c:choose>
         
-         <h3>travelerList: ${travelerList}</h3>
-         <h3>vendorList: ${vendActList}</h3>
-         <h3>dataSourceMode: ${appVariables.dataSourceMode}, dataSourceFolder: ${dataSourceFolder}</h3>
-
         <c:forEach var="vendAct" items="${vendActList}">
             <c:set var="vendPath" value="/LSST/vendorData"/>
             <c:set var="vendPath" value="${vendPath}/${param.vendor}/${param.lsstId}/${dataSourceFolder}/${vendAct}"/>
