@@ -52,6 +52,7 @@
         <c:set var="lsstIdQuery" value="${portal:getComponentIds(pageContext.session, ccdHdwTypeId)}" scope="page"/>
 
         <%-- Retrieve full list of current hardware status and location for all CCDs --%>
+        <%-- This function has been updated - need to fix this call --%>
         <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}" scope="page"/>
 
       

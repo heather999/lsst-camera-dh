@@ -53,7 +53,7 @@
                 <c:param name="experiment" value="LSST-CAMERA"/>
                 <%-- <c:param name="showFileList" value="true"/> --%>
             </c:url>
-                <a href="${vendDataLink}" target="_blank"><c:out value="Vendor Data"/></a> 
+    <big><b> <a href="${vendDataLink}" target="_blank"><c:out value="Click here for Vendor Data"/></a> </b></big>
         </c:forEach>
 
         <c:forEach var="curTraveler" items="${travelerList}"> 
