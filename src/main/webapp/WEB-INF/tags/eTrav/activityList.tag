@@ -79,6 +79,7 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
     <display:column title="Name" sortable="true" headerClass="sortable">
         <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
             <c:param name="activityId" value="${row.activityId}"/>
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
         <a href="${actLink}" target="_blank">${row.processName} ${row.activityId}</a>
     </display:column>
