@@ -33,9 +33,7 @@
     </filter:filterTable>
     
         <%-- Select CCD as the HardwareType for this page, scope session means all the pages? set scope to page --%>
-        <c:set var="ccdHdwTypeId" value="1" scope="page"/>  
-        <c:set var="ccdHdwTypeITL" value="9" scope="page"/> 
-        <c:set var="ccdHdwTypeE2V" value="10" scope="page"/> 
+        <c:set var="ccdHdwTypeId" value="1" scope="page"/>   
 
         <c:if test="${empty selectedLsstId}">
             <c:set var="selectedLsstId" value="" scope="page"/>            
@@ -83,12 +81,10 @@
             <c:otherwise>
 
                 <%-- Extract useful info from Hardware table --%>
+                <c:set var="hdwTypeStr" value="${portal:getCCDHardwareTypes(pageContext.session)}" scope="page"/>
                 <sql:query  var="hdwData" scope="page" >
-                    select  Hardware.id,Hardware.manufacturer,Hardware.model, Hardware.manufactureDate from Hardware where Hardware.lsstId=? and (Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=? OR Hardware.hardwareTypeId=?) 
+                    select  Hardware.id,Hardware.manufacturer,Hardware.model, Hardware.manufactureDate from Hardware where Hardware.lsstId=? and Hardware.hardwareTypeId IN ${hdwTypeStr}
                     <sql:param value="${selectedLsstId}"/>
-                    <sql:param value="${ccdHdwTypeId}"/>
-                    <sql:param value="${ccdHdwTypeITL}"/>
-                    <sql:param value="${ccdHdwTypeE2V}"/>
                 </sql:query>
 
                 <c:set var="curHdwData" value="${hdwData.rows[0]}"/>
