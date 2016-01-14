@@ -13,6 +13,8 @@
 <%@taglib prefix="display" uri="http://displaytag.sf.net" %>
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
 <%@taglib prefix="etraveler" tagdir="/WEB-INF/tags/eTrav"%>
+<%@taglib prefix="srs_utils" uri="http://srs.slac.stanford.edu/utils" %>
+
 
 <html>
 <body>
@@ -21,6 +23,7 @@
 </head>
 
 <h2>Recent Activity</h2>
+<srs_utils:refresh /> 
 <etraveler:activityList perHw="false"/>
 
 </body>
