@@ -1,7 +1,5 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html"%>
 <%@page pageEncoding="UTF-8"%>
-
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
 <%@taglib uri="http://java.sun.com/jsp/jstl/sql" prefix="sql" %>
 <%@taglib uri="http://displaytag.sf.net" prefix="display" %>
@@ -25,16 +23,16 @@
     <body>
         <h1>Summary Of Tests</h1>
         
-        <sql:query var="specs" dataSource="jdbc/config-prod">
-           select specId,schemaName,namelist,ntype from Summary_md
+        <sql:query var="lca128" dataSource="jdbc/config-prod">
+           select specid,description,specification, scope from LCA128
         </sql:query>
-    
+
         <sql:query var="sensor">
             select act.id, act.parentActivityId, hw.lsstId, statusHist.activityStatusId from Activity act join Hardware hw on act.hardwareId=hw.id 
             join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
             where pr.name='test_report_offline' order by act.parentActivityId desc   
         </sql:query>
-    
+
     <p><c:out value="sensor count ${sensor.rowCount}"/></p>
     <c:choose>
         <c:when test="${empty param}">
@@ -60,7 +58,7 @@
             </form>
         </c:when>
         <c:when test="${! empty param}">
-
+            
             <c:set var="string" value="${fn:split(param.schemaInfo,' ')}"/>
             <c:set var="actid" value="${string[0]}"/> 
             <c:set var="parentActivityId" value="${string[1]}"/>
@@ -68,35 +66,27 @@
             <c:set var="actHistStatus" value="${string[3]}"/>
             <p>You selected: <br/>activity Id ${actid}<br/> parentActivityId ${parentActivityId}<br/> schema ${schema} <br/> status ${actHistStatus}</p>
             
-             <sql:query var="activities"> 
+            <sql:query var="summarylist" dataSource="jdbc/config-prod">
+              select testName, namelist, ntype, specid from Summary_md
+            </sql:query> 
+            <c:out value="summarylist rows = ${summarylist.rowCount}"/>
+            
+            <sql:query var="activities"> 
                 select act.id, act.parentActivityId, pr.name from Activity act join Process pr on act.processId=pr.id where act.parentActivityId=?
                 <sql:param value="${parentActivityId}"/>
             </sql:query>
             
             <table class="datatable" border="1">
                 <tbody>
-                <th><td>Status</td> <td>spec. ID</td> <td>Description</td> <td>Specification</td> <td>Measurement</td></th>
-                <c:forEach var="spec" items="${specs.rows}">
-                    <sql:query var="tests">
-                        select res.schemaInstance, res.value, res.value from FloatResultHarnessed res join Activity act on res.activityId=act.id 
-                        where res.schemaName= ? and res.name= ? and act.parentActivityId = ? order by res.value asc
-                        <sql:param value="${spec.schemaName}"/>
-                        <sql:param value="${spec.namelist}"/>
-                        <sql:param value="${parentActivityId}"/>
-                    </sql:query>
-                
-                    <c:forEach var="x" items="${tests.rows}" varStatus="loop">
-                        <c:if test="${loop.first == 'true'}">
-                          <c:set var="min" value="${x.value}"/>
+                <th><td>Status</td> <td>spec. ID</td><td>Description</td><td>Specification</td><td>Measurement</td></th>
+                    <c:forEach var="row" items="${summarylist.rows}">
+                        <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, row.testName, parentActivityId, row.ntype, fn:split(row.testName, ','))}"/>
+                        <c:if test="${! empty SchemaNameFloat}">
+                            <c:set var="dataParts" value="${fn:split(SchemaNameFloat,',')}"/>
+                            <tr> <td>?</td><td></td>  <td>${row.specid}</td>  <td></td> <td></td><td>${dataParts[1]} - ${dataParts[2]}</td> </tr>
                         </c:if>
-                        <c:if test="${loop.last == 'true'}">
-                            <c:set var="max" value="${x.value}"/>
-                        </c:if>
-                        </tr>
                     </c:forEach>
-                    <tr><td>${actHistStatus}</td><td>specId</td><td>description</td><td>specification</td><td>${min} - ${max}</td></tr>
-               </c:forEach>
-            </tbody>
+                </tbody>
             </table>
         </c:when>
     </c:choose>
