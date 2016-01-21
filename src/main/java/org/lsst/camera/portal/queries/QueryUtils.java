@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import org.lsst.camera.portal.data.TravelerStatus;
 import org.lsst.camera.portal.data.HardwareStatus;
@@ -59,6 +60,75 @@ public class QueryUtils {
             }
         }
         return result;
+    }
+    // This class can eventually be split out into its own file
+    public static class SummaryResult {
+        public Integer schemaInstance;
+        public String min;
+        public String max;
+
+        public SummaryResult(Integer schemaInstance, String min, String max) {
+            this.schemaInstance = schemaInstance;
+            this.min = min;
+            this.max = max;
+        }
+
+        public Integer getSchemaInstance() {
+            return schemaInstance;
+        }
+
+        public String getMin() {
+            return min;
+        }
+
+        public String getMax() {
+            return max;
+        }
+//      For debugging output the values instead of the default memory address. 
+        @Override
+        public String toString() {
+              return "SummaryResult {" + schemaInstance + ", min=" + min + ", max=" + max + "}";
+//            return "SummaryResult{" + "schemaInstance=" + schemaInstance + ", min=" + min + ", max=" + max + '}';
+        }
+
+    }
+    
+    public static List<SummaryResult> getSummaryResults(HttpSession session, String schemaName, String parentActivityId, String ntype, String... names) throws SQLException, ServletException{
+        List<SummaryResult> results = new ArrayList<>();
+        System.out.println("...Entering getSummaryResults with params schemaName=" + schemaName + " parentId=" + parentActivityId);  
+        
+        String sql = 
+        "select res.schemaInstance, min(res.value) as min, max(res.value) as max "
+        + "    from FloatResultHarnessed res join Activity act on res.activityId=act.id "
+        + "    where res.schemaName=? and res.name = ? "
+        + "    and act.parentActivityId = ? "
+        + "    group by res.schemaInstance order by res.value asc";
+        
+        System.out.println(sql);
+        
+        for (int i=0; i <= names.length-1; i++){
+            System.out.println("Names[" + i + "] = " + names[i]);
+        }
+        
+        try (Connection conn = ConnectionManager.getConnection(session)){
+            try ( PreparedStatement stmt = conn.prepareStatement(sql) ) {
+                for(String name : names){
+                    stmt.setString(1, schemaName);
+                    stmt.setString(2, name);
+                    stmt.setString(3, parentActivityId);
+                    ResultSet rs = stmt.executeQuery();
+                    if(!rs.next()){
+                        continue;
+                    }
+                    int schemaInstance = rs.getInt("schemaInstance");
+                    String min = rs.getString("min");
+                    String max = rs.getString("max");
+                    results.add(new SummaryResult( schemaInstance, min, max));
+                }
+                System.out.println(results);
+                return results;
+            }
+        } 
     }
     
     public static String getCCDHardwareTypes(HttpSession session) throws SQLException {
