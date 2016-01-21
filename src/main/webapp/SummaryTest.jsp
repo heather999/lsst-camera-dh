@@ -1,3 +1,4 @@
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@page contentType="text/html"%>
 <%@page pageEncoding="UTF-8"%>
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
@@ -21,11 +22,12 @@
         <title>Summary of Tests</title>
     </head>
     <body>
-        <h1>Summary Of Tests</h1>
+        <h1>Summary Of Tests (page under construction)</h1>
         
+        <%--
         <sql:query var="lca128" dataSource="jdbc/config-prod">
            select specid,description,specification, scope from LCA128
-        </sql:query>
+        </sql:query> --%>
 
         <sql:query var="sensor">
             select act.id, act.parentActivityId, hw.lsstId, statusHist.activityStatusId from Activity act join Hardware hw on act.hardwareId=hw.id 
@@ -78,12 +80,30 @@
             
             <table class="datatable" border="1">
                 <tbody>
-                <th><td>Status</td> <td>spec. ID</td><td>Description</td><td>Specification</td><td>Measurement</td></th>
+                    <tr><th>Status</th> 
+                        <th>spec. ID</th>
+                        <th>Description</th>
+                        <th>Specification</th>
+                        <th>Measurement</th>
+                    </tr>
                     <c:forEach var="row" items="${summarylist.rows}">
+                        <sql:query var="lca128" dataSource="jdbc/config-prod">
+                            select specid,description,specification from LCA128 where specid = ?
+                            <sql:param value="${row.specid}"/>
+                        </sql:query>
+                        
                         <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, row.testName, parentActivityId, row.ntype, fn:split(row.testName, ','))}"/>
-                        <c:if test="${! empty SchemaNameFloat}">
-                            <c:set var="dataParts" value="${fn:split(SchemaNameFloat,',')}"/>
-                            <tr> <td>?</td><td></td>  <td>${row.specid}</td>  <td></td> <td></td><td>${dataParts[1]} - ${dataParts[2]}</td> </tr>
+                       
+                        <c:if test="${! empty fn:replace(SchemaNameFloat,' ','')}">
+                            <c:set var="dataParts" value="${fn:replace(SchemaNameFloat,' ','')}"/>
+                            <c:set var="parts" value="${fn:split(dataParts,',')}"/>
+                            <tr>
+                            <td>${actHistStatus}</td>  
+                            <td>${row.specid}</td>  
+                            <td>${lca128.rows[0].description}</td> 
+                            <td>${lca128.rows[0].specification}</td> 
+                            <td> min - max<td>
+                            </tr>
                         </c:if>
                     </c:forEach>
                 </tbody>
