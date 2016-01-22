@@ -30,6 +30,7 @@ import org.lsst.camera.portal.data.TravelerInfo;
 import org.lsst.camera.portal.data.ReportData;
 import org.lsst.camera.portal.data.TestReportPathData;
 import org.lsst.camera.portal.data.ComponentData;
+import org.lsst.camera.portal.data.CatalogFileData;
 import org.srs.web.base.db.ConnectionManager;
 
 /**
@@ -1104,4 +1105,40 @@ public class QueryUtils {
         return result;
     }
 
+     public static List getDataCatalogFiles(HttpSession session, String fileSearchStr) throws SQLException {
+        List<CatalogFileData> result = new ArrayList<>();
+        String lower_fileSearchStr = fileSearchStr.toLowerCase();
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            
+            PreparedStatement idStatement = c.prepareStatement("(SELECT activityId, virtualPath, createdBy, "
+                    + "catalogKey, creationTS "
+                    + "FROM FilepathResultHarnessed WHERE LOWER(virtualPath) LIKE concat('%', ?, '%')) "
+                    + "UNION "
+                    + "(SELECT activityId, virtualPath, createdBy, "
+                    + "catalogKey, creationTS "
+                    + "FROM FilepathResultManual WHERE LOWER(virtualPath) LIKE concat('%', ?, '%')) "
+                    + "ORDER BY activityId DESC");
+            idStatement.setString(1, lower_fileSearchStr);
+            idStatement.setString(2, lower_fileSearchStr);
+            ResultSet r = idStatement.executeQuery();
+            while (r.next()) {
+                CatalogFileData comp = new CatalogFileData(r.getInt("activityId"), r.getTimestamp("creationTS"), r.getString("virtualPath"), r.getInt("catalogKey"), r.getString("createdBy") );
+                result.add(comp);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+
+    }
+     
 }

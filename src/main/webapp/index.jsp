@@ -6,6 +6,8 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="display" uri="http://displaytag.sf.net" %>
+<%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
+<%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
 <html>
     <head>
@@ -15,23 +17,71 @@
         <h1>Sensor Quick Links</h1>
         
 
-         <ul>
+        <c:url var="ccdStatusLink" value="/ccdStatus.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
+        <c:url var="ccdExplorerLink" value="/oneComponent.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
+        <c:url var="reportsLink" value="/reports.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
+        <c:url var="actStatusLink" value="/activityStatus.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
+        
+         <ul>   
+           
+            <li><a href="${ccdStatusLink}" title="CCD Status" style=""><strong>Overview All CCDs</strong></a></li>
                 
-          
-                            
-                
-                
-                
-            <li><a href="/DataPortal/ccdStatus.jsp" title="CCD Status" style=""><strong>Overview All CCDs</strong></a></li>
-                
-            <li><a href="/DataPortal/oneComponent.jsp" title="CCD Explorer" style=""><strong>CCD Explorer</strong></a></li>
+            <li><a href="${ccdExplorerLink}" title="CCD Explorer" style=""><strong>CCD Explorer</strong></a></li>
             
             <%-- <li><a href="/DataPortal/eTravelerPortal.jsp" title "eTraveler Portal" style=""><strong>eTraveler Portal</strong></a></li> --%>
-            <li> <a href="/DataPortal/reports.jsp" title "Data and Reports" style=""><strong>Data and Reports</strong></a></li>
+            <li> <a href="${reportsLink}" title "Data and Reports" style=""><strong>Data and Reports</strong></a></li>
             
-            <li><a href="/DataPortal/activityStatus.jsp" title="Activity Status" style=""><strong>All eTraveler Activity Status</strong></a></li>
+            <li><a href="${actStatusLink}" title="Activity Status" style=""><strong>All eTraveler Activity Status</strong></a></li>
            
             </ul>   
+            
+            <section>
+                
+                <h2> Data Catalog FileName Search </h2>
+        
+
+    <filter:filterTable>
+        <filter:filterInput var="fileSearchStr" title="Filename (substring search)"/>
+    </filter:filterTable>
+    
+    <c:choose>
+            <c:when test="${empty fileSearchStr}">
+                Enter a file name substring if you wish to search the Data Catalog.
+            </c:when>
+            <c:otherwise>
+        <c:set var="dcQuery" value="${portal:getDataCatalogFiles(pageContext.session, fileSearchStr)}"/>
+        <c:if test="${! empty dcQuery}">
+              <display:table name="${dcQuery}" id="row" export="true" class="datatable">
+            <display:column title="Data Catalog Link" sortable="true" headerClass="sortable">
+                <c:choose>
+                    <c:when test="${empty row.catalogKey}">
+                        <%-- <c:out value="${row.value}"/> --%>
+                    </c:when>
+                    <c:otherwise>
+                        <c:url var="dcLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                            <c:param name="dataset" value="${row.catalogKey}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                        </c:url>
+                        <a href="${dcLink}" target="_blank"><c:out value="${row.virtualPath}"/></a>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+            <display:column property="creationDate" title="Timestamp" sortable="true" headerClass="sortable"/>
+        </display:table>
+        </c:if>
+            </c:otherwise>
+    </c:choose>
+    
+    
+            </section>
 
 
 

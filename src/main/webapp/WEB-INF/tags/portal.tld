@@ -129,6 +129,12 @@
         </function-signature>
     </function>
     <function>
+        <name>getDataCatalogFiles</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getDataCatalogFiles(javax.servlet.http.HttpSession,java.lang.String)
+        </function-signature>
+    </function>
+    <function>
         <name>getDatasets</name>
         <function-class>org.lsst.camera.portal.data.datacat.DatacatQuery</function-class>
         <function-signature>java.util.List getDatasets(javax.servlet.http.HttpServletRequest)</function-signature>
