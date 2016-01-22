@@ -98,10 +98,8 @@ public class QueryUtils {
         System.out.println("...Entering getSummaryResults with params schemaName=" + schemaName + " parentId=" + parentActivityId);  
         
         String sql = 
-        "select res.schemaInstance, min(res.value) as min, max(res.value) as max "
-        + "    from FloatResultHarnessed res join Activity act on res.activityId=act.id "
-        + "    where res.schemaName=? and res.name = ? "
-        + "    and act.parentActivityId = ? "
+        "select res.schemaInstance, min(res.value) min, max(res.value) max from FloatResultHarnessed res join Activity act on res.activityId=act.id "
+        + "    where res.schemaName=? and res.name = ? and act.parentActivityId = ? "
         + "    group by res.schemaInstance order by res.value asc";
         
         System.out.println(sql);
@@ -123,6 +121,7 @@ public class QueryUtils {
                     int schemaInstance = rs.getInt("schemaInstance");
                     String min = rs.getString("min");
                     String max = rs.getString("max");
+                    
                     results.add(new SummaryResult( schemaInstance, min, max));
                 }
                 System.out.println(results);
