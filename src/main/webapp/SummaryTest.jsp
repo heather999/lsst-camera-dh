@@ -29,7 +29,7 @@
            select specid,description,specification, scope from LCA128
         </sql:query> --%>
 
-        <sql:query var="sensor">
+        <sql:query var="sensor" dataSource="jdbc/rd-lsst-cam-dev-ro">
             select act.id, act.parentActivityId, hw.lsstId, statusHist.activityStatusId from Activity act join Hardware hw on act.hardwareId=hw.id 
             join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
             where pr.name='test_report_offline' order by act.parentActivityId desc   
@@ -45,7 +45,7 @@
                     <thead>
                     <td>
                     <tr>
-                        <td><select name="schemaInfo" id="schemaInfo" size="6">
+                        <td><select name="schemaInfo" id="schemaInfo" size="25">
                             <c:forEach var="arow" items="${sensor.rows}">
                                 <c:set var="sensorString" value="${arow.id} ${arow.parentActivityId} ${arow.lsstId} ${arow.activityStatusId}"/>
                                 <option value="${sensorString}">${arow.id} ${arow.lsstId} ${arow.parentActivityId} ${arow.activityStatusId}</option>
@@ -60,7 +60,6 @@
             </form>
         </c:when>
         <c:when test="${! empty param}">
-            
             <c:set var="string" value="${fn:split(param.schemaInfo,' ')}"/>
             <c:set var="actid" value="${string[0]}"/> 
             <c:set var="parentActivityId" value="${string[1]}"/>
@@ -71,9 +70,9 @@
             <sql:query var="summarylist" dataSource="jdbc/config-prod">
               select testName, namelist, ntype, specid from Summary_md
             </sql:query> 
-            <c:out value="summarylist rows = ${summarylist.rowCount}"/>
+            <c:out value="summarylist rowCount = ${summarylist.rowCount}"/><br/>
             
-            <sql:query var="activities"> 
+            <sql:query var="activities" dataSource="jdbc/rd-lsst-cam-dev-ro"> 
                 select act.id, act.parentActivityId, pr.name from Activity act join Process pr on act.processId=pr.id where act.parentActivityId=?
                 <sql:param value="${parentActivityId}"/>
             </sql:query>
@@ -86,26 +85,41 @@
                         <th>Specification</th>
                         <th>Measurement</th>
                     </tr>
-                    <c:forEach var="row" items="${summarylist.rows}">
-                        <sql:query var="lca128" dataSource="jdbc/config-prod">
-                            select specid,description,specification from LCA128 where specid = ?
-                            <sql:param value="${row.specid}"/>
-                        </sql:query>
-                        
-                        <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, row.testName, parentActivityId, row.ntype, fn:split(row.testName, ','))}"/>
-                       
-                        <c:if test="${! empty fn:replace(SchemaNameFloat,' ','')}">
-                            <c:set var="dataParts" value="${fn:replace(SchemaNameFloat,' ','')}"/>
-                            <c:set var="parts" value="${fn:split(dataParts,',')}"/>
-                            <tr>
-                            <td>${actHistStatus}</td>  
-                            <td>${row.specid}</td>  
-                            <td>${lca128.rows[0].description}</td> 
-                            <td>${lca128.rows[0].specification}</td> 
-                            <td> min - max<td>
-                            </tr>
-                        </c:if>
-                    </c:forEach>
+                    
+                            <c:forEach var="sum" items="${summarylist.rows}" varStatus="loop">
+                                <c:out value="${sum.testName}, ${sum.namelist}, ${sum.specid}"/><br/>
+                                <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, sum.testName, parentActivityId, sum.ntype, fn:split(sum.namelist, ','))}"/>
+                                <br/>
+                                 
+                                <c:out value="for ${sum.testName}  parentId ${parentActivityId}  ${SchemaNameFloat}"/><br/>
+                                
+                                <c:choose>
+                                    <c:when test="${fn:startsWith(act.name,sum[loop.index])}">
+                                        <c:out value="${sum.testname}, ${sum.namelist}, ${sum.ntype}, ${sum.specid}"/>
+                                        <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, row.testName, parentActivityId, row.ntype, fn:split(row.testName, ','))}"/>
+
+                                        <c:if test="${! empty fn:replace(SchemaNameFloat,' ','')}">
+                                        
+                                            <sql:query var="lca128" dataSource="jdbc/config-prod">
+                                                select specid,description,specification from LCA128 where specid = ?
+                                                <sql:param value="${sum.specid}"/>
+                                            </sql:query>
+                                        
+                                            <c:set var="dataParts" value="${fn:replace(SchemaNameFloat,' ','')}"/>
+                                            <c:set var="parts" value="${fn:split(dataParts,',')}"/>
+                                            <tr>
+                                            <td>${actHistStatus}</td>  
+                                            <td>${row.specid}</td>  
+                                            <td>${lca128.rows[0].description}</td> 
+                                            <td>${lca128.rows[0].specification}</td> 
+                                            <td> min - max<td>
+                                            </tr>
+                                        </c:if>
+                                    </c:when>
+                                </c:choose> --%>
+                            </c:forEach>
+                         
+                     
                 </tbody>
             </table>
         </c:when>
