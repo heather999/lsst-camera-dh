@@ -69,7 +69,7 @@
                 select distinct testname, ntype from summary_md
             </sql:query>
             
-            <%-- determine which datatable to read from on rd_lsst_cam MySQL database f=float, i-int and b=both --%>
+            <%-- determine which datatable to read from on rd_lsst_cam MySQL database f=float, i-int and b=both  
             <c:out value="Datatable used in query:"/><br/>
             <c:forEach var="tes" items="${summaryTestname.rows}">
                 <c:choose>
@@ -83,7 +83,7 @@
                    <c:out value="${tes.testname} from FloatResultHarnessed and IntResultHarnessed"/><br/>
                 </c:when>   
                 </c:choose>
-            </c:forEach>
+            </c:forEach> --%>
                    <p></p>
             <table class="datatable" border="1">
                 <tbody>
@@ -95,6 +95,7 @@
                     </tr>
                     <%-- loop over the testnames to get the name(s) then build a string of these names to pass to tag --%>
                     <c:forEach var="sum" items="${summaryTestname.rows}" varStatus="loop">
+                         
                         <sql:query var="namelistString" dataSource="jdbc/config-prod">
                             select namelist from summary_md where testname = ?
                             <sql:param value="${sum.testname}"/>
@@ -109,7 +110,7 @@
                                 <c:set var="listOfnames" value="${listOfnames}, ${x.namelist}"/>
                             </c:if>
                         </c:forEach>
-                          
+                         
                          
                         <%-- call tag with args --%>
                         <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, sum.testName, parentActivityId, sum.ntype, fn:split(listOfnames, ','))}"/>  
