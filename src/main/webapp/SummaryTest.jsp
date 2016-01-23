@@ -109,9 +109,8 @@
                                 <c:set var="listOfnames" value="${listOfnames}, ${x.namelist}"/>
                             </c:if>
                         </c:forEach>
-                         <%-- 
-                        <c:out value="${sum.testName}"/>
-                        <c:out value="${listOfnames}"/><br/> --%>
+                          
+                         
                         <%-- call tag with args --%>
                         <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, sum.testName, parentActivityId, sum.ntype, fn:split(listOfnames, ','))}"/>  
                         <c:forEach var="lons" items="${listOfnames}"> 
@@ -121,14 +120,24 @@
                                 <sql:param value="${lons}"/>
                             </sql:query>
                             <c:set var="specID" value="${specInfo.rows[0].specid}"/>
+                            
+                            <sql:query var="lca" dataSource="jdbc/config-prod">
+                                select description, specification, scope from lca128 where specid=?
+                                <sql:param value="${specID}"/>
+                            </sql:query>
+                            <c:set var="description" value="${lca.rows[0].description}"/>
+                            <c:set var="specification" value="${lca.rows[0].specification}"/>
+                            <c:set var="scope" value="${lca.rows[0].scope}"/>
+                            
                             <c:forEach var="line" items="${SchemaNameFloat}">
                                 <c:set var="lval" value="${fn:split(line,',')}"/>
                                 <c:forEach var="subline" items="${lval}">
                                     <c:if test="${fn:contains(subline,'min')}">
-                                        <c:set var="min" value="<td>${subline}-"/>
+                                        <c:set var="min" value="${fn:replace(subline,'min=','')}-"/>
                                     </c:if>
                                      <c:if test="${fn:contains(subline,'max')}">
-                                        <c:set var="max" value="${subline}</td>"/>
+                                        <c:set var="max" value="${fn:replace(subline,'max=','')}"/>
+                                        <c:set var="max" value="${fn:replace(max,'}','')}"/>
                                     </c:if>
                                 </c:forEach>
                             </c:forEach>
