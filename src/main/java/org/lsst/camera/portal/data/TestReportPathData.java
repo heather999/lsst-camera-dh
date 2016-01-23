@@ -20,8 +20,8 @@ public class TestReportPathData {
     
     public TestReportPathData() {
         lsst_num = "";
-        testReportPath = "";
-        testReportDirPath = "";
+        testReportPath = "NA";
+        testReportDirPath = "NA";
         activityId = -999;
         catalogKey=-999;
     }

@@ -1022,7 +1022,8 @@ public class QueryUtils {
             // List of Sensors
             List<ComponentData> compIds = getComponentList(session, hardwareTypeId);
             Iterator<ComponentData> compIt = compIds.iterator();
-            while (compIt.hasNext()) {
+            while (compIt.hasNext()) { // iterate over sensors
+                Boolean hasVendorData = false;
                 ComponentData comp = compIt.next();
                 String lsst_num = comp.getLsst_num();
                 Integer hdwId = comp.getHdwId();
@@ -1031,16 +1032,19 @@ public class QueryUtils {
                 
                 List<TravelerInfo> travelerList = getTravelerCol(session, hdwId, true);
 
+                // Find Vendor Data
                 List<Integer> vendActList = getOutputActivityFromTraveler(session,
                         travelerList, "SR-RCV-1", "vendorIngest", hdwId);
 
                 Iterator<Integer> vendAct = vendActList.iterator();
                 
+                // Find Offline Test Reports
                 List<Integer> offlineTestRepList = getOutputActivityFromTraveler(session,
                         travelerList, "SR-EOT-02", "test_report_offline", hdwId);
                 
                 TestReportPathData reportPaths = getTestReportPaths(session, offlineTestRepList, false);
 
+                if (vendAct.hasNext()) hasVendorData = true;
                 while (vendAct.hasNext()) {
                     Integer act = (vendAct.next());
                     String vendPath = "/LSST/vendorData/";
@@ -1052,6 +1056,15 @@ public class QueryUtils {
                     repData.setTestReportOfflineDirPath(reportPaths.getTestReportDirPath());
                     result.add(repData);
                 }
+                if ((hasVendorData == false) && (!reportPaths.getTestReportPath().equals("NA"))) {
+                    ReportData repData = new ReportData(lsst_num, registrationDate, "");
+                    repData.setOfflineReportCatKey(reportPaths.getCatalogKey());
+                    repData.setTestReportOfflinePath(reportPaths.getTestReportPath());
+                    repData.setTestReportOfflineDirPath(reportPaths.getTestReportDirPath());
+                    result.add(repData);
+                } else {
+                }
+                
             }
 
         } catch (Exception e) {
@@ -1082,14 +1095,14 @@ public class QueryUtils {
             fileStatement.setInt(1, mostRecentTestReport);
             ResultSet r = fileStatement.executeQuery();
             r.first();
-            if ((r != null) && (getAll == false)) {
+            if ((r != null) && (getAll == false)) { // retrieve most recent file
                 String vPath = r.getString("virtualPath");
                 java.util.Date creation = r.getTimestamp("creationTS");
                 Integer lastSlash = vPath.lastIndexOf('/');
                 String dirPath = vPath.substring(0, lastSlash);
                 Integer catKey = r.getInt("catalogKey");
                 result.setValues("", creation, mostRecentTestReport, catKey, vPath, dirPath);
-            } else if (r!=null) {
+            } else if (r!=null) {  // retrieve all
                 
             }
             

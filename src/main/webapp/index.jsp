@@ -45,7 +45,7 @@
             
             <section>
                 
-                <h2> Data Catalog FileName Search </h2>
+                <h2> Data Catalog File Search </h2>
         
 
     <filter:filterTable>
@@ -55,6 +55,7 @@
     <c:choose>
             <c:when test="${empty fileSearchStr}">
                 Enter a file name substring if you wish to search the Data Catalog.
+                The % character can be used as a wildcard.
             </c:when>
             <c:otherwise>
         <c:set var="dcQuery" value="${portal:getDataCatalogFiles(pageContext.session, fileSearchStr)}"/>

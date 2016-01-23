@@ -49,11 +49,18 @@
             --%>
             <display:column title="Date Registered" sortable="true" >${rep.creationDate}</display:column>
             <display:column title="Vendor Data" sortable="true" >
-                <c:url var="vendDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">
-                    <c:param name="folderPath" value="${rep.vendDataPath}"/>
-                    <c:param name="experiment" value="LSST-CAMERA"/>
-                </c:url>
-                <a href="${vendDataLink}" target="_blank"><c:out value="${rep.vendDataPath}"/></a> 
+                <c:choose>
+                    <c:when test="${rep.vendDataPath == 'NA'}">
+                        <c:out value="NA"/>
+                    </c:when>
+                    <c:otherwise>
+                        <c:url var="vendDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                            <c:param name="folderPath" value="${rep.vendDataPath}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                        </c:url>
+                        <a href="${vendDataLink}" target="_blank"><c:out value="${rep.vendDataPath}"/></a> 
+                    </c:otherwise>
+                </c:choose>
             </display:column>
             <display:column title="Most Recent Offline Test Report" sortable="true" >
                 <c:choose>
