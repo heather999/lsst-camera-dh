@@ -62,7 +62,27 @@
                     </c:otherwise>
                 </c:choose>
             </display:column>
-            <display:column title="Most Recent Offline Test Report" sortable="true" >
+            <display:column title="Most Recent SR-EOT-1 Test Report" sortable="true" >
+                <c:choose>
+                    <c:when test="${rep.testReportOnlineDirPath == 'NA'}">
+                        <c:out value="NA"/>
+                    </c:when>
+                    <c:otherwise>
+                        <c:url var="onlineReportLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                            <c:param name="dataset" value="${rep.onlineReportCatKey}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                        </c:url>
+                        <a href="${onlineReportLink}" target="_blank"><c:out value="${rep.testReportOnlinePath}"/></a> 
+                        <br>
+                        <c:url var="onlineDirLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                            <c:param name="folderPath" value="${rep.testReportOnlineDirPath}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                        </c:url>
+                        <a href="${onlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+            <display:column title="Most Recent SR-EOT-02 Test Report" sortable="true" >
                 <c:choose>
                     <c:when test="${rep.testReportOfflineDirPath == 'NA'}">
                         <c:out value="NA"/>

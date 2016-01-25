@@ -1093,6 +1093,7 @@ public class QueryUtils {
             Iterator<ComponentData> compIt = compIds.iterator();
             while (compIt.hasNext()) { // iterate over sensors
                 Boolean hasVendorData = false;
+                Boolean hasOfflineData = false;
                 ComponentData comp = compIt.next();
                 String lsst_num = comp.getLsst_num();
                 Integer hdwId = comp.getHdwId();
@@ -1112,6 +1113,11 @@ public class QueryUtils {
                         travelerList, "SR-EOT-02", "test_report_offline", hdwId);
                 
                 TestReportPathData reportPaths = getTestReportPaths(session, offlineTestRepList, false);
+                
+                // Find Online Test Reports
+                List<Integer> onlineTestRepList = getOutputActivityFromTraveler(session,
+                        travelerList, "SR-EOT-1", "test_report", hdwId);
+                TestReportPathData onlineReportPaths = getTestReportPaths(session, onlineTestRepList, false);
 
                 if (vendAct.hasNext()) hasVendorData = true;
                 while (vendAct.hasNext()) {
@@ -1123,16 +1129,29 @@ public class QueryUtils {
                     repData.setOfflineReportCatKey(reportPaths.getCatalogKey());
                     repData.setTestReportOfflinePath(reportPaths.getTestReportPath());
                     repData.setTestReportOfflineDirPath(reportPaths.getTestReportDirPath());
+                    repData.setOnlineReportCatKey(onlineReportPaths.getCatalogKey());
+                    repData.setTestReportOnlinePath(onlineReportPaths.getTestReportPath());
+                    repData.setTestReportOnlineDirPath(onlineReportPaths.getTestReportDirPath());
                     result.add(repData);
                 }
                 if ((hasVendorData == false) && (!reportPaths.getTestReportPath().equals("NA"))) {
+                    hasOfflineData = true;
                     ReportData repData = new ReportData(lsst_num, registrationDate, "");
                     repData.setOfflineReportCatKey(reportPaths.getCatalogKey());
                     repData.setTestReportOfflinePath(reportPaths.getTestReportPath());
                     repData.setTestReportOfflineDirPath(reportPaths.getTestReportDirPath());
+                    repData.setOnlineReportCatKey(onlineReportPaths.getCatalogKey());
+                    repData.setTestReportOnlinePath(onlineReportPaths.getTestReportPath());
+                    repData.setTestReportOnlineDirPath(onlineReportPaths.getTestReportDirPath());
                     result.add(repData);
-                } else {
+                } else if ((hasVendorData == false) && (hasOfflineData == false)) {
+                    ReportData repData = new ReportData(lsst_num, registrationDate, "");
+                    repData.setOnlineReportCatKey(onlineReportPaths.getCatalogKey());
+                    repData.setTestReportOnlinePath(onlineReportPaths.getTestReportPath());
+                    repData.setTestReportOnlineDirPath(onlineReportPaths.getTestReportDirPath());
+                    result.add(repData);
                 }
+                
                 
             }
 

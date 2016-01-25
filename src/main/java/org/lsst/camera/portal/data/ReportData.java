@@ -20,12 +20,19 @@ public class ReportData {
     private Integer offlineReportCatKey;
     private String testReportOfflinePath;
     private String testReportOfflineDirPath;
+    private Integer onlineReportCatKey;
+    private String testReportOnlinePath;
+    private String testReportOnlineDirPath;
     private List<TestReportPathData> offlineReportCol = new ArrayList<>();
    
     public ReportData(String num, Date c, String vData) {
         this.lsst_num = num == null || "".equals(num) ? "NA" : num;
         this.creationDate = c;
         this.vendDataPath = vData == null || "".equals(vData) ? "NA" : vData;
+        this.testReportOfflinePath = "NA";
+        this.testReportOfflineDirPath = "NA";
+        this.testReportOnlinePath = "NA";
+        this.testReportOnlineDirPath = "NA";
     }
    
     public void setLsst_num(String id) {
@@ -40,6 +47,10 @@ public class ReportData {
         offlineReportCatKey = catKey;
     }
     
+    public void setOnlineReportCatKey(Integer catKey) {
+        onlineReportCatKey = catKey;
+    }
+    
     public void setValues(String id, Date c, String vDataPath) {
         lsst_num = id == null || "".equals(id) ? "NA" : id; 
         creationDate = c;
@@ -52,6 +63,14 @@ public class ReportData {
     
     public void setTestReportOfflineDirPath(String path) {
         testReportOfflineDirPath = path == null || "".equals(path) ? "NA" : path;
+    }
+    
+     public void setTestReportOnlinePath(String path) {
+        testReportOnlinePath = path == null || "".equals(path) ? "NA" : path;
+    }
+    
+    public void setTestReportOnlineDirPath(String path) {
+        testReportOnlineDirPath = path == null || "".equals(path) ? "NA" : path;
     }
     
     public void addTestReportPathData(TestReportPathData data) {
@@ -80,6 +99,18 @@ public class ReportData {
     
     public String getTestReportOfflineDirPath() {
         return testReportOfflineDirPath;
+    }
+    
+    public Integer getOnlineReportCatKey() {
+        return onlineReportCatKey;
+    }
+    
+       public String getTestReportOnlinePath(){
+        return testReportOnlinePath;
+    }
+    
+    public String getTestReportOnlineDirPath() {
+        return testReportOnlineDirPath;
     }
     
     public List getOfflineReportCol() {
