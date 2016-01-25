@@ -31,6 +31,7 @@ import org.lsst.camera.portal.data.TravelerInfo;
 import org.lsst.camera.portal.data.ReportData;
 import org.lsst.camera.portal.data.TestReportPathData;
 import org.lsst.camera.portal.data.ComponentData;
+import org.lsst.camera.portal.data.CatalogFileData;
 import org.srs.web.base.db.ConnectionManager;
 
 /**
@@ -1090,7 +1091,8 @@ public class QueryUtils {
             // List of Sensors
             List<ComponentData> compIds = getComponentList(session, hardwareTypeId);
             Iterator<ComponentData> compIt = compIds.iterator();
-            while (compIt.hasNext()) {
+            while (compIt.hasNext()) { // iterate over sensors
+                Boolean hasVendorData = false;
                 ComponentData comp = compIt.next();
                 String lsst_num = comp.getLsst_num();
                 Integer hdwId = comp.getHdwId();
@@ -1099,16 +1101,19 @@ public class QueryUtils {
                 
                 List<TravelerInfo> travelerList = getTravelerCol(session, hdwId, true);
 
+                // Find Vendor Data
                 List<Integer> vendActList = getOutputActivityFromTraveler(session,
                         travelerList, "SR-RCV-1", "vendorIngest", hdwId);
 
                 Iterator<Integer> vendAct = vendActList.iterator();
                 
+                // Find Offline Test Reports
                 List<Integer> offlineTestRepList = getOutputActivityFromTraveler(session,
                         travelerList, "SR-EOT-02", "test_report_offline", hdwId);
                 
                 TestReportPathData reportPaths = getTestReportPaths(session, offlineTestRepList, false);
 
+                if (vendAct.hasNext()) hasVendorData = true;
                 while (vendAct.hasNext()) {
                     Integer act = (vendAct.next());
                     String vendPath = "/LSST/vendorData/";
@@ -1120,6 +1125,15 @@ public class QueryUtils {
                     repData.setTestReportOfflineDirPath(reportPaths.getTestReportDirPath());
                     result.add(repData);
                 }
+                if ((hasVendorData == false) && (!reportPaths.getTestReportPath().equals("NA"))) {
+                    ReportData repData = new ReportData(lsst_num, registrationDate, "");
+                    repData.setOfflineReportCatKey(reportPaths.getCatalogKey());
+                    repData.setTestReportOfflinePath(reportPaths.getTestReportPath());
+                    repData.setTestReportOfflineDirPath(reportPaths.getTestReportDirPath());
+                    result.add(repData);
+                } else {
+                }
+                
             }
 
         } catch (Exception e) {
@@ -1150,14 +1164,14 @@ public class QueryUtils {
             fileStatement.setInt(1, mostRecentTestReport);
             ResultSet r = fileStatement.executeQuery();
             r.first();
-            if ((r != null) && (getAll == false)) {
+            if ((r != null) && (getAll == false)) { // retrieve most recent file
                 String vPath = r.getString("virtualPath");
                 java.util.Date creation = r.getTimestamp("creationTS");
                 Integer lastSlash = vPath.lastIndexOf('/');
                 String dirPath = vPath.substring(0, lastSlash);
                 Integer catKey = r.getInt("catalogKey");
                 result.setValues("", creation, mostRecentTestReport, catKey, vPath, dirPath);
-            } else if (r!=null) {
+            } else if (r!=null) {  // retrieve all
                 
             }
             
@@ -1173,4 +1187,40 @@ public class QueryUtils {
         return result;
     }
 
+     public static List getDataCatalogFiles(HttpSession session, String fileSearchStr) throws SQLException {
+        List<CatalogFileData> result = new ArrayList<>();
+        String lower_fileSearchStr = fileSearchStr.toLowerCase();
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            
+            PreparedStatement idStatement = c.prepareStatement("(SELECT activityId, virtualPath, createdBy, "
+                    + "catalogKey, creationTS "
+                    + "FROM FilepathResultHarnessed WHERE LOWER(virtualPath) LIKE concat('%', ?, '%')) "
+                    + "UNION "
+                    + "(SELECT activityId, virtualPath, createdBy, "
+                    + "catalogKey, creationTS "
+                    + "FROM FilepathResultManual WHERE LOWER(virtualPath) LIKE concat('%', ?, '%')) "
+                    + "ORDER BY activityId DESC");
+            idStatement.setString(1, lower_fileSearchStr);
+            idStatement.setString(2, lower_fileSearchStr);
+            ResultSet r = idStatement.executeQuery();
+            while (r.next()) {
+                CatalogFileData comp = new CatalogFileData(r.getInt("activityId"), r.getTimestamp("creationTS"), r.getString("virtualPath"), r.getInt("catalogKey"), r.getString("createdBy") );
+                result.add(comp);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+
+    }
+     
 }
