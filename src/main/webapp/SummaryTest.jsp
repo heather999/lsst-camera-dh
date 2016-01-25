@@ -63,11 +63,18 @@
             <c:set var="schema" value="${string[2]}"/>
             <c:set var="actHistStatus" value="${string[3]}"/>
             <p>You selected: <br/>activity Id ${actid}<br/> parentActivityId ${parentActivityId}<br/> schema ${schema} <br/> status ${actHistStatus}</p>
-            
-            <%-- query used to get the testnames --%>
-            <sql:query var="summaryTestname" dataSource="jdbc/config-prod">
-                select distinct testname, ntype from summary_md
+          
+            <%-- which jobs were used for this parentActivityId --%>
+            <sql:query var="processes" dataSource ="jdbc/rd-lsst-cam-dev-ro">
+                select act.id, act.parentActivityId, pr.name from Activity act join Process pr on
+                act.processId = pr.id where act.parentActivityId = ?
+                <sql:param value="${parentActivityId}"/>
             </sql:query>
+            
+            <%-- query used to get the testnames  
+            <sql:query var="summaryTestname" dataSource="jdbc/config-prod">
+                select distinct testname, ntype, specid from summary_md
+            </sql:query> --%>
             
             <%-- determine which datatable to read from on rd_lsst_cam MySQL database f=float, i-int and b=both  
             <c:out value="Datatable used in query:"/><br/>
@@ -87,34 +94,47 @@
                    <p></p>
             <table class="datatable" border="1">
                 <tbody>
-                    <tr><th>Status</th> 
+                    <tr><th>Name</th>
+                        <th>Status</th> 
                         <th>spec. ID</th>
                         <th>Description</th>
                         <th>Specification</th>
                         <th>Measurement</th>
                     </tr>
-                    <%-- loop over the testnames to get the name(s) then build a string of these names to pass to tag --%>
-                    <c:forEach var="sum" items="${summaryTestname.rows}" varStatus="loop">
-                         
-                        <sql:query var="namelistString" dataSource="jdbc/config-prod">
-                            select namelist from summary_md where testname = ?
-                            <sql:param value="${sum.testname}"/>
-                        </sql:query>
                     
+               <c:forEach var="pr" items="${processes.rows}">
+                    <c:if test="${fn:contains(pr,'_offline')}">
+                      <c:set var="prname" value="${fn:replace(pr.name,'_offline','')}"/>
+                    </c:if>
+                    
+                    <%-- find the testnames to get the name(s)  --%>
+                    <sql:query var="namelistString" dataSource="jdbc/config-prod">
+                        select namelist, ntype, specid from summary_md where testname like substr(?,1)
+                        <sql:param value="${prname}"/>
+                    </sql:query>
+                     
+                    <%-- build string of tasks associated with process name selected to pass to tag --%>
                         <c:set var="listOfnames" value=""/>
                         <c:forEach var="x" items="${namelistString.rows}" varStatus = "loop">
                             <c:if test="${loop.index == 0}">
                                 <c:set var="listOfnames" value="${x.namelist}"/>
+                                <c:if test="${!empty x.ntype}">
+                                    <c:set var="ntype" value="${x.ntype}"/>
+                                </c:if>
                             </c:if>
                             <c:if test="${loop.index > 0}">
                                 <c:set var="listOfnames" value="${listOfnames}, ${x.namelist}"/>
                             </c:if>
                         </c:forEach>
+                  
+                        <h4>getSummaryResults(session, ${prname}, ${parentActivityId}, ${ntype}, ${listOfnames})</h4>
+                        <%-- call tag with args  
+                        
+                        <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, prname, parentActivityId, ntype, fn:split(listOfnames, ','))}"/>  
+                         --%>
                          
-                         
-                        <%-- call tag with args --%>
-                        <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, sum.testName, parentActivityId, sum.ntype, fn:split(listOfnames, ','))}"/>  
-                        <c:forEach var="lons" items="${listOfnames}"> 
+                        <%--   <c:forEach var="lons" items="${listOfnames}"> 
+                            <c:set var="nameUsed" value="${lons}"/>
                             <sql:query var="specInfo" dataSource="jdbc/config-prod">
                                 select specid from summary_md where testname = ? and namelist = ?
                                 <sql:param value="${sum.testName}"/>
@@ -133,6 +153,7 @@
                             <c:forEach var="line" items="${SchemaNameFloat}">
                                 <c:set var="lval" value="${fn:split(line,',')}"/>
                                 <c:forEach var="subline" items="${lval}">
+                                    <c:out value="SUBLINE=${subline}"/><br/>
                                     <c:if test="${fn:contains(subline,'min')}">
                                         <c:set var="min" value="${fn:replace(subline,'min=','')}-"/>
                                     </c:if>
@@ -141,60 +162,31 @@
                                         <c:set var="max" value="${fn:replace(max,'}','')}"/>
                                     </c:if>
                                 </c:forEach>
-                            </c:forEach>
-                        </c:forEach>
+                            </c:forEach> --%>
+                      <%--  </c:forEach>  --%>
                         <tr>
                             <td>
-                            ${actHistStatus}
+                              ${nameUsed}
                             </td>
-                             <td>
-                             ${specID}
+                            <td>
+                              ${actHistStatus}
+                            </td>
+                            <td>
+                              ${specID}
                             </td>
                              <td>
                               ${description}
                             </td>
                              <td>
-                             ${specification}
+                              ${specification}
                             </td>
-                             <td>
+                            <td>
                               ${min}-${max}
                             </td>
                         </tr>
-                        <%--
-                        <c:forEach var="line" items="${SchemaNameFloat}">
-                            
-                            <sql:query var="lca128" dataSource="jdbc/config-prod">
-                               select specid,description,specification,scope from LCA128 where specid = ?
-                               <sql:param value="CCD-007"/>
-                            </sql:query> 
-                            
-                            <c:set var="specID" value="${lca128.rows[0].specid}"/>
-                            <c:set var="description" value="${lca128.rows[0].description}"/>
-                            <c:set var="specification" value="${lca128.rows[0].specification}"/>
-                            <c:set var="scope" value="${lca128.rows[0].scope}"/>
-                                                                                    
-                            <c:set var="lval" value="${fn:split(line,',')}"/>
-                            <tr>
-                                    <td>${actHistStatus}</td>  
-                                    <td>${specID}</td>  
-                                    <td>${description}</td> 
-                                    <td>${specification}</td> 
-                            <c:forEach var="subline" items="${lval}">
-                                <c:if test="${fn:contains(subline,'min')}">
-                                    <c:set var="min" value="<td>${subline}-"/>
-                                </c:if>
-                                 <c:if test="${fn:contains(subline,'max')}">
-                                    <c:set var="max" value="${subline}</td>"/>
-                                </c:if>
-                            </c:forEach>
-                            ${min}${max}
-                                        </tr>
-                        </c:forEach>
-                        --%>
-                         
+                       
                         
                     </c:forEach>
-                         
                      
                 </tbody>
             </table>
