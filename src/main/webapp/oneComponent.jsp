@@ -124,30 +124,6 @@
                     <%-- <c:forEach var="row" items="${hdwData.rows}" begin = "0" end="0" > --%>
                     <c:set var="hdwId" value="${curHdwData.id}" scope="page"/> 
 
-                    <%-- HMK Aug 7 2015 --%>
-                    <%-- <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId)}"/> --%>
-
-<%-- Provide link to test report --%>        
-<%--
-                    <c:set var="testReportActId" value="${portal:getTestReportActivityId(pageContext.session,hdwId)}"/>
-                    <c:if test="${testReportActId!=-1}">
-                        <sql:query var="testReportQuery" scope="page">
-                            SELECT creationTS, name, value, catalogKey, virtualPath FROM FilepathResultHarnessed 
-                            WHERE FilepathResultHarnessed.activityId=?<sql:param value="${testReportActId}"/>
-                        </sql:query>
-                        <c:if test="${testReportQuery.rowCount>0}">
-                        </c:if>
-                    </c:if>
---%>
-                    <%--
-                    <display:table name="${travelerList}" export="true" class="datatable" id="trav"> 
-                        <display:column title="Traveler" sortable="true" >${trav.name}</display:column>
-                        <display:column title="Status" sortable="true" >${trav.statusName}</display:column>
-                        <display:column title="Start Time" sortable="true" >${trav.beginTime}</display:column>
-                        <display:column title="End Time" sortable="true" >${trav.endTime}</display:column>
-                    </display:table>--%>
-                    <%-- </c:forEach> --%>
-
 
                     <div id=""theFold"/>
                          <table>
@@ -167,50 +143,10 @@
                             </tr>
                         </table>
 
-
-
-                        <%--</c:choose> --%>
-                        <%-- </c:forEach> --%> <%-- End Activity Loop --%>
                         <br>
-                        <%-- </c:forEach> --%>  <%-- End Traveler Loop --%>
 
-                        <%-- Note use of concat in the query, the AS statement was not working otherwise 
-http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
---%>
-                        
-                        <%--
-                       <sql:query var="activityQuery">
-                           SELECT A.id, H.lsstId, concat(P.name,'') as process, A.processId, A.inNCR, A.iteration,
-                           P.version AS version,A.begin,A.end,concat(AFS.name,'') as status
-                           FROM Hardware H, Process P, 
-                           Activity A INNER JOIN ActivityStatusHistory on ActivityStatusHistory.activityId=A.id and 
-                           ActivityStatusHistory.id=(select max(id) from ActivityStatusHistory where activityId=A.id)
-                           INNER JOIN ActivityFinalStatus AFS on AFS.id=ActivityStatusHistory.activityStatusId
-                           WHERE H.id=A.hardwareId AND H.lsstId="${selectedLsstId}" AND 
-                           (H.hardwareTypeId="${ccdHdwTypeId}" OR H.hardwareTypeId=${ccdHdwTypeITL} OR H.hardwareTypeId=${ccdHdwTypeE2V}) 
-                           AND P.id=A.processId
-                           ORDER BY A.id DESC
-                       </sql:query>
-                        --%>
-
-                        <%--  <h2>All Processes</h2> --%>
-
-                        <%-- <display:table name="${activityQuery.rows}" export="true" class="datatable"/> --%>
-                        <%--
-                                            <display:table name="${activityQuery.rows}" export="true" class="datatable" id="processes"> 
-                                                <display:column title="LsstId" sortable="true"> <c:out value="${processes.lsstId}"/> </display:column> 
-                                                <display:column title="Process" sortable="true"> <c:out value="${processes.Process}"/> </display:column> 
-                                                <display:column title="Version" sortable="true"> <c:out value="${processes.version}"/> </display:column> 
-                                                <display:column title="Status" sortable="true"> <c:out value="${processes.Status}"/> </display:column> 
-                                                <display:column title="Start Time" sortable="true"> <c:out value="${processes.begin}"/> </display:column>
-                                                <display:column title="End Time" sortable="true"> <c:out value="${processes.end}"/> </display:column>
-                                                <display:column title="inNCR" sortable="true"> <c:out value="${processes.inNCR}"/> </display:column>
-                                            </display:table>
-                                            
-                        --%>
 
                         </section>
-
 
 
                     </c:otherwise>

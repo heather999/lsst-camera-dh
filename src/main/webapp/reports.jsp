@@ -8,17 +8,20 @@
 <%@taglib prefix="display" uri="http://displaytag.sf.net" %>
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
 <%@taglib prefix="etraveler" tagdir="/WEB-INF/tags/eTrav"%>
+<%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
 <html>
     <head>
         <title>Data & Reports/></title>
     </head>
     <body> 
-<h1>CCD Sensor Data and Reports</h1>
 
-<%-- This code ends up searching on HdwTypes 1, 9, 10 --%>
-       <c:set var="ccdHdwTypeId" value="1" scope="page"/>  
-        
+    
+        <h1>CCD Sensor Data and Reports</h1>
+
+        <%-- This code ends up searching on HdwTypes 1, 9, 10 --%>
+        <c:set var="ccdHdwTypeId" value="1" scope="page"/>  
+
         <%-- Determine the data source: Prod, Dev, or Test --%>
         <c:choose>
             <c:when test="${'Prod' == appVariables.dataSourceMode}">
@@ -32,50 +35,57 @@
             </c:otherwise>
         </c:choose>
 
-                        
-                
-<c:set var="reportsTable" value="${portal:getReportsTable(pageContext.session,ccdHdwTypeId,dataSourceFolder)}"/>
 
-<display:table name="${reportsTable}" export="true" defaultsort="2" defaultorder="descending" class="datatable" id="rep" >
-    <display:column title="LSST_NUM" sortable="true">${rep.lsst_num}</display:column>
-    <%-- <c:url var="explorerLink" value="oneComponent.jsp">
-         <c:param name="lsstIdValue" value="${rep.lsst_num}"/>
-     </c:url>                
-     <a href="${explorerLink}"><c:out value="${rep.lsst_num}"/></a>
- </display:column>
-    --%>
-    <display:column title="Date Registered" sortable="true" >${rep.creationDate}</display:column>
-    <display:column title="Vendor Data" sortable="true" >
-        <c:url var="vendDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">
-            <c:param name="folderPath" value="${rep.vendDataPath}"/>
-            <c:param name="experiment" value="LSST-CAMERA"/>
-        </c:url>
-        <a href="${vendDataLink}" target="_blank"><c:out value="${rep.vendDataPath}"/></a> 
-    </display:column>
-    <display:column title="Most Recent Offline Test Report" sortable="true" >
-        <c:choose>
-            <c:when test="${rep.testReportOfflineDirPath == 'NA'}">
-                <c:out value="NA"/>
-            </c:when>
-            <c:otherwise>
-                <c:url var="offlineReportLink" value="http://srs.slac.stanford.edu/DataCatalog/">
-                    <c:param name="dataset" value="${rep.offlineReportCatKey}"/>
-                    <c:param name="experiment" value="LSST-CAMERA"/>
-                </c:url>
-                <a href="${offlineReportLink}" target="_blank"><c:out value="${rep.testReportOfflinePath}"/></a> 
-                <br>
-                <c:url var="offlineDirLink" value="http://srs.slac.stanford.edu/DataCatalog/">
-                    <c:param name="folderPath" value="${rep.testReportOfflineDirPath}"/>
-                    <c:param name="experiment" value="LSST-CAMERA"/>
-                </c:url>
-                <a href="${offlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
-            </c:otherwise>
-        </c:choose>
-    </display:column>
-    <display:setProperty name="export.excel.filename" value="sensorData.xls"/> 
-    <display:setProperty name="export.csv.filename" value="sensorData.csv"/> 
-    <display:setProperty name="export.xml.filename" value="sensorData.xml"/> 
-</display:table>
+
+        <c:set var="reportsTable" value="${portal:getReportsTable(pageContext.session,ccdHdwTypeId,dataSourceFolder)}"/>
+
+        <display:table name="${reportsTable}" export="true" defaultsort="2" defaultorder="descending" class="datatable" id="rep" >
+            <display:column title="LSST_NUM" sortable="true">${rep.lsst_num}</display:column>
+            <%-- <c:url var="explorerLink" value="oneComponent.jsp">
+                 <c:param name="lsstIdValue" value="${rep.lsst_num}"/>
+             </c:url>                
+             <a href="${explorerLink}"><c:out value="${rep.lsst_num}"/></a>
+         </display:column>
+            --%>
+            <display:column title="Date Registered" sortable="true" >${rep.creationDate}</display:column>
+            <display:column title="Vendor Data" sortable="true" >
+                <c:choose>
+                    <c:when test="${rep.vendDataPath == 'NA'}">
+                        <c:out value="NA"/>
+                    </c:when>
+                    <c:otherwise>
+                        <c:url var="vendDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                            <c:param name="folderPath" value="${rep.vendDataPath}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                        </c:url>
+                        <a href="${vendDataLink}" target="_blank"><c:out value="${rep.vendDataPath}"/></a> 
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+            <display:column title="Most Recent Offline Test Report" sortable="true" >
+                <c:choose>
+                    <c:when test="${rep.testReportOfflineDirPath == 'NA'}">
+                        <c:out value="NA"/>
+                    </c:when>
+                    <c:otherwise>
+                        <c:url var="offlineReportLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                            <c:param name="dataset" value="${rep.offlineReportCatKey}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                        </c:url>
+                        <a href="${offlineReportLink}" target="_blank"><c:out value="${rep.testReportOfflinePath}"/></a> 
+                        <br>
+                        <c:url var="offlineDirLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                            <c:param name="folderPath" value="${rep.testReportOfflineDirPath}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                        </c:url>
+                        <a href="${offlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+            <display:setProperty name="export.excel.filename" value="sensorData.xls"/> 
+            <display:setProperty name="export.csv.filename" value="sensorData.csv"/> 
+            <display:setProperty name="export.xml.filename" value="sensorData.xml"/> 
+        </display:table>
 
 
     </body>
