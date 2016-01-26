@@ -106,16 +106,20 @@
                     <c:if test="${fn:contains(pr,'_offline')}">
                       <c:set var="prname" value="${fn:replace(pr.name,'_offline','')}"/>
                     </c:if>
-                    
                     <%-- find the testnames to get the name(s)  --%>
                     <sql:query var="namelistString" dataSource="jdbc/config-prod">
-                        select namelist, ntype, specid from summary_md where testname like substr(?,1)
-                        <sql:param value="${prname}"/>
+                        select namelist, ntype, specid from summary_md where testname like ?
+                        <sql:param value="${prname}%"/>
                     </sql:query>
                      
                     <%-- build string of tasks associated with process name selected to pass to tag --%>
                         <c:set var="listOfnames" value=""/>
                         <c:forEach var="x" items="${namelistString.rows}" varStatus = "loop">
+                            <c:set var="specInfo" value="${x.specid}"/>
+                            <sql:query var="lcaInfo" dataSource="jdbc/config-prod">
+                                select description, specification, scope from lca128 where specid = ?
+                                <sql:param value="${specInfo}"/>
+                            </sql:query>
                             <c:if test="${loop.index == 0}">
                                 <c:set var="listOfnames" value="${x.namelist}"/>
                                 <c:if test="${!empty x.ntype}">
@@ -126,34 +130,14 @@
                                 <c:set var="listOfnames" value="${listOfnames}, ${x.namelist}"/>
                             </c:if>
                         </c:forEach>
-                  
-                        <h4>getSummaryResults(session, ${prname}, ${parentActivityId}, ${ntype}, ${listOfnames})</h4>
-                        <%-- call tag with args  
-                        
-                        <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, prname, parentActivityId, ntype, fn:split(listOfnames, ','))}"/>  
-                         --%>
-                         
-                        <%--   <c:forEach var="lons" items="${listOfnames}"> 
-                            <c:set var="nameUsed" value="${lons}"/>
-                            <sql:query var="specInfo" dataSource="jdbc/config-prod">
-                                select specid from summary_md where testname = ? and namelist = ?
-                                <sql:param value="${sum.testName}"/>
-                                <sql:param value="${lons}"/>
-                            </sql:query>
-                            <c:set var="specID" value="${specInfo.rows[0].specid}"/>
-                            
-                            <sql:query var="lca" dataSource="jdbc/config-prod">
-                                select description, specification, scope from lca128 where specid=?
-                                <sql:param value="${specID}"/>
-                            </sql:query>
-                            <c:set var="description" value="${lca.rows[0].description}"/>
-                            <c:set var="specification" value="${lca.rows[0].specification}"/>
-                            <c:set var="scope" value="${lca.rows[0].scope}"/>
-                            
+                        <%-- call tag with args   
+                           <h2>getSummaryResults( session, ${prname}, ${parentActivityId}, ${ntype}, ${listOfnames} ${fn:length(listOfnames)} )</h2>
+                        --%>
+                        <c:if test="${fn:length(listOfnames) > 0}">
+                            <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, prname, parentActivityId, ntype, fn:split(listOfnames, ','))}"/>  
                             <c:forEach var="line" items="${SchemaNameFloat}">
-                                <c:set var="lval" value="${fn:split(line,',')}"/>
-                                <c:forEach var="subline" items="${lval}">
-                                    <c:out value="SUBLINE=${subline}"/><br/>
+                                 <c:set var="lval" value="${fn:split(line,',')}"/>
+                                 <c:forEach var="subline" items="${lval}">
                                     <c:if test="${fn:contains(subline,'min')}">
                                         <c:set var="min" value="${fn:replace(subline,'min=','')}-"/>
                                     </c:if>
@@ -161,9 +145,10 @@
                                         <c:set var="max" value="${fn:replace(subline,'max=','')}"/>
                                         <c:set var="max" value="${fn:replace(max,'}','')}"/>
                                     </c:if>
-                                </c:forEach>
-                            </c:forEach> --%>
-                      <%--  </c:forEach>  --%>
+                                 </c:forEach>
+                            </c:forEach>
+                         
+                         
                         <tr>
                             <td>
                               ${nameUsed}
@@ -172,19 +157,19 @@
                               ${actHistStatus}
                             </td>
                             <td>
-                              ${specID}
+                              ${specInfo}
                             </td>
                              <td>
-                              ${description}
+                              ${lcaInfo.rows[0].description}
                             </td>
                              <td>
-                              ${specification}
+                              ${lcaInfo.rows[0].specification}
                             </td>
                             <td>
                               ${min}-${max}
                             </td>
                         </tr>
-                       
+                        </c:if>
                         
                     </c:forEach>
                      
