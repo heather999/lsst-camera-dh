@@ -70,36 +70,16 @@
                 act.processId = pr.id where act.parentActivityId = ?
                 <sql:param value="${parentActivityId}"/>
             </sql:query>
-            
-            <%-- query used to get the testnames  
-            <sql:query var="summaryTestname" dataSource="jdbc/config-prod">
-                select distinct testname, ntype, specid from summary_md
-            </sql:query> --%>
-            
-            <%-- determine which datatable to read from on rd_lsst_cam MySQL database f=float, i-int and b=both  
-            <c:out value="Datatable used in query:"/><br/>
-            <c:forEach var="tes" items="${summaryTestname.rows}">
-                <c:choose>
-                <c:when test="${tes.ntype == 'f'}">
-                    <c:out value="${tes.testname} from FloatResultHarnessed"/><br/>
-                </c:when>
-                <c:when test="${tes.ntype =='i'}">
-                    <c:out value="${tes.testname} from IntResultHarnessed"/><br/>
-                </c:when>
-                <c:when test="${tes.ntype == 'b'}">
-                   <c:out value="${tes.testname} from FloatResultHarnessed and IntResultHarnessed"/><br/>
-                </c:when>   
-                </c:choose>
-            </c:forEach> --%>
-                   <p></p>
+             
             <table class="datatable" border="1">
                 <tbody>
-                    <tr><th>Name</th>
-                        <th>Status</th> 
+                    <tr><th>SchemaName</th>
+                        <th>Name</th>
                         <th>spec. ID</th>
                         <th>Description</th>
                         <th>Specification</th>
                         <th>Measurement</th>
+                        <th>Datatable Queried</th>
                     </tr>
                     
                <c:forEach var="pr" items="${processes.rows}">
@@ -107,19 +87,17 @@
                       <c:set var="prname" value="${fn:replace(pr.name,'_offline','')}"/>
                     </c:if>
                     <%-- find the testnames to get the name(s)  --%>
-                    <sql:query var="namelistString" dataSource="jdbc/config-prod">
+                    <sql:query var="processlist" dataSource="jdbc/config-prod">
                         select namelist, ntype, specid from summary_md where testname like ?
                         <sql:param value="${prname}%"/>
                     </sql:query>
                      
-                    <%-- build string of tasks associated with process name selected to pass to tag --%>
+                    <%-- build string of names associated with schemaName selected to pass to tag --%>
                         <c:set var="listOfnames" value=""/>
-                        <c:forEach var="x" items="${namelistString.rows}" varStatus = "loop">
+                        <c:forEach var="x" items="${processlist.rows}" varStatus = "loop">
                             <c:set var="specInfo" value="${x.specid}"/>
-                            <sql:query var="lcaInfo" dataSource="jdbc/config-prod">
-                                select description, specification, scope from lca128 where specid = ?
-                                <sql:param value="${specInfo}"/>
-                            </sql:query>
+                            <c:out value="SpecID=${!empty specInfo ? specInfo : 'no specid' }"/><br/> 
+                           
                             <c:if test="${loop.index == 0}">
                                 <c:set var="listOfnames" value="${x.namelist}"/>
                                 <c:if test="${!empty x.ntype}">
@@ -130,47 +108,47 @@
                                 <c:set var="listOfnames" value="${listOfnames}, ${x.namelist}"/>
                             </c:if>
                         </c:forEach>
-                        <%-- call tag with args   
-                           <h2>getSummaryResults( session, ${prname}, ${parentActivityId}, ${ntype}, ${listOfnames} ${fn:length(listOfnames)} )</h2>
-                        --%>
+                       
                         <c:if test="${fn:length(listOfnames) > 0}">
-                            <c:set var="SchemaNameFloat" value="${portal:getSummaryResults(pageContext.session, prname, parentActivityId, ntype, fn:split(listOfnames, ','))}"/>  
-                            <c:forEach var="line" items="${SchemaNameFloat}">
-                                 <c:set var="lval" value="${fn:split(line,',')}"/>
-                                 <c:forEach var="subline" items="${lval}">
-                                    <c:if test="${fn:contains(subline,'min')}">
-                                        <c:set var="min" value="${fn:replace(subline,'min=','')}-"/>
-                                    </c:if>
-                                     <c:if test="${fn:contains(subline,'max')}">
-                                        <c:set var="max" value="${fn:replace(subline,'max=','')}"/>
-                                        <c:set var="max" value="${fn:replace(max,'}','')}"/>
-                                    </c:if>
-                                 </c:forEach>
-                            </c:forEach>
-                         
-                         
-                        <tr>
-                            <td>
-                              ${nameUsed}
-                            </td>
-                            <td>
-                              ${actHistStatus}
-                            </td>
-                            <td>
-                              ${specInfo}
-                            </td>
-                             <td>
-                              ${lcaInfo.rows[0].description}
-                            </td>
-                             <td>
-                              ${lcaInfo.rows[0].specification}
-                            </td>
-                            <td>
-                              ${min}-${max}
-                            </td>
-                        </tr>
+                            <c:choose>
+                                <c:when test="${ntype=='f' || ntype == 'b'}">
+                                     <sql:query var="lcaInfo" dataSource="jdbc/config-prod">
+                                       select description, specification, scope from lca128 where specid = ?
+                                     <sql:param value="${specInfo}"/>
+                                     </sql:query>
+                                      
+                                     <c:set var="dbtable" value="FloatResultHarnessed"/>
+                                     <%-- results returned as a list so loop over it to get the actual values --%>
+                                     <c:set var="resultsFloat" value="${portal:getSummaryResults(pageContext.session, prname, parentActivityId, dbtable, fn:split(listOfnames, ','))}"/>  
+                                     <c:forEach var="f" items="${resultsFloat}">
+                                        <tr>
+                                            <td>${prname}</td>
+                                            <td>${f.tmpname}</td>
+                                            <td>${!empty specInfo ? specInfo : 'unknown'}</td>
+                                            <td>${lcaInfo.rows[0].description}</td>
+                                            <td>${lcaInfo.rows[0].specification}</td>
+                                            <td>${f.min} - ${f.max}</td>
+                                            <td>${dbtable}</td>
+                                        </tr>
+                                    </c:forEach>
+                                </c:when>
+                                <c:when test="${ntype =='i' || ntype == 'b'}">
+                                    <c:set var="dbtable" value="IntResultHarnessed"/>
+                                    <c:set var="resultsInt" value="${portal:getSummaryResults(pageContext.session, prname, parentActivityId, dbtable, fn:split(listOfnames, ','))}"/>  
+                                    <c:forEach var="i" items="${resultsInt}">
+                                        <tr>
+                                            <td>${prname}</td>
+                                            <td>${i.tmpname}</td>
+                                            <td>${!empty specInfo ? specInfo : 'unknown'}</td>
+                                            <td>${lcaInfo.rows[0].description}</td>
+                                            <td>${lcaInfo.rows[0].specification}</td>
+                                            <td>${i.min} - ${i.max}</td>
+                                            <td>${dbtable}</td>
+                                        </tr>
+                                    </c:forEach>
+                                </c:when>
+                            </c:choose>
                         </c:if>
-                        
                     </c:forEach>
                      
                 </tbody>
