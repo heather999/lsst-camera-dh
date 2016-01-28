@@ -96,7 +96,7 @@
                         <c:set var="listOfnames" value=""/>
                         <c:forEach var="x" items="${processlist.rows}" varStatus = "loop">
                             <c:set var="specInfo" value="${x.specid}"/>
-                            <c:out value="SpecID=${!empty specInfo ? specInfo : 'no specid' }"/><br/> 
+                          <%--  <c:out value="SpecID=${!empty specInfo ? specInfo : 'no specid' }"/><br/> --%>
                            
                             <c:if test="${loop.index == 0}">
                                 <c:set var="listOfnames" value="${x.namelist}"/>
