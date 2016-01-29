@@ -118,8 +118,6 @@
                                      <sql:param value="${specInfo}"/>
                                      </sql:query>
                                    
-                                     <c:out value="SPECINFO= ${specInfo} for ${prname}. Descrip=${lcaInfo.rows[0].description} "/><br/>
-                                    
                                      <c:set var="dbtable" value="FloatResultHarnessed"/>
                                      <%-- results returned as a list so loop over it to get the actual values --%>
                                      <c:set var="resultsFloat" value="${portal:getSummaryResults(pageContext.session, prname, parentActivityId, dbtable, fn:split(listOfnames, ','))}"/>  
