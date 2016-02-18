@@ -24,11 +24,14 @@ public class ReportData {
     private String testReportOnlinePath;
     private String testReportOnlineDirPath;
     private List<TestReportPathData> offlineReportCol = new ArrayList<>();
+    private List<TestReportPathData> onlineReportCol = new ArrayList<>();
+    private Boolean pastOffline = false;
+    private Boolean pastOnline = false;
    
-    public ReportData(String num, Date c, String vData) {
+    public ReportData(String num, Date c) {
         this.lsst_num = num == null || "".equals(num) ? "NA" : num;
         this.creationDate = c;
-        this.vendDataPath = vData == null || "".equals(vData) ? "NA" : vData;
+        this.vendDataPath = "NA";
         this.testReportOfflinePath = "NA";
         this.testReportOfflineDirPath = "NA";
         this.testReportOnlinePath = "NA";
@@ -41,6 +44,10 @@ public class ReportData {
     
     public void setCreationDate(Date l) {
         creationDate = l; 
+    }
+    
+    public void setVendDataPath(String vData) {
+        vendDataPath = vData == null || "".equals(vData) ? "NA" : vData;
     }
     
     public void setOfflineReportCatKey(Integer catKey) {
@@ -73,8 +80,21 @@ public class ReportData {
         testReportOnlineDirPath = path == null || "".equals(path) ? "NA" : path;
     }
     
-    public void addTestReportPathData(TestReportPathData data) {
+    public void setOfflineReportCol(List<TestReportPathData> reportCol) {
+        offlineReportCol.addAll(reportCol);
+        if (offlineReportCol.size() > 0) pastOffline = true;
+    }
+    public void setOnlineReportCol(List<TestReportPathData> reportCol) {
+        onlineReportCol.addAll(reportCol);
+        if (onlineReportCol.size() > 0) pastOnline = true;
+    }
+    
+    public void addOfflineReportPathData(TestReportPathData data) {
         offlineReportCol.add(data);
+    }
+    
+    public void addOnlineReportPathData(TestReportPathData data) {
+        onlineReportCol.add(data);
     }
     
     public String getLsst_num() {
@@ -116,4 +136,16 @@ public class ReportData {
     public List getOfflineReportCol() {
         return offlineReportCol;
     }
-}
+    
+    
+    public List getOnlineReportCol() {
+        return onlineReportCol;
+    }
+    
+    public Boolean getPastOnline() { 
+        return pastOnline;
+    }
+    public Boolean getPastOffline() {
+        return pastOffline;
+    }
+} 

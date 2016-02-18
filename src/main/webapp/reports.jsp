@@ -16,7 +16,7 @@
     </head>
     <body> 
 
-    
+
         <h1>CCD Sensor Data and Reports</h1>
 
         <%-- This code ends up searching on HdwTypes 1, 9, 10 --%>
@@ -35,11 +35,11 @@
             </c:otherwise>
         </c:choose>
 
+        <c:set var="moreOnlineFiles" value=""/>
+        
+        <c:set var="h_reportsTable" value="${portal:getReportsTable(pageContext.session,ccdHdwTypeId,dataSourceFolder,false)}" scope="session"/>
 
-
-        <c:set var="reportsTable" value="${portal:getReportsTable(pageContext.session,ccdHdwTypeId,dataSourceFolder)}"/>
-
-        <display:table name="${reportsTable}" export="true" defaultsort="2" defaultorder="descending" class="datatable" id="rep" >
+        <display:table name="${h_reportsTable}" export="true" defaultsort="2" defaultorder="descending" class="datatable" id="rep" >
             <display:column title="LSST_NUM" sortable="true">${rep.lsst_num}</display:column>
             <%-- <c:url var="explorerLink" value="oneComponent.jsp">
                  <c:param name="lsstIdValue" value="${rep.lsst_num}"/>
@@ -79,6 +79,12 @@
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
                         <a href="${onlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
+                       
+                        <c:if test="${rep.pastOnline == true}">
+                            <br>
+                            <a href="pastReports.jsp?row=${rep_rowNum}&lsstnum=${rep.lsst_num}&on=1">View Previous Reports</a>
+                            
+                        </c:if>
                     </c:otherwise>
                 </c:choose>
             </display:column>
@@ -99,6 +105,12 @@
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
                         <a href="${offlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
+                        <c:if test="${rep.pastOffline == true}">
+                            <br>
+                           
+                            <a href="pastReports.jsp?row=${rep_rowNum}&lsstnum=${rep.lsst_num}&on=0">View Previous Reports</a>
+                            
+                        </c:if>
                     </c:otherwise>
                 </c:choose>
             </display:column>

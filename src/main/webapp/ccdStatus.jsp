@@ -51,6 +51,7 @@
 <srs_utils:refresh />
 <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId, lsst_num, manu)}"/>
 
+<%-- defaultsort index starts from 1 --%>
 <display:table name="${hdwStatLocTable}" export="true" defaultsort="9" defaultorder="descending" class="datatable" id="hdl" >
     <%-- <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column> --%>
     <display:column title="LSST_NUM" sortable="true">
