@@ -20,12 +20,22 @@ public class ReportData {
     private Integer offlineReportCatKey;
     private String testReportOfflinePath;
     private String testReportOfflineDirPath;
+    private Integer onlineReportCatKey;
+    private String testReportOnlinePath;
+    private String testReportOnlineDirPath;
     private List<TestReportPathData> offlineReportCol = new ArrayList<>();
+    private List<TestReportPathData> onlineReportCol = new ArrayList<>();
+    private Boolean pastOffline = false;
+    private Boolean pastOnline = false;
    
-    public ReportData(String num, Date c, String vData) {
+    public ReportData(String num, Date c) {
         this.lsst_num = num == null || "".equals(num) ? "NA" : num;
         this.creationDate = c;
-        this.vendDataPath = vData == null || "".equals(vData) ? "NA" : vData;
+        this.vendDataPath = "NA";
+        this.testReportOfflinePath = "NA";
+        this.testReportOfflineDirPath = "NA";
+        this.testReportOnlinePath = "NA";
+        this.testReportOnlineDirPath = "NA";
     }
    
     public void setLsst_num(String id) {
@@ -36,8 +46,16 @@ public class ReportData {
         creationDate = l; 
     }
     
+    public void setVendDataPath(String vData) {
+        vendDataPath = vData == null || "".equals(vData) ? "NA" : vData;
+    }
+    
     public void setOfflineReportCatKey(Integer catKey) {
         offlineReportCatKey = catKey;
+    }
+    
+    public void setOnlineReportCatKey(Integer catKey) {
+        onlineReportCatKey = catKey;
     }
     
     public void setValues(String id, Date c, String vDataPath) {
@@ -54,8 +72,29 @@ public class ReportData {
         testReportOfflineDirPath = path == null || "".equals(path) ? "NA" : path;
     }
     
-    public void addTestReportPathData(TestReportPathData data) {
+     public void setTestReportOnlinePath(String path) {
+        testReportOnlinePath = path == null || "".equals(path) ? "NA" : path;
+    }
+    
+    public void setTestReportOnlineDirPath(String path) {
+        testReportOnlineDirPath = path == null || "".equals(path) ? "NA" : path;
+    }
+    
+    public void setOfflineReportCol(List<TestReportPathData> reportCol) {
+        offlineReportCol.addAll(reportCol);
+        if (offlineReportCol.size() > 0) pastOffline = true;
+    }
+    public void setOnlineReportCol(List<TestReportPathData> reportCol) {
+        onlineReportCol.addAll(reportCol);
+        if (onlineReportCol.size() > 0) pastOnline = true;
+    }
+    
+    public void addOfflineReportPathData(TestReportPathData data) {
         offlineReportCol.add(data);
+    }
+    
+    public void addOnlineReportPathData(TestReportPathData data) {
+        onlineReportCol.add(data);
     }
     
     public String getLsst_num() {
@@ -82,7 +121,31 @@ public class ReportData {
         return testReportOfflineDirPath;
     }
     
+    public Integer getOnlineReportCatKey() {
+        return onlineReportCatKey;
+    }
+    
+       public String getTestReportOnlinePath(){
+        return testReportOnlinePath;
+    }
+    
+    public String getTestReportOnlineDirPath() {
+        return testReportOnlineDirPath;
+    }
+    
     public List getOfflineReportCol() {
         return offlineReportCol;
     }
-}
+    
+    
+    public List getOnlineReportCol() {
+        return onlineReportCol;
+    }
+    
+    public Boolean getPastOnline() { 
+        return pastOnline;
+    }
+    public Boolean getPastOffline() {
+        return pastOffline;
+    }
+} 

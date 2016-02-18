@@ -888,7 +888,7 @@ public class QueryUtils {
                     + "AND ASH.id=(select max(id) FROM ActivityStatusHistory WHERE activityId=Activity.id) " 
                     + "INNER JOIN ActivityFinalStatus AFS ON AFS.id=ASH.activityStatusId " 
                     + "WHERE Activity.Id IN " + str + " AND Process.name LIKE ? "
-                    + "AND ASH.activityStatusId = 1");
+                    + "AND ASH.activityStatusId = 1 ORDER BY Activity.id DESC");
             vendorIngestStatement.setString(1, actName);
                    
             vendorIngestResult = vendorIngestStatement.executeQuery();
@@ -1056,42 +1056,61 @@ public class QueryUtils {
         return result;
     }
 
-    
-      public static String getActString(HttpSession session, Integer travelerActId, Integer hardwareId) throws SQLException {
+  
+    public static String intListToString(List<Integer> intList) {
         String result = "";
-
-        Connection c = null;
-        try {
-            c = ConnectionManager.getConnection(session);
-            List<Integer> actList = getActivitiesForTraveler(session, travelerActId, hardwareId);
-            Iterator<Integer> iterator = actList.iterator();
+        Iterator<Integer> iterator = intList.iterator();
             int counter=0;
             while (iterator.hasNext()) {
-                result += (iterator.next());
                 if (counter==0)
                     result+="(";
+                result += (iterator.next());
                 ++counter;
                
-                if (counter == actList.size()) {
+                if (counter == intList.size()) {
                     result += ")";
                 } else {
                     result += ", ";
                 }
             }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (c != null) {
-                //Close the connection
-                c.close();
-            }
-        }
-
-        return result;
+            return result;
     }
+    
+      //public static String getActString(HttpSession session, Integer travelerActId, Integer hardwareId) throws SQLException {
+      //  String result = "";
 
-    public static List getReportsTable(HttpSession session, Integer hardwareTypeId, String dataSourceFolder) throws SQLException {
+       // Connection c = null;
+       // try {
+       //     c = ConnectionManager.getConnection(session);
+       //     List<Integer> actList = getActivitiesForTraveler(session, travelerActId, hardwareId);
+       //     Iterator<Integer> iterator = actList.iterator();
+       //     int counter=0;
+       //     while (iterator.hasNext()) {
+       //         result += (iterator.next());
+       //         if (counter==0)
+       //             result+="(";
+       //         ++counter;
+       //        
+       //         if (counter == actList.size()) {
+       //             result += ")";
+       //         } else {
+       //             result += ", ";
+       //         }
+       //     }
+
+       // } catch (Exception e) {
+       //     e.printStackTrace();
+       // } finally {
+        //    if (c != null) {
+        //        //Close the connection
+        //        c.close();
+        //    }
+   //     }
+
+   //     return result;
+   // }
+
+    public static List getReportsTable(HttpSession session, Integer hardwareTypeId, String dataSourceFolder, Boolean removeDups) throws SQLException {
         List<ReportData> result = new ArrayList<>();
 
         Connection c = null;
@@ -1111,13 +1130,16 @@ public class QueryUtils {
             Iterator<ComponentData> compIt = compIds.iterator();
             while (compIt.hasNext()) { // iterate over sensors
                 Boolean hasVendorData = false;
+                Boolean hasOfflineData = false;
+                Boolean hasOnlineData = false;
+                
                 ComponentData comp = compIt.next();
                 String lsst_num = comp.getLsst_num();
                 Integer hdwId = comp.getHdwId();
                 java.util.Date registrationDate = comp.getRegistrationDate();
                 if (registrationDate.compareTo(goodVendorDataPathDate) < 0) continue;
                 
-                List<TravelerInfo> travelerList = getTravelerCol(session, hdwId, true);
+                List<TravelerInfo> travelerList = getTravelerCol(session, hdwId, removeDups);
 
                 // Find Vendor Data
                 List<Integer> vendActList = getOutputActivityFromTraveler(session,
@@ -1129,28 +1151,47 @@ public class QueryUtils {
                 List<Integer> offlineTestRepList = getOutputActivityFromTraveler(session,
                         travelerList, "SR-EOT-02", "test_report_offline", hdwId);
                 
-                TestReportPathData reportPaths = getTestReportPaths(session, offlineTestRepList, false);
+                List<TestReportPathData> reportPaths = getTestReportPaths(session, offlineTestRepList, true);
+                
+                // Find Online Test Reports
+                List<Integer> onlineTestRepList = getOutputActivityFromTraveler(session,
+                        travelerList, "SR-EOT-1", "test_report", hdwId);
+                List<TestReportPathData> onlineReportPaths = getTestReportPaths(session, onlineTestRepList, true);
 
                 if (vendAct.hasNext()) hasVendorData = true;
-                while (vendAct.hasNext()) {
+                Iterator<TestReportPathData> offlineReportIter = reportPaths.iterator();
+                Iterator<TestReportPathData> onlineReportIter = onlineReportPaths.iterator();
+                if (reportPaths.size() > 0) hasOfflineData = true;
+                if (onlineReportPaths.size() > 0) hasOnlineData = true;
+                
+                ReportData repData = null;
+                if (hasVendorData || hasOfflineData || hasOnlineData) 
+                    repData = new ReportData(lsst_num, registrationDate);
+                
+                if (hasVendorData) { // first in the list should be most recent
                     Integer act = (vendAct.next());
                     String vendPath = "/LSST/vendorData/";
                     vendPath += comp.getManufacturer() + "/" + lsst_num + "/" + dataSourceFolder + "/" + act;
-                    
-                    ReportData repData = new ReportData(lsst_num, registrationDate, vendPath);
-                    repData.setOfflineReportCatKey(reportPaths.getCatalogKey());
-                    repData.setTestReportOfflinePath(reportPaths.getTestReportPath());
-                    repData.setTestReportOfflineDirPath(reportPaths.getTestReportDirPath());
-                    result.add(repData);
+                    repData.setVendDataPath(vendPath);
                 }
-                if ((hasVendorData == false) && (!reportPaths.getTestReportPath().equals("NA"))) {
-                    ReportData repData = new ReportData(lsst_num, registrationDate, "");
-                    repData.setOfflineReportCatKey(reportPaths.getCatalogKey());
-                    repData.setTestReportOfflinePath(reportPaths.getTestReportPath());
-                    repData.setTestReportOfflineDirPath(reportPaths.getTestReportDirPath());
-                    result.add(repData);
-                } else {
+                if (hasOfflineData) {
+                    TestReportPathData offlineData = offlineReportIter.next();
+                    repData.setOfflineReportCatKey((offlineData.getCatalogKey()));
+                    repData.setTestReportOfflinePath(offlineData.getTestReportPath());
+                    repData.setTestReportOfflineDirPath(offlineData.getTestReportDirPath());
+                    if (offlineReportIter.hasNext())
+                       repData.setOfflineReportCol(reportPaths);
                 }
+                if (hasOnlineData) {
+                    TestReportPathData onlineData = onlineReportIter.next();
+                    repData.setOnlineReportCatKey(onlineData.getCatalogKey());
+                    repData.setTestReportOnlinePath(onlineData.getTestReportPath());
+                    repData.setTestReportOnlineDirPath(onlineData.getTestReportDirPath());
+                    if (onlineReportIter.hasNext())
+                       repData.setOnlineReportCol(onlineReportPaths);
+                } 
+                
+                if (repData != null) result.add(repData);
                 
             }
 
@@ -1166,33 +1207,48 @@ public class QueryUtils {
         return result;
     }
     
-     public static TestReportPathData getTestReportPaths(HttpSession session, List<Integer> actIdList, Boolean getAll) throws SQLException {
-        TestReportPathData result = new TestReportPathData();
+     public static List getTestReportPaths(HttpSession session, List<Integer> actIdList, Boolean getAll) throws SQLException {
+        List<TestReportPathData> result = new ArrayList<>();
+        //TestReportPathData result = new TestReportPathData();
 
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
+            ResultSet r = null;
             Integer mostRecentTestReport = Collections.max(actIdList, null);
-            // Pull out the most recent PDF associated with this activity ID
-            PreparedStatement fileStatement = c.prepareStatement("SELECT virtualPath, "
-                    + "catalogKey, creationTS FROM "
-                    + "FilepathResultHarnessed "
-                    + "WHERE activityId=? AND virtualPath LIKE concat('%', 'pdf', '%') "
-                    + "ORDER BY creationTS DESC");
-            fileStatement.setInt(1, mostRecentTestReport);
-            ResultSet r = fileStatement.executeQuery();
-            r.first();
-            if ((r != null) && (getAll == false)) { // retrieve most recent file
+            if (getAll == false) { // retrieve only the most recent
+                // Pull out the most recent PDF associated with this activity ID
+                PreparedStatement fileStatement = c.prepareStatement("SELECT virtualPath, "
+                        + "catalogKey, creationTS FROM "
+                        + "FilepathResultHarnessed "
+                        + "WHERE activityId=? AND virtualPath LIKE concat('%', 'pdf', '%') "
+                        + "ORDER BY creationTS DESC");
+                fileStatement.setInt(1, mostRecentTestReport);
+                r = fileStatement.executeQuery();
+            } else { // getAll == true
+                String actString = intListToString(actIdList);
+                PreparedStatement fileStatement = c.prepareStatement("SELECT virtualPath, "
+                        + "catalogKey, creationTS FROM "
+                        + "FilepathResultHarnessed "
+                        + "WHERE activityId IN " + actString + " AND virtualPath LIKE concat('%', 'pdf', '%') "
+                        + "ORDER BY creationTS DESC");
+                r = fileStatement.executeQuery();
+            }
+            Boolean DONE = false;
+            while (r.next() && !DONE) {
+                TestReportPathData reportData = new TestReportPathData();
                 String vPath = r.getString("virtualPath");
                 java.util.Date creation = r.getTimestamp("creationTS");
                 Integer lastSlash = vPath.lastIndexOf('/');
                 String dirPath = vPath.substring(0, lastSlash);
                 Integer catKey = r.getInt("catalogKey");
-                result.setValues("", creation, mostRecentTestReport, catKey, vPath, dirPath);
-            } else if (r!=null) {  // retrieve all
-                
+                reportData.setValues("", creation, mostRecentTestReport, catKey, vPath, dirPath);
+                result.add(reportData);
+                if (getAll == false) {
+                    DONE = true;
+                }
             }
-            
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -1205,21 +1261,33 @@ public class QueryUtils {
         return result;
     }
 
-     public static List getDataCatalogFiles(HttpSession session, String fileSearchStr) throws SQLException {
+     public static List getDataCatalogFiles(HttpSession session, String fileSearchStr, String doRegex) throws SQLException {
         List<CatalogFileData> result = new ArrayList<>();
         String lower_fileSearchStr = fileSearchStr.toLowerCase();
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
             
-            PreparedStatement idStatement = c.prepareStatement("(SELECT activityId, virtualPath, createdBy, "
-                    + "catalogKey, creationTS "
-                    + "FROM FilepathResultHarnessed WHERE LOWER(virtualPath) LIKE concat('%', ?, '%')) "
-                    + "UNION "
-                    + "(SELECT activityId, virtualPath, createdBy, "
-                    + "catalogKey, creationTS "
-                    + "FROM FilepathResultManual WHERE LOWER(virtualPath) LIKE concat('%', ?, '%')) "
-                    + "ORDER BY activityId DESC");
+            PreparedStatement idStatement;
+            if ((doRegex.equals("false")) || (doRegex == null)) {
+                idStatement = c.prepareStatement("(SELECT activityId, virtualPath, createdBy, "
+                        + "catalogKey, creationTS "
+                        + "FROM FilepathResultHarnessed WHERE LOWER(virtualPath) LIKE concat('%', ?, '%')) "
+                        + "UNION "
+                        + "(SELECT activityId, virtualPath, createdBy, "
+                        + "catalogKey, creationTS "
+                        + "FROM FilepathResultManual WHERE LOWER(virtualPath) LIKE concat('%', ?, '%')) "
+                        + "ORDER BY activityId DESC");
+            } else {
+                idStatement = c.prepareStatement("(SELECT activityId, virtualPath, createdBy, "
+                        + "catalogKey, creationTS "
+                        + "FROM FilepathResultHarnessed WHERE LOWER(virtualPath) REGEXP ?) "
+                        + "UNION "
+                        + "(SELECT activityId, virtualPath, createdBy, "
+                        + "catalogKey, creationTS "
+                        + "FROM FilepathResultManual WHERE LOWER(virtualPath) REGEXP ?) "
+                        + "ORDER BY activityId DESC");
+            }
             idStatement.setString(1, lower_fileSearchStr);
             idStatement.setString(2, lower_fileSearchStr);
             ResultSet r = idStatement.executeQuery();
