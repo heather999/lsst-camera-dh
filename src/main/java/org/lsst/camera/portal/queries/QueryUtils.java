@@ -62,92 +62,6 @@ public class QueryUtils {
         }
         return result;
     }
-    // This class can eventually be split out into its own file
-    public static class SummaryResult {
-        public Integer schemaInstance;
-        public String min;
-        public String max;
-
-        public SummaryResult(Integer schemaInstance, String min, String max) {
-            this.schemaInstance = schemaInstance;
-            this.min = min;
-            this.max = max;
-        }
-
-        public Integer getSchemaInstance() {
-            return schemaInstance;
-        }
-
-        public String getMin() {
-            return min;
-        }
-
-        public String getMax() {
-            return max;
-        }
-//      For debugging output the values instead of the default memory address. 
-        @Override
-        public String toString() {
-              return "SummaryResult {" + schemaInstance + ", min=" + min + ", max=" + max + "}";
-//            return "SummaryResult{" + "schemaInstance=" + schemaInstance + ", min=" + min + ", max=" + max + '}';
-        }
-
-    }
-    
-    public static List<SummaryResult> getSummaryResults(HttpSession session, String schemaName, String parentActivityId, String ntype, String... names) throws SQLException, ServletException{
-        List<SummaryResult> results = new ArrayList<>();
-        System.out.println("...Entering getSummaryResults with params schemaName=" + schemaName + " parentId=" + parentActivityId + " ntype " + ntype + " names " + names);  
-        String sql="";
-////        In MySQL group by and order by don't do what is expected so try query without these.        
-////        String sql = 
-////        "select res.schemaInstance, min(res.value) min, max(res.value) max from FloatResultHarnessed res join Activity act on res.activityId=act.id "
-////        + "    where res.schemaName=? and res.name = ? and act.parentActivityId = ? "
-////        + "    group by res.schemaInstance order by res.value asc";
-        
-        if (ntype.equals("f")){
-            sql = 
-            "select res.schemaInstance, min(res.value) min, max(res.value) max from FloatResultHarnessed res join Activity act on res.activityId=act.id "
-          + "where res.schemaName=? and res.name = ? and act.parentActivityId = ? ";
-        }
-        if (ntype.equals("i")){
-            sql = 
-            "select res.schemaInstance, min(res.value) min, max(res.value) max from IntResultHarnessed res join Activity act on res.activityId=act.id "
-          + "where res.schemaName=? and res.name = ? and act.parentActivityId = ? ";
-        }
-        
-//        String sql = 
-//        "select res.schemaInstance, min(res.value) min, max(res.value) max from FloatResultHarnessed res join Activity act on res.activityId=act.id "
-//        + "    where res.schemaName=? and res.name = ? and act.parentActivityId = ? "
-//        + "    group by res.schemaInstance order by res.value asc";
-        System.out.println(sql);
-         
-//        for (int i=0; i <= names.length-1; i++){
-//            System.out.println("Names[" + i + "] = " + names[i]);
-//        }
-        
-        try (Connection conn = ConnectionManager.getConnection(session)){
-            try ( PreparedStatement stmt = conn.prepareStatement(sql) ) {
-                for(String name : names){
-                    stmt.setString(1, schemaName);
-                    stmt.setString(2, name);
-                    stmt.setString(3, parentActivityId);
-                    ResultSet rs = stmt.executeQuery();
-                    System.out.println("ResultSet Rowcount: " + rs.toString().length() + " , " + name);
-                    if(!rs.next()){
-                        continue;
-                    }
-                    int schemaInstance = rs.getInt("schemaInstance");
-                    String min = rs.getString("min");
-                    String max = rs.getString("max");
-                    results.add(new SummaryResult( schemaInstance, min, max));
-                }
-                System.out.println(results);
-                System.out.println("...Leaving getSummaryResults \n");  
-
-                return results;
-            }
-        } 
-    }
     
     public static String getCCDHardwareTypes(HttpSession session) throws SQLException {
         List<Integer> typeList = new ArrayList<>();
@@ -1240,5 +1154,5 @@ public class QueryUtils {
         return result;
 
     }
-     
+   
 }
