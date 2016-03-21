@@ -181,6 +181,30 @@
         </function-signature>
     </function>
     <function>
+        <name>getSummaryMaxFromList</name>
+        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
+        <function-signature>java.util.List getSummaryMaxFromList(java.util.List)
+        </function-signature>
+    </function>
+     <function>
+        <name>getSummaryMinFromList</name>
+        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
+        <function-signature>java.util.List getSummaryMinFromList(java.util.List)
+        </function-signature>
+    </function>
+    <function>
+        <name>getSummaryAverage</name>
+        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
+        <function-signature>java.util.List getSummaryAverage(java.util.List)
+        </function-signature>
+    </function>
+    <function>
+        <name>getSensorValues</name>
+        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
+        <function-signature>java.util.Map getSensorValues(javax.servlet.http.HttpSession,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
         <name>getDatasets</name>
         <function-class>org.lsst.camera.portal.data.datacat.DatacatQuery</function-class>
         <function-signature>java.util.List getDatasets(javax.servlet.http.HttpServletRequest)</function-signature>
