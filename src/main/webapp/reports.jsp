@@ -48,7 +48,8 @@
          </display:column>
             --%>
             <display:column title="Date Registered" sortable="true" >${rep.creationDate}</display:column>
-            <display:column title="Vendor Data" sortable="true" >
+            <display:column title="Vendor Data" media="csv excel xml">${rep.vendDataPath} </display:column>
+            <display:column title="Vendor Data" sortable="true" media="html">
                 <c:choose>
                     <c:when test="${rep.vendDataPath == 'NA'}">
                         <c:out value="NA"/>
@@ -62,7 +63,8 @@
                     </c:otherwise>
                 </c:choose>
             </display:column>
-            <display:column title="Most Recent SR-EOT-1 Test Report" sortable="true" >
+            <display:column title="Most Recent SR-EOT-1 Test Report" media="csv excel xml">${rep.testReportOnlinePath} </display:column>
+            <display:column title="Most Recent SR-EOT-1 Test Report" sortable="true" media="html">
                 <c:choose>
                     <c:when test="${rep.testReportOnlineDirPath == 'NA'}">
                         <c:out value="NA"/>
@@ -78,17 +80,18 @@
                             <c:param name="folderPath" value="${rep.testReportOnlineDirPath}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
-                        <a href="${onlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
+                        <a href="${onlineDirLink}" target="_blank"><c:out value="All Current Report Data"/></a>
                        
                         <c:if test="${rep.pastOnline == true}">
                             <br>
-                            <a href="pastReports.jsp?row=${rep_rowNum}&lsstnum=${rep.lsst_num}&on=1">View Previous Reports</a>
+                            <a href="pastReports.jsp?row=${rep_rowNum}&lsstnum=${rep.lsst_num}&on=1">View All Reports</a>
                             
                         </c:if>
                     </c:otherwise>
                 </c:choose>
             </display:column>
-            <display:column title="Most Recent SR-EOT-02 Test Report" sortable="true" >
+            <display:column title="Most Recent SR-EOT-02 Test Report" media="csv excel xml">${rep.testReportOfflinePath} </display:column>                           
+            <display:column title="Most Recent SR-EOT-02 Test Report" sortable="true" media="html" >
                 <c:choose>
                     <c:when test="${rep.testReportOfflineDirPath == 'NA'}">
                         <c:out value="NA"/>
