@@ -122,11 +122,17 @@
         <function-signature>org.lsst.camera.portal.data TestReportData getTestReportPaths(javax.servlet.http.HttpSession,java.util.List,java.lang.Boolean)
         </function-signature>
     </function>
+    
     <function>
         <name>getDataCatalogFiles</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.util.List getDataCatalogFiles(javax.servlet.http.HttpSession,java.lang.String,java.lang.String)
         </function-signature>
+    </function>
+    <function>
+        <name>jexlEvaluateData</name>
+        <function-class>org.lsst.camera.portal.queries.JexlUtils</function-class>
+        <function-signature>java.util.Map jexlEvaluateData(java.util.Map, java.lang.String)</function-signature>
     </function>
     <function>
         <name>getSummaryResults</name>
