@@ -98,13 +98,13 @@
                 <display:table name="${theMap.entrySet()}" id="dataTable"/>
 
                 <sql:query var="summary" dataSource="jdbc/config-prod">
-                    select description, spec_display, jexl_status, jexl_measurement from report_specs
+                    select specid, description, spec_display, jexl_status, jexl_measurement from report_specs
                 </sql:query>
-                
-                    <display:table name="${summary.rows}" id="row">
+
+                <display:table name="${summary.rows}" id="row" defaultsort="1">
+                    <display:column property="SpecId"/>
                     <display:column property="Description"/>
                     <display:column property="Spec_Display" title="Spec"/>
-                    <display:column property="jexl_measurement" title="JEXL"/>
                     <display:column title="Value">
                         ${portal:jexlEvaluateData(theMap, row.jexl_measurement)}
                     </display:column>
