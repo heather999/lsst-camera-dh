@@ -4,7 +4,7 @@
     Author     : bvan
 --%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
+ <%@taglib prefix="portal" uri="http://camera.lsst.org/portal"  %>
 
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <!DOCTYPE html>

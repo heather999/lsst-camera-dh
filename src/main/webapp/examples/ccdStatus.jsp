@@ -6,7 +6,8 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="display" uri="http://displaytag.sf.net" %>
-<%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
+<%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
+
 
 
 <head>
