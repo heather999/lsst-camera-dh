@@ -1,15 +1,11 @@
 package org.lsst.camera.portal.queries;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.util.List;
 import java.util.Map;
-import javax.servlet.http.HttpSession;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.jexl3.JexlBuilder;
-import org.srs.web.base.db.ConnectionManager;
 
 /**
  *
@@ -17,13 +13,13 @@ import org.srs.web.base.db.ConnectionManager;
  */
 public class JexlUtils {
 
-    private final Map<String, double[]> data;
+    private final Map<String, List> data;
 
-    public JexlUtils(Map<String, double[]> data) { // constructor
+    public JexlUtils(Map<String, List> data) { // constructor
         this.data = data;
     }
 
-    public static Object jexlEvaluateData(Map<String, double[]> data, String measurement) {
+    public static Object jexlEvaluateData(Map<String, List> data, String measurement) {
         System.out.println("Args " +  data +", "+ measurement);
         JexlUtils jexlUtils = new JexlUtils(data);
         JexlEngine jexl = new JexlBuilder().create();
@@ -34,34 +30,36 @@ public class JexlUtils {
         return func.evaluate(mc);
     }
 
-    public double[] fetch(String SpecId) {
-        return data.get(SpecId);
+    public List fetch(String SpecId) {
+        List result =  data.get(SpecId);
+        if (result == null) throw new RuntimeException("Unable to fetch "+SpecId);
+        return result;
     }
 
-    public double min(double[] args) {
+    public double min(List<Number> args) {
         double min = Double.NaN;
-        for (double a : args) {
-            if (!(a > min)) {
-                min = a; // if NaN (not-a-number or not a mathematical result) is false then it's a number and greater than min, so reset min to a 
+        for (Number a : args) {
+            if (!(a.doubleValue() > min)) {
+                min = a.doubleValue(); // if NaN (not-a-number or not a mathematical result) is false then it's a number and greater than min, so reset min to a 
             }
         }
         return min;
     }
 
-    public double max(double[] args) {
+    public double max(List<Number> args) {
         double max = Double.NaN;
-        for (double a : args) {
-            if (!(a < max)) {
-                max = a;
+        for (Number a : args) {
+            if (!(a.doubleValue() < max)) {
+                max = a.doubleValue();
             }
         }
         return max;
     }
     
-    public double sum(double[] args) {
+    public double sum(List<Number> args) {
         double sum = 0;
-        for (double a : args) {
-             sum = sum + a;
+        for (Number a : args) {
+             sum = sum + a.doubleValue();
         }
         return sum;
     }
