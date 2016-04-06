@@ -69,14 +69,20 @@
                 <%--  <display:table name="${theMap.entrySet()}" id="dataTable"/> --%>
                 <display:table name="${summary.rows}" id="row" defaultsort="2" class="datatable" export="true">
                     <display:column title="Status">
-                        <c:set var="status" value="${portal:jexlEvaluateData(theMap, row.jexl_status)}"/>
-                        ${empty status ? "..." : status ? "&#x2714;" : "&#x2718;"}
+                        <c:catch var="x">
+                            <c:set var="status" value="${portal:jexlEvaluateData(theMap, row.jexl_status)}"/>
+                            ${empty status ? "..." : status ? "&#x2714;" : "&#x2718;"}
+                        </c:catch>
+                        <c:if test="${!empty x}">???</c:if>
                     </display:column>
                     <display:column property="SpecId" title="Spec. ID"/>
                     <display:column property="Description"/>
                     <display:column property="Spec_Display" title="Specification"/>
                     <display:column title="Value">
-                        ${portal:jexlEvaluateData(theMap, row.jexl_measurement)}  
+                        <c:catch var="x">
+                            ${portal:jexlEvaluateData(theMap, row.jexl_measurement)} 
+                        </c:catch>
+                        <c:if test="${!empty x}">???</c:if>
                     </display:column>
                 </display:table>
 
