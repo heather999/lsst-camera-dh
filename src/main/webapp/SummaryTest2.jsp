@@ -15,19 +15,83 @@
     </head>
     <body>
         <h1>Summary Of Tests 2 (page under construction)</h1>
-
-        <%-- get a list of all the sensors to display to user --%> 
+        
+        <%-- get a list of all the parentActivityIds --%> 
         <sql:query var="sensor" dataSource="jdbc/rd-lsst-cam-dev-ro">
             select hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name from Activity act join Hardware hw on act.hardwareId=hw.id 
             join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
-            where  statusHist.activityStatusId=1  and pr.name='test_report_offline' order by hw.lsstId desc   
+            where statusHist.activityStatusId=1 and pr.name='test_report_offline' order by act.parentActivityId desc   
         </sql:query> 
 
         <p><c:out value="sensor count ${sensor.rowCount}"/></p>
+        
+        <%-- get a list of all the queries --%> 
+        <sql:query var="reportqry" dataSource="jdbc/config-prod">
+            select rkey, query from report_queries
+        </sql:query>
+            
+        <%-- get a list of all the specs --%> 
+        <sql:query var="summary" dataSource="jdbc/config-prod">
+            select specid, description, spec_display, jexl_status, jexl_measurement from report_specs
+        </sql:query>
+            
+        <c:choose>
+        <c:when test="${empty param}">
+            <display:table name = "${sensor.rows}" id="row" class="dataTable">
+                 
+                <display:column property="parentActivityId" title="ParentActivityId" href="SummaryTest2.jsp" paramId="parentActivityId"/>
+                <display:column property="lsstId" title="lsstId"/>
+            </display:table>
+        </c:when>     
+        <c:when test="${! empty param}">
+            <c:out value="${param.parentActivityId}"/>
+            <c:out value="${param.lsstId}"/>
+            <c:set var="parentActivityId" value="${param.parentActivityId}"/>
+            <c:set var="lsstId" value="${param.lsstId}"/>
+             
+               <jsp:useBean id="theMap" class="java.util.HashMap" scope="page"/> 
+               <c:forEach var="row" items="${reportqry.rows}">
+                     <c:set var="key" value="${row.rkey}"/>
+                     <sql:query var="results" dataSource="jdbc/rd-lsst-cam-dev-ro">
+                         ${row.query}
+                     <sql:param value="${parentActivityId}"/>
+                     </sql:query> 
 
+                     <% java.util.ArrayList theList = new java.util.ArrayList(); %>
+                     <c:forEach var="res" items="${results.rows}">
+                         <c:set var="value" value="${res.value}"/>
+                         <% theList.add(pageContext.getAttribute("value")); %>
+                     </c:forEach>
+                     <% ((java.util.Map) pageContext.getAttribute("theMap")).put(pageContext.getAttribute("key"), theList);%> 
+               </c:forEach> 
+
+               <h1>Electro-Optical Test Results for Sensor ${lsstId}</h1>
+              <%--  <display:table name="${theMap.entrySet()}" id="dataTable"/> --%>
+                <c:catch var="x">
+                    <display:table name="${summary.rows}" id="row" defaultsort="1">
+                    <display:column property="SpecId"/>
+                    <display:column property="Description"/>
+                    <display:column property="Spec_Display" title="Spec"/>
+                    <display:column title="Value">
+                       ${portal:jexlEvaluateData(theMap, row.jexl_measurement)}  
+                    </display:column>
+                    </display:table>
+                </c:catch>
+               X=${x} ${parentActivityId}<br/>  
+
+        </c:when>
+        <c:otherwise>
+            <c:out value="No rows returned from queries"/>
+        </c:otherwise>
+      </c:choose>
+    </body>
+</html>
+
+
+        <%--
         <c:choose>
             <c:when test="${empty param}">
-                The list contains the lsstHwId, the activity Id, the parent activity Id and the activity status id, in that order.<br/>
+                The list contains the lsstHwId, the activity Id, the parent activity Id, in that order.<br/>
                 Select one (for test reports only):
                 <form name="sensorform" id="sensorform" action="SummaryTest2.jsp?rectype=NEWSENSOR" method="get" >
                     <table>
@@ -64,8 +128,10 @@
                     </tr>
                 </table>
                 <p></p>
-
+--%>
                 <%-- select id, rkey, query from report_queries --%>
+                
+                <%--
                 <sql:query var="reportqry" dataSource="jdbc/config-prod">
                     select rkey, query from report_queries
                 </sql:query>
@@ -106,25 +172,11 @@
                     <display:column property="Description"/>
                     <display:column property="Spec_Display" title="Spec"/>
                     <display:column title="Value">
-                        ${portal:jexlEvaluateData(theMap, row.jexl_measurement)}
+                       ${portal:jexlEvaluateData(theMap, row.jexl_measurement)}  
                     </display:column>
                 </display:table>
 
-                <%--
-            <table border="1">
-                <tr> <th>Activity and jobname(s)</th> <th>Min</th> <th>Max</th> <th>Values</th> <th>Average</th></tr>
-                <c:set var="sensorData" value="${portal:getSensorValues(pageContext.session,parentActivityId)}"/>
-                <c:forEach var="entry" items="${sensorData}">
-                    <c:set var="listOfnumbers" value="${entry.value}"/>
-                    <c:if test="${!empty entry.value}"> 
-                        <c:set var="strVals" value="${fn:contains(entry.key, 'StringResultHarnessed')}" />
-                        <c:set var="sensorMin" value="${strVals ? '' : portal:getSummaryMinFromList(entry.value)}"/>
-                        <c:set var="sensorMax" value="${strVals ? '' : portal:getSummaryMaxFromList(entry.value)}"/>
-                        <c:set var="sensorAvg" value="${strVals ? '' : portal:getSummaryAverage(entry.value)}"/>  
-                    </c:if>
-                    <tr><td>${entry.key}</td><td>${! empty sensorMin ? sensorMin : 'none'}</td><td>${!empty sensorMax ? sensorMax : 'none'}</td><td>${listOfnumbers}</td> <td> ${sensorAvg}</td></tr>
-                </c:forEach>  
-            </table>
-                --%>
+                 
             </c:when>
         </c:choose>
+--%>
