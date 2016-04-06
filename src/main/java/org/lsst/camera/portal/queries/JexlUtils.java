@@ -1,6 +1,8 @@
 package org.lsst.camera.portal.queries;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlEngine;
@@ -26,7 +28,6 @@ public class JexlUtils {
         MapContext mc = new MapContext();
         mc.set("u", jexlUtils);
         JexlScript func = jexl.createScript(measurement);
-
         return func.execute(mc);
     }
 
@@ -87,17 +88,35 @@ public class JexlUtils {
     public List<Number> divide(List<Number> a1, List<Number> a2) {
         List<Number> result = new ArrayList<>();
         for (int i = 0; i < Math.min(a1.size(), a2.size()); i++) {
-            result.add(a1.get(i).doubleValue()/a2.get(i).doubleValue());
+            result.add(a1.get(i).doubleValue() / a2.get(i).doubleValue());
         }
         return result;
     }
-    
+
     public double sum(List<Number> args) {
         double sum = 0;
         for (Number a : args) {
             sum = sum + a.doubleValue();
         }
         return sum;
+    }
+
+    public double median(List<Number> args) {
+        // Collections does not have a comparator for Number so we have to make our own. 
+        List<Number> tmpList = new ArrayList<>(args);
+        Collections.sort(tmpList, (Number o1, Number o2) -> (int) Math.signum(o1.doubleValue() - o2.doubleValue()));
+
+        double theMedian = 0;
+        int size = tmpList.size();
+        boolean isOdd = size % 2 != 0;
+
+        if (isOdd) {
+            theMedian = args.get(size/2).doubleValue();
+        } else {
+            theMedian = (args.get(size/2).doubleValue() + args.get(size/2+1).doubleValue()) / 2;
+        }
+        System.out.println(theMedian);
+        return theMedian;
     }
 
     public String format(String format, Object... arg) {
