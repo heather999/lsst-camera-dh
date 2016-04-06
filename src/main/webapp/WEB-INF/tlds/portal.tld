@@ -168,7 +168,6 @@
         <function-signature>org.lsst.camera.portal.data TestReportData getTestReportPaths(javax.servlet.http.HttpSession,java.util.List,java.lang.Boolean)
         </function-signature>
     </function>
-    
     <function>
         <name>getDataCatalogFiles</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
@@ -179,36 +178,6 @@
         <name>jexlEvaluateData</name>
         <function-class>org.lsst.camera.portal.queries.JexlUtils</function-class>
         <function-signature>java.util.Map jexlEvaluateData(java.util.Map, java.lang.String)</function-signature>
-    </function>
-    <function>
-        <name>getSummaryResults</name>
-        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.List getSummaryResults(javax.servlet.http.HttpSession, java.lang.String, java.lang.String, java.lang.String, java.lang.String[])
-        </function-signature>
-    </function>
-    <function>
-        <name>getSummaryMaxFromList</name>
-        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
-        <function-signature>java.util.List getSummaryMaxFromList(java.util.List)
-        </function-signature>
-    </function>
-     <function>
-        <name>getSummaryMinFromList</name>
-        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
-        <function-signature>java.util.List getSummaryMinFromList(java.util.List)
-        </function-signature>
-    </function>
-    <function>
-        <name>getSummaryAverage</name>
-        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
-        <function-signature>java.util.List getSummaryAverage(java.util.List)
-        </function-signature>
-    </function>
-    <function>
-        <name>getSensorValues</name>
-        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
-        <function-signature>java.util.Map getSensorValues(javax.servlet.http.HttpSession,java.lang.Integer)
-        </function-signature>
     </function>
     <function>
         <name>getDatasets</name>
