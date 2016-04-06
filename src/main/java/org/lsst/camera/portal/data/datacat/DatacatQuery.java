@@ -25,13 +25,17 @@ public class DatacatQuery {
     public static Client getClient(HttpServletRequest request) throws IOException{
         String datacatUrl = "http://srs.slac.stanford.edu/datacat-v0.4/r";
         try {
+            
             String userName = (String) request.getSession().getAttribute("userName"); // From LoginFilter
             Map<String, Object> headers = new HashMap<>();
 
-            String srsClientId = System.getProperty("org.lsst.camera.portal.srs_client_id");
+            String srsClientId = request.getServletContext().getInitParameter("org.lsst.camera.portal.srs_client_id");
+
             if(srsClientId != null){
                 headers.put("x-client-id", srsClientId); // This web applications has a clientId which should be trusted
-            } else {
+            }
+            
+            if(userName != null){
                 headers.put("x-cas-username", userName); // This machine should be trusted (this won't work locally)
             }
 

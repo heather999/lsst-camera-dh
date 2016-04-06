@@ -55,6 +55,11 @@
         </param-value>
     </context-param>
     
+    <context-param>
+        <param-name>org.lsst.camera.portal.srs_client_id</param-name>
+        <param-value>${srsClientId}</param-value>
+    </context-param>
+    
     <filter>
         <filter-name>ModeSwitcherFilter</filter-name>
         <filter-class>org.srs.web.base.filters.modeswitcher.ModeSwitcherFilter</filter-class>
