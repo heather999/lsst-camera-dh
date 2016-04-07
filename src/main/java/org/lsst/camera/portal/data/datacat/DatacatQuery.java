@@ -29,7 +29,7 @@ public class DatacatQuery {
             String userName = (String) request.getSession().getAttribute("userName"); // From LoginFilter
             Map<String, Object> headers = new HashMap<>();
 
-            String srsClientId = request.getServletContext().getInitParameter("org.lsst.camera.portal.srs_client_id");
+            String srsClientId = request.getSession().getServletContext().getInitParameter("org.lsst.camera.portal.srs_client_id");
 
             if(srsClientId != null){
                 headers.put("x-client-id", srsClientId); // This web applications has a clientId which should be trusted
