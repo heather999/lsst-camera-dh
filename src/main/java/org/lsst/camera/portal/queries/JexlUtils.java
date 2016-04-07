@@ -2,6 +2,7 @@ package org.lsst.camera.portal.queries;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlEngine;
@@ -105,21 +106,37 @@ public class JexlUtils {
         List<Number> tmpList = new ArrayList<>(args);
         Collections.sort(tmpList, (Number o1, Number o2) -> (int) Math.signum(o1.doubleValue() - o2.doubleValue()));
 
-        double theMedian = 0;
         int size = tmpList.size();
         boolean isOdd = size % 2 != 0;
 
         if (isOdd) {
-            theMedian = args.get(size/2).doubleValue();
+            return args.get(size/2).doubleValue();
         } else {
-            theMedian = (args.get(size/2).doubleValue() + args.get(size/2+1).doubleValue()) / 2;
+            return (args.get(size/2).doubleValue() + args.get(size/2+1).doubleValue()) / 2;
         }
-        System.out.println(theMedian);
-        return theMedian;
     }
 
     public String format(String format, Object... arg) {
         return String.format(format, arg);
     }
 
+    public List<Map<String,Object>> toTable(String[] headers, List... data) {
+        List<Map<String,Object>> result = new ArrayList<>();
+        for (int i=0; i<data[0].size(); i++) {
+            Map<String,Object> item = new HashMap<>();
+            for (int j=0; j<headers.length; j++) {
+                item.put(headers[j],data[j].get(i));
+            }
+            result.add(item);
+        }
+        System.out.println(result);
+        return result;
+    } 
+    public List<Number> range(int start, int end) {
+        List<Number> result = new ArrayList<>();
+        for (int i=start; i<end; i++) {
+            result.add(i);
+        }
+        return result;
+    }
 }

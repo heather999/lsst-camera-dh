@@ -85,13 +85,14 @@
                         <c:if test="${!empty x}">???</c:if>
                     </display:column>
                 </display:table>
-
-            </c:when>
-            <c:otherwise>
-                <c:out value="No rows returned from queries"/>
-            </c:otherwise>
-        </c:choose>
-    </body>
+                <c:set var="tdata" value="u.toTable([\"Amp\",\"Full Well\",\"Nonlinearity\"],u.range(1,16),u.fetch(\"full_well\"),u.fetch(\"max_frac_dev\"))"/>
+            <display:table name="${portal:jexlEvaluateData(theMap, tdata)}" class="datatable"/>
+        </c:when>
+        <c:otherwise>
+            <c:out value="No rows returned from queries"/>
+        </c:otherwise>
+    </c:choose>
+</body>
 </html>
 
 
