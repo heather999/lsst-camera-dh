@@ -25,24 +25,29 @@
 
         <p><c:out value="sensor count ${sensor.rowCount}"/></p>
 
-        <%-- get a list of all the queries --%> 
+        <%-- get a list of all the queries  
         <sql:query var="reportqry" dataSource="jdbc/config-prod">
             select rkey, query from report_queries
         </sql:query>
 
-        <%-- get a list of all the specs --%> 
+        <%-- get a list of all the specs  
         <sql:query var="summary" dataSource="jdbc/config-prod">
             select specid, description, spec_display, jexl_status, jexl_measurement from report_specs
-        </sql:query>
+        </sql:query> --%>
 
         <c:choose>
             <c:when test="${empty param}">
                 <display:table name = "${sensor.rows}" id="row" class="dataTable">
-
-                    <display:column property="parentActivityId" title="ParentActivityId" href="SummaryTest2.jsp" paramId="parentActivityId"/>
+                    <display:column property="parentActivityId" title="ParentActivityId" href="SummaryReport.jsp" paramId="parentActivityId"/>
                     <display:column property="lsstId" title="lsstId"/>
                 </display:table>
-            </c:when>     
+            </c:when>  
+            <c:otherwise>
+               <c:out value="No rows returned from queries"/>
+            </c:otherwise>
+        </c:choose>
+        
+            <%--
             <c:when test="${! empty param}">
                 <c:out value="${param.parentActivityId}"/>
                 <c:out value="${param.lsstId}"/>
@@ -66,7 +71,7 @@
                 </c:forEach> 
 
                 <h1>Electro-Optical Test Results for Sensor ${lsstId}</h1>
-                <%--  <display:table name="${theMap.entrySet()}" id="dataTable"/> --%>
+               Comment**<display:table name="${theMap.entrySet()}" id="dataTable"/>**Comment
                 <display:table name="${summary.rows}" id="row" defaultsort="2" class="datatable" export="true">
                     <display:column title="Status">
                         <c:catch var="x">
@@ -91,7 +96,7 @@
         <c:otherwise>
             <c:out value="No rows returned from queries"/>
         </c:otherwise>
-    </c:choose>
+    </c:choose> --%>
 </body>
 </html>
 
