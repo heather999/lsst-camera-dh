@@ -133,6 +133,15 @@
         <function-class>org.lsst.camera.portal.queries.JexlUtils</function-class>
         <function-signature>java.util.Map jexlEvaluateData(java.util.Map, java.lang.String)</function-signature>
     </function>
+    
+    <function>
+        <name>getReportValues</name>
+        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
+        <function-signature>
+           java.util.Map getReportValues(javax.servlet.http.HttpSession, java.lang.Integer)
+        </function-signature>
+    </function>
+    
     <function>
         <name>getDatasets</name>
         <function-class>org.lsst.camera.portal.data.datacat.DatacatQuery</function-class>
