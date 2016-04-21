@@ -12,7 +12,7 @@
 
 
 <%-- The list of normal or fragment attributes can be specified here: --%>
-<%@attribute name="sectionNum" type="java.lang.String" %>
+<%@attribute name="sectionNum" type="java.lang.String" required="true"%>
 <%@attribute name="data" type="java.util.Map" required="true"%>
 
 <sql:query var="specs" dataSource="jdbc/config-prod">
@@ -21,22 +21,33 @@
         where section=? <sql:param value="${sectionNum}"/>
     </c:if>
 </sql:query>
-
-<display:table name="${specs.rows}" id="row" defaultsort="2" class="datatable">
-    <display:column title="Status">
-        <c:catch var="x">
-            <c:set var="status" value="${portal:jexlEvaluateData(data, row.jexl_status)}"/>
-            ${empty status ? "..." : status ? "&#x2714;" : "&#x2718;"}
-        </c:catch>
-        <c:if test="${!empty x}">???</c:if>
-    </display:column>
-    <display:column property="SpecId" title="Spec. ID"/>
-    <display:column property="Description"/>
-    <display:column property="Spec_Display" title="Specification"/>
-    <display:column title="Value">
-        <c:catch var="x">
-            ${portal:jexlEvaluateData(data, row.jexl_measurement)} 
-        </c:catch>
-        <c:if test="${!empty x}">???</c:if>
-    </display:column>
-</display:table>
+        
+<sql:query var="imgs" dataSource="jdbc/config-prod">
+    select section from report_image_info where section=? 
+    <sql:param value="${sectionNum}"/>
+</sql:query>
+    
+<c:if test="${specs.rowCount > 0}">  
+    <display:table name="${specs.rows}" id="row" defaultsort="2" class="datatable">
+        <display:column title="Status">
+            <c:catch var="x">
+                <c:set var="status" value="${portal:jexlEvaluateData(data, row.jexl_status)}"/>
+                ${empty status ? "..." : status ? "&#x2714;" : "&#x2718;"}
+            </c:catch>
+            <c:if test="${!empty x}">???</c:if>
+        </display:column>
+        <display:column property="SpecId" title="Spec. ID"/>
+        <display:column property="Description"/>
+        <display:column property="Spec_Display" title="Specification"/>
+        <display:column title="Value">
+            <c:catch var="x">
+                ${portal:jexlEvaluateData(data, row.jexl_measurement)} 
+            </c:catch>
+            <c:if test="${!empty x}">???</c:if>
+        </display:column>
+    </display:table>        
+</c:if>
+        
+<c:if test="${imgs.rowCount > 0}">
+    <c:out value="${imgs.rowCount} image(s) here"/>
+</c:if>   
