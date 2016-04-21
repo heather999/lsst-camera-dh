@@ -6,7 +6,7 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@taglib uri="http://displaytag.sf.net" prefix="display" %>
-<%@taglib prefix="ru" tagdir="/WEB-INF/tags/reports"%>
+<%@taglib prefix="ru" tagdir="/WEB-INF/tags/reports" %>
 <%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
 
 <html>
@@ -63,7 +63,7 @@
        <h1>Electro-Optical Test Results for ${lsstId}</h1>
         
         <c:forEach var="sect" items="${sections.rows}">  
-          <%--  <h1>${sect.section} ${sect.title}</h1>  --%>
+            <h1>${sect.section} ${sect.title}</h1> 
             <c:if test="${!empty sect.section}">
                 <ru:reportUtil sectionNum="${sect.section}" data="${theMap}"/>
             </c:if>                      
