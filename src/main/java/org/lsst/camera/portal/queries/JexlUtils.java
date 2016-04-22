@@ -2,7 +2,7 @@ package org.lsst.camera.portal.queries;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.jexl3.JexlEngine;
@@ -16,6 +16,8 @@ import org.apache.commons.jexl3.JexlScript;
  */
 public class JexlUtils {
 
+    private static JexlEngine jexl;
+
     private final Map<String, List> data;
 
     public JexlUtils(Map<String, List> data) { // constructor
@@ -24,7 +26,7 @@ public class JexlUtils {
 
     public static Object jexlEvaluateData(Map<String, List> data, String measurement) {
         JexlUtils jexlUtils = new JexlUtils(data);
-        JexlEngine jexl = new JexlBuilder().create();
+        jexl = new JexlBuilder().create();
         MapContext mc = new MapContext();
         mc.set("u", jexlUtils);
         JexlScript func = jexl.createScript(measurement);
@@ -110,9 +112,9 @@ public class JexlUtils {
         boolean isOdd = size % 2 != 0;
 
         if (isOdd) {
-            return args.get(size/2).doubleValue();
+            return args.get(size / 2).doubleValue();
         } else {
-            return (args.get(size/2).doubleValue() + args.get(size/2+1).doubleValue()) / 2;
+            return (args.get(size / 2).doubleValue() + args.get(size / 2 + 1).doubleValue()) / 2;
         }
     }
 
@@ -120,23 +122,22 @@ public class JexlUtils {
         return String.format(format, arg);
     }
 
-    public List<Map<String,Object>> toTable(String[] headers, List... data) {
-        List<Map<String,Object>> result = new ArrayList<>();
-        for (int i=0; i<data[0].size(); i++) {
-            Map<String,Object> item = new HashMap<>();
-            for (int j=0; j<headers.length; j++) {
-                item.put(headers[j],data[j].get(i));
+    public List<Map<String, Object>> toTable(String[] headers, int nRows, String... jexlCol) {
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (int i = 0; i < nRows; i++) {
+            Map<String, Object> item = new LinkedHashMap<>();
+            for (int j = 0; j < headers.length; j++) {
+                MapContext mc = new MapContext();
+                mc.set("u", this);
+                mc.set("row", i);
+                System.out.println(jexlCol[j]);
+                JexlScript func = jexl.createScript(jexlCol[j]);
+                item.put(headers[j], func.execute(mc));
             }
             result.add(item);
         }
         System.out.println(result);
         return result;
-    } 
-    public List<Number> range(int start, int end) {
-        List<Number> result = new ArrayList<>();
-        for (int i=start; i<end; i++) {
-            result.add(i);
-        }
-        return result;
     }
+
 }
