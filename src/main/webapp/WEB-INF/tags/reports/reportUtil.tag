@@ -49,5 +49,5 @@
 </c:if>
         
 <c:if test="${imgs.rowCount > 0}">
-    <c:out value="${imgs.rowCount} image(s) here"/>
+    <c:out value="image(s) here"/>
 </c:if>   

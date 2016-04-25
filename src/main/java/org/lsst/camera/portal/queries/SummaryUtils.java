@@ -26,9 +26,8 @@ public class SummaryUtils {
           Connection oraconn = null; 
   
           boolean debug = false;
-          Map<String, String> listOfqueries = new LinkedHashMap<>();
           Map<String, List<?> > queryMap = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
-
+          
           try {
               c = ConnectionManager.getConnection("jdbc/config-prod");
               oraconn = ConnectionManager.getConnection("jdbc/rd-lsst-cam-dev-ro");
@@ -37,7 +36,6 @@ public class SummaryUtils {
               ResultSet r = stmt.executeQuery();
               while (r.next()) {
                  String key = r.getString("rkey");
-                 String spec_id = r.getString("id");
                  String tmpstr=r.getString("query");
                  List<Object> resultList = new ArrayList<>(); // create list each time so values don't accumulate
                  PreparedStatement stmt2 = oraconn.prepareStatement(tmpstr);
