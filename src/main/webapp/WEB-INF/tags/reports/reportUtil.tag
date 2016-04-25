@@ -21,18 +21,13 @@
         where section=? <sql:param value="${sectionNum}"/>
     </c:if>
 </sql:query>
-        
-<sql:query var="imgs" dataSource="jdbc/config-prod">
-    select section from report_image_info where section=? 
-    <sql:param value="${sectionNum}"/>
-</sql:query>
-    
-<c:if test="${specs.rowCount > 0}">  
+
+<c:if test="${specs.rowCount != 0}">
     <display:table name="${specs.rows}" id="row" defaultsort="2" class="datatable">
         <display:column title="Status">
             <c:catch var="x">
                 <c:set var="status" value="${portal:jexlEvaluateData(data, row.jexl_status)}"/>
-                ${empty status ? "..." : status ? "&#x2714;" : "&#x2718;"}
+                ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
             </c:catch>
             <c:if test="${!empty x}">???</c:if>
         </display:column>
@@ -45,9 +40,5 @@
             </c:catch>
             <c:if test="${!empty x}">???</c:if>
         </display:column>
-    </display:table>        
+    </display:table>
 </c:if>
-        
-<c:if test="${imgs.rowCount > 0}">
-    <c:out value="image(s) here"/>
-</c:if>   

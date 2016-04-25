@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib version="2.1" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd">
+  <tlib-version>1.0</tlib-version>
+  <short-name>datacat</short-name>
+  <uri>http://srs.slac.stanford.edu/tlds/datacat</uri>
+  <tag>
+    <name>query</name>
+    <tag-class>org.lsst.camera.portal.data.datacat.DatacatQueryTag</tag-class>
+    <body-content>scriptless</body-content>
+    <attribute>
+      <name>var</name>
+      <required>true</required>
+      <rtexprvalue>false</rtexprvalue>
+      <type>java.lang.String</type>
+    </attribute>
+  </tag>
+  <tag>
+    <name>folderPath</name>
+    <tag-class>org.lsst.camera.portal.data.datacat.DatacatFolderPathTag</tag-class>
+    <body-content>scriptless</body-content>
+    <attribute>
+      <name>value</name>
+      <required>true</required>
+      <rtexprvalue>true</rtexprvalue>
+      <type>java.lang.String</type>
+    </attribute>
+  </tag>
+</taglib>
