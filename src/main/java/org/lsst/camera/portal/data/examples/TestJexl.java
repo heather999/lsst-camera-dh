@@ -3,37 +3,8 @@
  */
 package org.lsst.camera.portal.data.examples;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Iterator;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpSession;
-import javax.servlet.jsp.JspException;
-
-import org.lsst.camera.portal.data.TravelerStatus;
-import org.lsst.camera.portal.data.HardwareStatus;
-import org.lsst.camera.portal.data.HdwStatusLoc;
-import org.lsst.camera.portal.data.Activity;
-import org.lsst.camera.portal.data.TravelerInfo;
-import org.lsst.camera.portal.data.ReportData;
-import org.lsst.camera.portal.data.TestReportPathData;
-import org.lsst.camera.portal.data.ComponentData;
-import org.lsst.camera.portal.data.CatalogFileData;
-import org.srs.web.base.db.ConnectionManager;
 
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;

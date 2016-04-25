@@ -112,9 +112,9 @@ public class JexlUtils {
         boolean isOdd = size % 2 != 0;
 
         if (isOdd) {
-            return args.get(size / 2).doubleValue();
+            return tmpList.get(size / 2).doubleValue();
         } else {
-            return (args.get(size / 2).doubleValue() + args.get(size / 2 + 1).doubleValue()) / 2;
+            return (tmpList.get(size / 2).doubleValue() + tmpList.get(size / 2 + 1).doubleValue()) / 2;
         }
     }
 
@@ -130,13 +130,11 @@ public class JexlUtils {
                 MapContext mc = new MapContext();
                 mc.set("u", this);
                 mc.set("row", i);
-                System.out.println(jexlCol[j]);
                 JexlScript func = jexl.createScript(jexlCol[j]);
                 item.put(headers[j], func.execute(mc));
             }
             result.add(item);
         }
-        System.out.println(result);
         return result;
     }
 
