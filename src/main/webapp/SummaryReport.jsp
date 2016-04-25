@@ -43,15 +43,6 @@
             <display:table name="${theMap.entrySet()}" id="theMap"/>  <%-- shows what's in the map --%> 
         </c:if>
 
-        <c:forEach var="row" items="${reportqry.rows}">
-            <c:set var="key" value="${row.rkey}"/>
-            <c:set var="spec_id" value="${row.id}"/>
-            <sql:query var="results" dataSource="jdbc/rd-lsst-cam-dev-ro">
-                ${row.query}
-                <sql:param value="${parentActivityId}"/>
-            </sql:query> 
-        </c:forEach>  
-
         <h1>Electro-Optical Test Results for ${lsstId}</h1>
 
         <c:forEach var="sect" items="${sections.rows}">  
