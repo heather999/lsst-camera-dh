@@ -16,7 +16,7 @@
         <title>Summary Report</title>
         <style>
             img {page-break-before: avoid;}
-            h2 {page-break-before: always;}
+            h2.break {page-break-before: always;}
         </style>
     </head>
     <body>
@@ -42,7 +42,7 @@
             select section,title,extra_table,page_break from report_display_info order by display_order asc
         </sql:query>
         <c:forEach var="sect" items="${sections.rows}">  
-            <h2>${sect.section} ${sect.title}</h2>
+            <h2 class='${sect.page_break==1 ? 'break' : 'nobreak'}'>${sect.section} ${sect.title}</h2>
             <ru:reportUtil sectionNum="${sect.section}" data="${theMap}"/>
             <c:if test="${!empty sect.extra_table}">
                 <c:set var="tdata" value="${sect.extra_table}"/>
