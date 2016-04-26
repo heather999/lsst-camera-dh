@@ -12,7 +12,7 @@ import org.srs.datacat.client.Client;
 import org.srs.datacat.model.DatasetModel;
 
 /**
- * Implements the datacat query tag
+ * Implements the data catalog query tag
  *
  * @author tonyj
  */
@@ -20,7 +20,6 @@ public class DatacatQueryTag extends SimpleTagSupport {
 
     private String var;
     private String folderPath;
-    private static Client client;
 
     @Override
     public void doTag() throws JspException {
@@ -34,8 +33,10 @@ public class DatacatQueryTag extends SimpleTagSupport {
             String query = writer.toString().trim();
             if (query.length()==0) query = null;
             JspContext pageContext = this.getJspContext();
+            Client client = (Client) pageContext.getAttribute("DatacatClient", PageContext.SESSION_SCOPE);
             if (client == null) {
                 client = DatacatQuery.getClient((HttpServletRequest) ((PageContext) pageContext).getRequest());
+                pageContext.setAttribute("DatacatClient", client, PageContext.SESSION_SCOPE);
             }
             List<DatasetModel> results = client.searchForDatasets(folderPath, null, null, query, null, null, 0, 1000).getResults();
             pageContext.setAttribute(var, results);
