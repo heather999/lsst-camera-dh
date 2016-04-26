@@ -11,10 +11,10 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Summary of Tests </title>
+        <title>Reports Available</title>
     </head>
     <body>
-        <h1>Summary Of Tests  (page under construction)</h1>
+        <h1>Reports available</h1>
 
         <%-- get a list of all the parentActivityIds --%> 
         <sql:query var="sensor" dataSource="jdbc/rd-lsst-cam-dev-ro">
@@ -23,18 +23,10 @@
             where statusHist.activityStatusId=1 and pr.name='test_report_offline' order by act.parentActivityId desc   
         </sql:query> 
 
-        <p><c:out value="sensor count ${sensor.rowCount}"/></p>
+        <display:table name = "${sensor.rows}" id="row" class="datatable" defaultsort="2">
+            <display:column property="parentActivityId" title="Activity" href="SummaryReport.jsp" paramId="parentActivityId"/>
+            <display:column property="lsstId" title="Device"/>
+        </display:table>
 
-        <c:choose>
-            <c:when test="${empty param}">
-                <display:table name = "${sensor.rows}" id="row" class="dataTable">
-                    <display:column property="parentActivityId" title="ParentActivityId" href="SummaryReport.jsp" paramId="parentActivityId"/>
-                    <display:column property="lsstId" title="lsstId"/>
-                </display:table>
-            </c:when>  
-            <c:otherwise>
-               <c:out value="No rows returned from queries"/>
-            </c:otherwise>
-        </c:choose>
-</body>
+    </body>
 </html>
