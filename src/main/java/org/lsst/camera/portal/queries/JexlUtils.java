@@ -18,10 +18,9 @@ import org.apache.commons.jexl3.JexlScript;
  */
 public class JexlUtils {
 
-    private static JexlEngine jexl;
-    private static final Pattern special = Pattern.compile("\\%(\\S+)w");
+    private static final JexlEngine jexl = new JexlBuilder().create();
+    private static final Pattern webFormat = Pattern.compile("\\%(\\S+)w");
     private static final Pattern numberInBrackets = Pattern.compile("\\[([\\+\\-]?[.0-9]+)(e(\\S+))?\\]");
-
 
     private final Map<String, List> data;
 
@@ -31,7 +30,6 @@ public class JexlUtils {
 
     public static Object jexlEvaluateData(Map<String, List> data, String measurement) {
         JexlUtils jexlUtils = new JexlUtils(data);
-        jexl = new JexlBuilder().create();
         MapContext mc = new MapContext();
         mc.set("u", jexlUtils);
         JexlScript func = jexl.createScript(measurement);
@@ -126,7 +124,7 @@ public class JexlUtils {
     public String format(String format, Object... arg) {
         // Note we support a special format %n.nw which is equivalent to %n.ng
         // except that the number is displayed using html superscripts.
-        Matcher matcher = special.matcher(format);
+        Matcher matcher = webFormat.matcher(format);
         return webify(String.format(matcher.replaceAll("[%$1g]"), arg));
     }
 
