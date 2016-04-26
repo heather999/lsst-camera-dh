@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.jexl3.JexlBuilder;
@@ -17,6 +19,9 @@ import org.apache.commons.jexl3.JexlScript;
 public class JexlUtils {
 
     private static JexlEngine jexl;
+    private static final Pattern special = Pattern.compile("\\%(\\S+)w");
+    private static final Pattern numberInBrackets = Pattern.compile("\\[([\\+\\-]?[.0-9]+)(e(\\S+))?\\]");
+
 
     private final Map<String, List> data;
 
@@ -119,9 +124,27 @@ public class JexlUtils {
     }
 
     public String format(String format, Object... arg) {
-        return String.format(format, arg);
+        // Note we support a special format %n.nw which is equivalent to %n.ng
+        // except that the number is displayed using html superscripts.
+        Matcher matcher = special.matcher(format);
+        return webify(String.format(matcher.replaceAll("[%$1g]"), arg));
     }
 
+    private String webify(String input) {
+        Matcher match = numberInBrackets.matcher(input);
+        StringBuffer result = new StringBuffer();
+        while (match.find()) {
+            if (match.group(3) != null) {
+                int exponent = Integer.parseInt(match.group(3));
+                match.appendReplacement(result, "$1&times10<sup>"+exponent+"</sup>");
+            } else {
+                match.appendReplacement(result, "$1");
+            }
+        }
+        match.appendTail(result);
+        return result.toString();
+    }
+    
     public List<Map<String, Object>> toTable(String[] headers, int nRows, String... jexlCol) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (int i = 0; i < nRows; i++) {
