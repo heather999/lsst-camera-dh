@@ -45,8 +45,11 @@
             <h2 class='${sect.page_break==1 ? 'break' : 'nobreak'}'>${sect.section} ${sect.title}</h2>
             <ru:reportUtil sectionNum="${sect.section}" data="${theMap}"/>
             <c:if test="${!empty sect.extra_table}">
-                <c:set var="tdata" value="${sect.extra_table}"/>
-                <display:table name="${portal:jexlEvaluateData(theMap, tdata)}" class="datatable"/>
+                <c:catch var="x">
+                    <c:set var="tdata" value="${sect.extra_table}"/>
+                    <display:table name="${portal:jexlEvaluateData(theMap, tdata)}" class="datatable"/>
+                </c:catch>
+                <c:if test="${!empty x}">No data returned <br/></c:if>
             </c:if>
             <sql:query var="images"  dataSource="jdbc/config-prod">
                 select image_url from report_image_info where section=? order by display_order asc
@@ -65,6 +68,17 @@
                     <img src="http://srs.slac.stanford.edu/DataCatalog/get?datasetLocation=${pk}" alt="${lsstId}${image.image_url}"/>
                 </c:forEach>
             </c:forEach>
+            
+            <c:if test="${sect.title == 'Software Versions'}">
+                <sql:query var="vers" dataSource="jdbc/rd-lsst-cam-dev-ro">
+                   select distinct res.name, res.value from StringResultHarnessed res join Activity act on res.activityId=act.id  where  name in ( 'harnessedJobs_version','eotest_version', 'LSST_stack_version','lcatr_harness_version' , 'lcatr_schema_version') and parentActivityId=?
+                   <sql:param value="${parentActivityId}"/>
+                </sql:query>
+                <c:if test="${vers.rowCount > 0}">
+                    <display:table name="${vers.rows}"   class="datatable" />
+                </c:if>  
+            </c:if>
+                    
         </c:forEach>
     </body>
 </html>
