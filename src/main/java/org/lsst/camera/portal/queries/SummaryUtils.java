@@ -26,7 +26,7 @@ public class SummaryUtils {
 
         try (Connection c = ConnectionManager.getConnection("jdbc/config-prod")) {
             // FIXME: We should not hard-wire the DEV connection here.
-            try (Connection oraconn = ConnectionManager.getConnection("jdbc/rd-lsst-cam-dev-ro")) {
+            try (Connection oraconn = ConnectionManager.getConnection(session)) {
 
                 PreparedStatement stmt = c.prepareStatement("select rkey, id, query from report_queries");
                 ResultSet r = stmt.executeQuery();
