@@ -21,9 +21,7 @@
     </head>
     <body>
         <c:set var="debug" value="false"/>
-        <%-- <sql:query var="sensor" dataSource="jdbc/rd-lsst-cam-dev-ro"> --%>
         <sql:query var="sensor">
-
             select hw.lsstId, act.id from Activity act 
             join Hardware hw on act.hardwareId=hw.id 
             join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
@@ -72,7 +70,6 @@
             </c:forEach>
             
             <c:if test="${sect.title == 'Software Versions'}">
-          <%--  <sql:query var="vers" dataSource="jdbc/rd-lsst-cam-dev-ro"> --%>
                 <sql:query var="vers">
                    select distinct res.name, res.value from StringResultHarnessed res join Activity act on res.activityId=act.id  where  name in ( 'harnessedJobs_version','eotest_version', 'LSST_stack_version','lcatr_harness_version' , 'lcatr_schema_version') and parentActivityId=?
                    <sql:param value="${parentActivityId}"/>
