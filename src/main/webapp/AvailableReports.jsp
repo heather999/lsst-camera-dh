@@ -17,7 +17,7 @@
         <h1>Reports available</h1>
 
         <%-- get a list of all the parentActivityIds --%> 
-        <sql:query var="sensor" dataSource="jdbc/rd-lsst-cam-dev-ro">
+        <sql:query var="sensor">
             select hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name from Activity act join Hardware hw on act.hardwareId=hw.id 
             join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
             where statusHist.activityStatusId=1 and pr.name='test_report_offline' order by act.parentActivityId desc   
