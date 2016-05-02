@@ -5,7 +5,7 @@
 <table>
     <tr valign="bottom" align="right">
         <td align="right" valign="bottom">
-            Mode: <srs_utils:modeChooser mode="dataSourceMode"/>
+            Mode: <srs_utils:modeChooser mode="dataSourceMode" href="index.jsp"/>
         </td>
     </tr>
     <tr valign="bottom" align="right">
