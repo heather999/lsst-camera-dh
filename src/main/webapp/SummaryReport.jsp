@@ -20,9 +20,10 @@
         </style>
     </head>
     <body>
+        <fmt:setTimeZone value="UTC"/>
         <c:set var="debug" value="false"/>
         <sql:query var="sensor">
-            select hw.lsstId, act.id from Activity act 
+            select hw.lsstId, act.end, act.id from Activity act 
             join Hardware hw on act.hardwareId=hw.id 
             join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
             where statusHist.activityStatusId=1 and pr.name='test_report_offline' and act.parentActivityId = ?
@@ -30,6 +31,7 @@
         </sql:query> 
         <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
         <c:set var="actId" value="${sensor.rows[0].id}"/>  
+        <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="parentActivityId" value="${param.parentActivityId}"/>
         <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId)}"/>
         <c:if test="${debug}">
@@ -37,6 +39,7 @@
         </c:if>
 
         <h1>Summary Report for ${lsstId}</h1>
+        Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id ${actId}
 
         <sql:query var="sections" dataSource="jdbc/config-prod">
             select section,title,extra_table,page_break from report_display_info order by display_order asc
