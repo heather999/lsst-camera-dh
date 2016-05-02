@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +20,9 @@ import org.srs.web.base.db.ConnectionManager;
  */
 public class SummaryUtils {
 
-    public static Map<String, List<?>> getReportValues(HttpSession session, Integer actParentId) throws SQLException, ServletException, JspException {
+    public static Map<String, Map<String, List<Object>>> getReportValues(HttpSession session, Integer actParentId) throws SQLException, ServletException, JspException {
 
-        boolean debug = false;
-        Map<String, List<?>> result = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
+        Map<String, Map<String, List<Object>>> result = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
 
         try (Connection c = ConnectionManager.getConnection("jdbc/config-prod")) {
             // FIXME: We should not hard-wire the DEV connection here.
@@ -33,20 +33,22 @@ public class SummaryUtils {
                 while (r.next()) {
                     String key = r.getString("rkey");
                     String tmpstr = r.getString("query");
-                    List<Object> resultList = new ArrayList<>(); // create list each time so values don't accumulate
+                    Map<String, List<Object>> map = new HashMap<>();
                     PreparedStatement stmt2 = oraconn.prepareStatement(tmpstr);
                     stmt2.setInt(1, actParentId);
                     ResultSet q = stmt2.executeQuery();
-                    while (q.next()) {
-                        resultList.add(q.getObject("value"));
+                    int nCol = q.getMetaData().getColumnCount();
+                    for (int col=1; col<=nCol; col++) {
+                        map.put(q.getMetaData().getColumnName(col),new ArrayList<>());
                     }
-                    result.put(key, resultList);
+                    while (q.next()) {
+                        for (int col=1; col<=nCol; col++ ) {
+                            String colName = q.getMetaData().getColumnName(col);
+                            map.get(colName).add(q.getObject(col));
+                        }
+                    }
+                    result.put(key, map);
                 }
-            }
-        }
-        if (debug) {
-            for (Map.Entry<String, List<?>> entry : result.entrySet()) {
-                System.out.println("Key= " + entry.getKey() + " Value=" + entry.getValue());
             }
         }
         return result;

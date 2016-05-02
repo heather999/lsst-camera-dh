@@ -22,13 +22,13 @@ public class JexlUtils {
     private static final Pattern webFormat = Pattern.compile("\\%(\\S+)w");
     private static final Pattern numberInBrackets = Pattern.compile("\\[([\\+\\-]?[.0-9]+)(e(\\S+))?\\]");
 
-    private final Map<String, List> data;
+    private final Map<String, Map<String, List<Object>>> data;
 
-    public JexlUtils(Map<String, List> data) { // constructor
+    public JexlUtils(Map<String, Map<String, List<Object>>> data) { // constructor
         this.data = data;
     }
 
-    public static Object jexlEvaluateData(Map<String, List> data, String measurement) {
+    public static Object jexlEvaluateData(Map<String, Map<String, List<Object>>> data, String measurement) {
         JexlUtils jexlUtils = new JexlUtils(data);
         MapContext mc = new MapContext();
         mc.set("u", jexlUtils);
@@ -36,10 +36,18 @@ public class JexlUtils {
         return func.execute(mc);
     }
 
-    public List fetch(String SpecId) {
-        List result = data.get(SpecId);
+    public List fetch(String specId) {
+        return fetch(specId, "value");
+    }
+
+    public List fetch(String specId, String column) {
+        final Map<String, List<Object>> specData = data.get(specId);
+        if (specData == null) {
+            throw new RuntimeException("Unable to fetch " + specId);
+        }        
+        final List result = specData.get(column);
         if (result == null) {
-            throw new RuntimeException("Unable to fetch " + SpecId);
+            throw new RuntimeException("Unable to fetch " + specId + " " + column);
         }
         return result;
     }
@@ -134,7 +142,7 @@ public class JexlUtils {
         while (match.find()) {
             if (match.group(3) != null) {
                 int exponent = Integer.parseInt(match.group(3));
-                match.appendReplacement(result, "$1&times10<sup>"+exponent+"</sup>");
+                match.appendReplacement(result, "$1&times10<sup>" + exponent + "</sup>");
             } else {
                 match.appendReplacement(result, "$1");
             }
@@ -142,7 +150,7 @@ public class JexlUtils {
         match.appendTail(result);
         return result.toString();
     }
-    
+
     public List<Map<String, Object>> toTable(String[] headers, int nRows, String... jexlCol) {
         List<Map<String, Object>> result = new ArrayList<>();
         for (int i = 0; i < nRows; i++) {

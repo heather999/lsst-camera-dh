@@ -16,7 +16,7 @@
 <%@attribute name="data" type="java.util.Map" required="true"%>
 
 <sql:query var="specs" dataSource="jdbc/config-prod">
-    select specid, description, spec_display, jexl_status, jexl_measurement from report_specs
+    select specid, description, spec_display, jexl_status, jexl_measurement, jexl_jobid from report_specs
     <c:if test="${sectionNum != '1'}">
         where section=? <sql:param value="${sectionNum}"/>
     </c:if>
@@ -37,6 +37,12 @@
         <display:column title="Value">
             <c:catch var="x">
                 ${portal:jexlEvaluateData(data, row.jexl_measurement)} 
+            </c:catch>
+            <c:if test="${!empty x}">???</c:if>
+        </display:column>
+        <display:column title="Job Id">
+            <c:catch var="x">
+                ${portal:jexlEvaluateData(data, row.jexl_jobid)} 
             </c:catch>
             <c:if test="${!empty x}">???</c:if>
         </display:column>
