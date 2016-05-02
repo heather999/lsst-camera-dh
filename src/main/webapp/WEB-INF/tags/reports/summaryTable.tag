@@ -1,15 +1,15 @@
 <%-- 
-    Document   : reportUtil
+    Document   : Summary Table
     Created on : Apr 20, 2016, 3:04:03 PM
     Author     : chee
 --%>
-<%@tag description="Report Activities" pageEncoding="UTF-8"%>
+<%@tag description="Summary Table" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql"%>
 <%@taglib prefix="display" uri="http://displaytag.sf.net"%>
 <%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
-
+<%@taglib prefix="ru" tagdir="/WEB-INF/tags/reports"%>
 
 <%-- The list of normal or fragment attributes can be specified here: --%>
 <%@attribute name="sectionNum" type="java.lang.String" required="true"%>
@@ -42,7 +42,7 @@
         </display:column>
         <display:column title="Job Id">
             <c:catch var="x">
-                ${portal:jexlEvaluateData(data, row.jexl_jobid)} 
+                <ru:jobLink id="${portal:jexlEvaluateData(data, row.jexl_jobid)}"/> 
             </c:catch>
             <c:if test="${!empty x}">???</c:if>
         </display:column>

@@ -39,14 +39,14 @@
         </c:if>
 
         <h1>Summary Report for ${lsstId}</h1>
-        Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id ${actId}
+        Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
 
         <sql:query var="sections" dataSource="jdbc/config-prod">
             select section,title,extra_table,page_break from report_display_info order by display_order asc
         </sql:query>
         <c:forEach var="sect" items="${sections.rows}">  
             <h2 class='${sect.page_break==1 ? 'break' : 'nobreak'}'>${sect.section} ${sect.title}</h2>
-            <ru:reportUtil sectionNum="${sect.section}" data="${theMap}"/>
+            <ru:summaryTable sectionNum="${sect.section}" data="${theMap}"/>
             <c:if test="${!empty sect.extra_table}">
                 <c:catch var="x">
                     <c:set var="tdata" value="${sect.extra_table}"/>
