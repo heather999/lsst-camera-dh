@@ -57,7 +57,7 @@
             </sql:query>
             <c:forEach var="image" items="${images.rows}">
                 <datacat:query var="datasets">
-                    <datacat:folderPath value="/LSST/mirror/SLAC-test/test/**/${actId}"/>
+                    <datacat:folderPath value="${appVariables.datacatSearch}${actId}"/>
                     site=='SLAC' && dataType=='LSSTSENSORTEST' && fileFormat='png' && name='${lsstId}${image.image_url}'
                 </datacat:query>
                 <c:if test="${empty datasets}">
