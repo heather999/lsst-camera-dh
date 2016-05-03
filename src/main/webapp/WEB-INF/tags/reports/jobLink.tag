@@ -13,7 +13,7 @@
 <c:set var="isNumber" value="${id.matches('[0-9]+')}"/>
 <c:if test="${isNumber}">
     <c:url var="url" value="/displayActivity.jsp" context="//lsst-camera.slac.stanford.edu/eTraveler">
-        <c:param name="dataSourceMode" value="prod"/>
+        <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         <c:param name="activityId" value="${id}"/>
     </c:url>
     <a href="${url}">
