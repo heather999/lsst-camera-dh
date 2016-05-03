@@ -908,6 +908,7 @@ public class QueryUtils {
 
     public static List getTestReportPaths(HttpSession session, List<Integer> actIdList, Boolean getAll) throws SQLException, ServletException {
         List<TestReportPathData> result = new ArrayList<>();
+        if (actIdList.isEmpty()) return result;
         //TestReportPathData result = new TestReportPathData();
         try (Connection c = ConnectionManager.getConnection(session)) {
             Integer mostRecentTestReport = Collections.max(actIdList, null);
