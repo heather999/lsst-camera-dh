@@ -23,7 +23,7 @@ import org.srs.datacat.model.DatasetModel;
 public class DatacatQuery {
 
     public static Client getClient(HttpServletRequest request) throws IOException{
-        String datacatUrl = "http://srs.slac.stanford.edu/datacat-v0.4/r";
+        String datacatUrl = "http://srs.slac.stanford.edu/datacat-v0.5-SNAPSHOT/r";
         try {
             
             String userName = (String) request.getSession().getAttribute("userName"); // From LoginFilter
