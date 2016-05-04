@@ -538,9 +538,11 @@ public class QueryUtils {
     }
 
     public static List getHdwStatRelationshipTable(HttpSession session, Integer hardwareTypeId, String lsst_num, String manu, String myGroup) throws SQLException {
+        // Turning rather ASPIC specific
         List<HdwStatusRelationship> result = new ArrayList<>();
         // Map<String,HdwStatLoc> travelerStatusMap = new HashMap<>(); 
 
+        ResultSet relationshipResult = null, locResult = null;
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
@@ -552,12 +554,13 @@ public class QueryUtils {
                 Map.Entry<Integer, String> entry = it.next();
                 String lsstId = entry.getValue();
                 Integer hdwId = entry.getKey();
+                Boolean relationshipExists = false;
                 
                 // Finding relationships based on minorId
                 PreparedStatement relationshipStatement = c.prepareStatement("select MRS.hardwareId as majorHdwId, " 
                         + "MRH.creationTS as creationTS, MRA.name as actionName, " 
                         + "MRT.name as relationshipName, MRST.slotname, " 
-                        + "HT.name as hardwareName, HT.id as hardwareTypeId, H.lsstId " 
+                        + "HT.name as hardwareName, HT.id as hardwareTypeId, H.lsstId as lsstId " 
                         + "FROM MultiRelationshipSlot MRS " 
                         + "INNER JOIN MultiRelationshipSlotType MRST on MRST.id=MRS.multiRelationshipSlotTypeId " 
                         + "INNER JOIN MultiRelationshipType MRT on MRT.id=MRST.multiRelationshipTypeId " 
@@ -568,8 +571,9 @@ public class QueryUtils {
                         + "INNER JOIN HardwareType HT on HT.id=H.hardwareTypeId " 
                         + "WHERE MRS.minorId=? AND MRA.name!='uninstall'");
                 relationshipStatement.setInt(1,hdwId);
-                ResultSet relationshipResult = relationshipStatement.executeQuery();
-                
+                relationshipResult = relationshipStatement.executeQuery();
+                if (relationshipResult.first() == true) relationshipExists=true;
+               
                 PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
                         + "HardwareStatusHistory.hardwareStatusId FROM Hardware, HardwareStatusHistory, HardwareStatus "
                         + "WHERE Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
@@ -585,7 +589,7 @@ public class QueryUtils {
                         + "AND Hardware.lsstId=? AND "
                         + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareLocationHistory.creationTS DESC");
                 hdwLocStatement.setString(1, lsstId);
-                ResultSet locResult = hdwLocStatement.executeQuery();
+                locResult = hdwLocStatement.executeQuery();
                 locResult.first();
                 TreeMap<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"),false);
                 String travelerName = "NA";
@@ -652,6 +656,11 @@ public class QueryUtils {
                 hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
                         locResult.getString("sname"), locResult.getTimestamp("creationTS"),
                         travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
+                if (relationshipExists)
+                    hsl.setRelationship(relationshipResult.getString("actionName"),true,relationshipResult.getString("lsstId"), 
+                        relationshipResult.getString("hardwareName"));
+                else
+                    hsl.setRelationship("",false,"","");
                 result.add(hsl);
             }
 
@@ -660,6 +669,8 @@ public class QueryUtils {
         } finally {
             if (c != null) {
                 //Close the connection
+                if (locResult != null) locResult.close();
+                if (relationshipResult != null) relationshipResult.close();
                 c.close();
             }
         }

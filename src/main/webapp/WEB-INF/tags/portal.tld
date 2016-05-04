@@ -55,6 +55,11 @@
         <function-signature>java.util.List getHardwareStatusTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.String)</function-signature>
     </function>
     <function>
+        <name>getHdwStatRelationshipTable</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getHdwStatRelationshipTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String)</function-signature>
+    </function>
+    <function>
         <name>getHdwStatLocTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String)</function-signature>

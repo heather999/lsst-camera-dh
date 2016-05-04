@@ -26,7 +26,8 @@ public class HdwStatusRelationship {
     private String actionName;
     private Boolean iAmMinor;
     private String otherHdwName;
-    private Integer otherHdwId;
+    private String otherLsstId;
+    private String relationshipName;
    
     public void setLsstId(String id) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
@@ -65,8 +66,8 @@ public class HdwStatusRelationship {
     public void setIAmMinor(Boolean b) {
         iAmMinor = b;
     }
-    public void setOtherHdwId(Integer i) {
-        otherHdwId = i;
+    public void setOtherLsstId(String i) {
+        actionName = i == null || "".equals(i) ? "NA" : i;    
     }
     public void setOtherHdwName(String l) {
         otherHdwName = l == null || "".equals(l) ? "NA" : l; 
@@ -85,12 +86,17 @@ public class HdwStatusRelationship {
         curTravBeginTime = travBeginTime;
         curActivityLastTime = actLastTime;
         inNCR = ncr;
+        relationshipName = "NA";
     }
-    public void setRelationship(String actName, Boolean minor, Integer otherId, String otherName) {
+    public void setRelationship(String actName, Boolean minor, String otherId, String otherName) {
         actionName = actName == null || "".equals(actName) ? "NA" : actName;
         iAmMinor = minor;
-        otherHdwId = otherId;
+        otherLsstId = otherId == null || "".equals(otherId) ? "NA" : otherId;
         otherHdwName = otherName == null || "".equals(otherName) ? "NA" : otherName;
+        if (actionName.equals("NA")) 
+            relationshipName = "NA";
+        else
+            relationshipName = actionName+"-"+otherLsstId;
     }
     public String getLsstId() {
         return lsstId;
@@ -143,10 +149,13 @@ public class HdwStatusRelationship {
     public Boolean getIAmMinor() {
         return iAmMinor;
     }
-    public Integer getOtherHdwId() {
-        return otherHdwId;
+    public String getOtherLsstId() {
+        return otherLsstId;
     }
     public String getOtherHdwName() {
         return otherHdwName;
+    }
+    public String getRelationshipName() {
+         return relationshipName;
     }
 }

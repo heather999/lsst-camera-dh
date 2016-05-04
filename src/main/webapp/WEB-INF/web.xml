@@ -58,7 +58,7 @@
     <filter>
         <filter-name>ModeSwitcherFilter</filter-name>
         <filter-class>org.srs.web.base.filters.modeswitcher.ModeSwitcherFilter</filter-class>
-        <init-param>
+        <init-param> 
             <param-name>experiment</param-name>
             <param-value>${experiment.name}</param-value>
         </init-param>

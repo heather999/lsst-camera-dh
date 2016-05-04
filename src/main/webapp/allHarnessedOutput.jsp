@@ -7,7 +7,7 @@
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
 
-<html>
+
     <head>
         <title>Results</title>
         <style type="text/css">
@@ -16,7 +16,7 @@
             }
         </style>
     </head>
-    <body> 
+     
         <h1>Data and Results for ${param.lsstNum}
 
         </h1>
@@ -36,7 +36,7 @@
         <c:forEach var="curAct" items="${actSet}" varStatus="status">
 
 
-            <sql:query var="resultsQu">
+            <sql:query var="resultsQu" scope="page" >
                 SELECT name, value, catalogKey, schemaName, schemaVersion, schemaInstance, id, 2 as section
                 FROM FilepathResultHarnessed
                 WHERE activityId=?<sql:param value="${curAct}"/>
@@ -56,8 +56,33 @@
                 ;
             </sql:query>
 
+
+
             <c:if test="${fn:length(resultsQu.rows) > 0}">
+
+                <sql:query var="majorTitleQu" scope="page">
+                    SELECT value AS majorTitle FROM StringResultHarnessed
+                    WHERE activityId=?<sql:param value="${curAct}"/> AND schemaName=?<sql:param value="${param.schema}"/> 
+                    AND name=?<sql:param value="${param.major}"/>
+                    ;
+                </sql:query>
+
+                <sql:query var="minorTitleQu" scope="page">
+                    SELECT value AS minorTitle FROM StringResultHarnessed
+                    WHERE activityId=?<sql:param value="${curAct}"/> AND schemaName=?<sql:param value="${param.schema}"/>  
+                    AND name=?<sql:param value="${param.minor}"/>
+                    ;
+                </sql:query>
                 <%-- sorting index starts from 1 --%>
+                
+                <h2>
+                    <c:if test="${fn:length(majorTitleQu.rows) > 0}">
+                        ${majorTitleQu.rows[0].majorTitle}  
+                    </c:if>
+                    <c:if test="${fn:length(minorTitleQu.rows) > 0}">
+                        ${minorTitleQu.rows[0].minorTitle} 
+                    </c:if>
+                </h2>
 
                 <display:table name="${resultsQu.rows}" id="row" export="true" class="datatable">
                     <display:column property="schemaName" title="Schema" sortable="true" headerClass="sortable"/>
@@ -90,5 +115,5 @@
 
 
 
-    </body>
-</html>
+    
+
