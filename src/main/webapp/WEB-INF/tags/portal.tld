@@ -16,6 +16,12 @@
         </function-signature>
     </function>
     <function>
+        <name>getAnyHardwareTypes</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.lang.String getAnyHardwareTypes(javax.servlet.http.HttpSession,java.lang.String)
+        </function-signature>
+    </function>
+    <function>
         <name>getComponentList</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.util.List getComponentList(javax.servlet.http.HttpSession,java.lang.Integer)
@@ -30,7 +36,7 @@
     <function>
         <name>getFilteredComponentIds</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.Map getFilteredComponentIds(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String)
+        <function-signature>java.util.Map getFilteredComponentIds(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String)
         </function-signature>
     </function>
     <function>
@@ -49,9 +55,14 @@
         <function-signature>java.util.List getHardwareStatusTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.String)</function-signature>
     </function>
     <function>
+        <name>getHdwStatRelationshipTable</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getHdwStatRelationshipTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String)</function-signature>
+    </function>
+    <function>
         <name>getHdwStatLocTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String)</function-signature>
+        <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String)</function-signature>
     </function>
     <function>
         <name>getHdwStatLoc</name>
@@ -67,6 +78,11 @@
         <name>getActivityMap</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.util.Map getActivityMap(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Boolean)</function-signature>
+    </function>
+    <function>
+        <name>getActivitySet</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.Set getActivitySet(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Boolean)</function-signature>
     </function>
     <function>
         <name>getTravelerCol</name>

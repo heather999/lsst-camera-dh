@@ -62,7 +62,7 @@
                     </c:otherwise>
                 </c:choose>
             </display:column>
-            <display:column title="Most Recent SR-EOT-1 Test Report" sortable="true" >
+            <display:column title="SR-EOT-1 Vendor Ingest Test Report" sortable="true" >
                 <c:choose>
                     <c:when test="${rep.testReportOnlineDirPath == 'NA'}">
                         <c:out value="NA"/>
@@ -72,7 +72,7 @@
                             <c:param name="dataset" value="${rep.onlineReportCatKey}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
-                        <a href="${onlineReportLink}" target="_blank"><c:out value="${rep.testReportOnlinePath}"/></a> 
+                        <a href="${onlineReportLink}" target="_blank"><c:out value="Most Recent Report"/></a> 
                         <br>
                         <c:url var="onlineDirLink" value="http://srs.slac.stanford.edu/DataCatalog/">
                             <c:param name="folderPath" value="${rep.testReportOnlineDirPath}"/>
@@ -88,7 +88,7 @@
                     </c:otherwise>
                 </c:choose>
             </display:column>
-            <display:column title="Most Recent SR-EOT-02 Test Report" sortable="true" >
+            <display:column title="SR-EOT-02 T3 Test Report" sortable="true" >
                 <c:choose>
                     <c:when test="${rep.testReportOfflineDirPath == 'NA'}">
                         <c:out value="NA"/>
@@ -98,7 +98,7 @@
                             <c:param name="dataset" value="${rep.offlineReportCatKey}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
-                        <a href="${offlineReportLink}" target="_blank"><c:out value="${rep.testReportOfflinePath}"/></a> 
+                        <a href="${offlineReportLink}" target="_blank"><c:out value="Most Recent Report"/></a> 
                         <br>
                         <c:url var="offlineDirLink" value="http://srs.slac.stanford.edu/DataCatalog/">
                             <c:param name="folderPath" value="${rep.testReportOfflineDirPath}"/>

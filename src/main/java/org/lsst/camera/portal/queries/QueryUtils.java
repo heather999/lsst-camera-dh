@@ -21,11 +21,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.Objects;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import org.lsst.camera.portal.data.TravelerStatus;
 import org.lsst.camera.portal.data.HardwareStatus;
 import org.lsst.camera.portal.data.HdwStatusLoc;
+import org.lsst.camera.portal.data.HdwStatusRelationship;
 import org.lsst.camera.portal.data.Activity;
 import org.lsst.camera.portal.data.TravelerInfo;
 import org.lsst.camera.portal.data.ReportData;
@@ -34,12 +36,14 @@ import org.lsst.camera.portal.data.ComponentData;
 import org.lsst.camera.portal.data.CatalogFileData;
 import org.srs.web.base.db.ConnectionManager;
 
+
+
 /**
  *
  * @author heather
  */
 public class QueryUtils {
-
+            
     public static Map getHardwareTypes(HttpSession session) throws SQLException {
         HashMap<Integer, String> result = new HashMap<>();
 
@@ -149,6 +153,53 @@ public class QueryUtils {
         } 
     }
     
+    public static String getAnyHardwareTypes(HttpSession session, String group) throws SQLException {
+        List<Integer> typeList = new ArrayList<>();
+        String result = "";
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            PreparedStatement findGroupStatement = c.prepareStatement("SELECT id, name FROM "
+                    + "HardwareGroup WHERE name = ?");
+            findGroupStatement.setString(1, group);
+            ResultSet r = findGroupStatement.executeQuery();
+            while (r.next()) {
+                Integer groupId = r.getInt("id");
+                PreparedStatement findHdwTypeStatement = c.prepareStatement("SELECT hardwareTypeId FROM "
+                        + "HardwareTypeGroupMapping WHERE hardwareGroupId = ?");
+                findHdwTypeStatement.setInt(1, groupId);
+                ResultSet r2 = findHdwTypeStatement.executeQuery();
+                while (r2.next())
+                    typeList.add(r2.getInt("hardwareTypeId"));
+            }
+            // Create String to use in Queries
+            Iterator<Integer> iterator = typeList.iterator();
+            int counter=0;
+            while (iterator.hasNext()) {
+                if (counter==0)
+                    result+="(";
+                ++counter;
+                result += (iterator.next());
+                if (counter == typeList.size()) {
+                    result += ")";
+                } else {
+                    result += ", ";
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return result;
+    }
+    
+    
     public static String getCCDHardwareTypes(HttpSession session) throws SQLException {
         List<Integer> typeList = new ArrayList<>();
         String result = "";
@@ -193,6 +244,20 @@ public class QueryUtils {
         }
         return result;
     }
+    
+    public static Set getActivitySet(HttpSession session, Integer hdwId, Boolean reverseOrder) {
+        Set result = null;
+        TreeMap<Integer, Activity> actMap=null;
+        try {
+            actMap = getActivityMap(session, hdwId, reverseOrder);
+            result = actMap.keySet();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return result;
+        
+    }
 
     // Returns all the activities in the Activity Table associated with a HardwareId
     public static TreeMap getActivityMap(HttpSession session, Integer hdwId, Boolean reverseOrder) throws SQLException {
@@ -200,7 +265,7 @@ public class QueryUtils {
         if (reverseOrder)
             activityMap = new TreeMap<>(Collections.reverseOrder());
         else
-            activityMap = new TreeMap<>();
+          activityMap = new TreeMap<>();
                     
         Connection c = null;
         try {
@@ -311,7 +376,7 @@ public class QueryUtils {
     
     // Retrieve all the LsstIds of a certain HardwareType
     // Return a Map of id, LsstId
-    public static Map getFilteredComponentIds(HttpSession session, Integer hdwType, String lsst_num, String manu) throws SQLException {
+    public static Map getFilteredComponentIds(HttpSession session, Integer hdwType, String lsst_num, String manu, String myGroup) throws SQLException {
         HashMap<Integer, String> result = new HashMap<>();
 
         String lower_lsst_num = lsst_num.toLowerCase();
@@ -319,7 +384,8 @@ public class QueryUtils {
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
-            String hdwTypeSet = getCCDHardwareTypes(session);
+            String hdwTypeSet = getAnyHardwareTypes(session, myGroup);
+            
             PreparedStatement idStatement;
             if (lower_manu.equals("any")) {
                 if (lower_lsst_num.equals("")) {
@@ -471,7 +537,148 @@ public class QueryUtils {
         return result;
     }
 
-    public static List getHdwStatLocTable(HttpSession session, Integer hardwareTypeId, String lsst_num, String manu) throws SQLException {
+    public static List getHdwStatRelationshipTable(HttpSession session, Integer hardwareTypeId, String lsst_num, String manu, String myGroup) throws SQLException {
+        // Turning rather ASPIC specific
+        List<HdwStatusRelationship> result = new ArrayList<>();
+        // Map<String,HdwStatLoc> travelerStatusMap = new HashMap<>(); 
+
+        ResultSet relationshipResult = null, locResult = null;
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu, myGroup);
+            String hdwTypeSet = getAnyHardwareTypes(session, myGroup);
+            
+            for (Iterator<Map.Entry<Integer, String>> it = compIds.entrySet().iterator(); it.hasNext();) {
+                Map.Entry<Integer, String> entry = it.next();
+                String lsstId = entry.getValue();
+                Integer hdwId = entry.getKey();
+                Boolean relationshipExists = false;
+                
+                // Finding relationships based on minorId
+                PreparedStatement relationshipStatement = c.prepareStatement("select MRS.hardwareId as majorHdwId, " 
+                        + "MRH.creationTS as creationTS, MRA.name as actionName, " 
+                        + "MRT.name as relationshipName, MRST.slotname, " 
+                        + "HT.name as hardwareName, HT.id as hardwareTypeId, H.lsstId as lsstId " 
+                        + "FROM MultiRelationshipSlot MRS " 
+                        + "INNER JOIN MultiRelationshipSlotType MRST on MRST.id=MRS.multiRelationshipSlotTypeId " 
+                        + "INNER JOIN MultiRelationshipType MRT on MRT.id=MRST.multiRelationshipTypeId " 
+                        + "INNER JOIN MultiRelationshipHistory MRH on MRH.multiRelationshipSlotId=MRS.id " 
+                        + "AND MRH.id=(select max(id) from MultiRelationshipHistory where multiRelationshipSlotId=MRS.id) " 
+                        + "INNER JOIN MultiRelationshipAction MRA on MRA.id=MRH.multiRelationshipActionId " 
+                        + "INNER JOIN Hardware H on H.id=MRS.hardwareId " 
+                        + "INNER JOIN HardwareType HT on HT.id=H.hardwareTypeId " 
+                        + "WHERE MRS.minorId=? AND MRA.name!='uninstall'");
+                relationshipStatement.setInt(1,hdwId);
+                relationshipResult = relationshipStatement.executeQuery();
+                if (relationshipResult.first() == true) relationshipExists=true;
+               
+                PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
+                        + "HardwareStatusHistory.hardwareStatusId FROM Hardware, HardwareStatusHistory, HardwareStatus "
+                        + "WHERE Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
+                        + "AND Hardware.lsstId=? AND "
+                        + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareStatusHistory.creationTS DESC");
+                hdwStatusStatement.setString(1, lsstId);
+                ResultSet statusResult = hdwStatusStatement.executeQuery();
+                statusResult.first();
+                PreparedStatement hdwLocStatement = c.prepareStatement("SELECT Hardware.lsstId, Hardware.id, Hardware.creationTS,"
+                        + " Hardware.hardwareTypeId, Location.name, Site.name AS sname, "
+                        + "HardwareLocationHistory.locationId from Hardware, HardwareLocationHistory, Location, Site "
+                        + "WHERE Hardware.id=HardwareLocationHistory.hardwareId and Location.id = HardwareLocationHistory.locationId and Location.siteId = Site.id "
+                        + "AND Hardware.lsstId=? AND "
+                        + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareLocationHistory.creationTS DESC");
+                hdwLocStatement.setString(1, lsstId);
+                locResult = hdwLocStatement.executeQuery();
+                locResult.first();
+                TreeMap<Integer, Activity> activityMap = getActivityMap(session, locResult.getInt("id"),false);
+                String travelerName = "NA";
+                String curActProcName = "NA";
+                String curActStatusName = "NA";
+                Boolean inNCR = false;
+                Date curActLastTime = null;
+                java.util.Date travStartTime = null;
+                int processId = -1;
+                boolean found = false;
+                Activity a = null;
+                if (activityMap.size() > 0) {
+                    Integer lastKey = activityMap.lastKey();
+                    a = activityMap.get(lastKey);
+                }
+                if (a != null) {
+                    // Starting with this child activity, find the parent activity and the processId
+                    curActStatusName = a.getStatusName();
+                    //  curActLastTime = a.getEndTime() == null ? a.getBeginTime() : a.getEndTime();
+                    PreparedStatement curProcessStatement = c.prepareStatement("SELECT Process.name, Process.version FROM "
+                            + "Process WHERE Process.id=?");
+                    curProcessStatement.setInt(1, Integer.valueOf(a.getProcessId()));
+                    ResultSet curProcessResult = curProcessStatement.executeQuery();
+                    curProcessResult.first();
+                    if (curProcessResult != null) {
+                        curActProcName = curProcessResult.getString("name")+"_v"+curProcessResult.getInt("version");
+                    }
+                    
+                    inNCR = a.getInNCR();
+                    
+                    while (!found) {
+                        // Sometimes the last activity has null begin and end times - check to find the most recent 
+                        // non-null timestamp
+                        // Since we're working with a SortedMap, we know we are iterating on the actvities in reverse order
+                        // from most recent to earlier in time
+                        if (curActLastTime == null) {
+                            curActLastTime = a.getEndTime() == null ? a.getBeginTime() : a.getEndTime();
+                        }
+                        if (a.isParent()) {
+                            found = true;
+                            processId = a.getProcessId();
+                            travStartTime = a.getBeginTime();
+                            break;
+                        } else {
+                            int actId = a.getParentActivityId();
+                            a = activityMap.get(actId);
+                            if (a == null) {
+                                found = true; // bail out at this point, if we have a null activity
+                            }
+
+                        }
+
+                    }
+                    PreparedStatement travelerStatement = c.prepareStatement("SELECT Process.name, Process.version FROM "
+                            + "Process WHERE Process.id=?");
+                    travelerStatement.setInt(1, Integer.valueOf(processId));
+                    ResultSet travelerResult = travelerStatement.executeQuery();
+                    travelerResult.first();
+                    if (travelerResult != null) {
+                        travelerName = travelerResult.getString("name")+"_v"+travelerResult.getInt("version");
+                    }
+                }
+                HdwStatusRelationship hsl = new HdwStatusRelationship();
+                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
+                        locResult.getString("sname"), locResult.getTimestamp("creationTS"),
+                        travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
+                if (relationshipExists)
+                    hsl.setRelationship(relationshipResult.getString("actionName"),true,relationshipResult.getString("lsstId"), 
+                        relationshipResult.getString("hardwareName"));
+                else
+                    hsl.setRelationship("",false,"","");
+                result.add(hsl);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                if (locResult != null) locResult.close();
+                if (relationshipResult != null) relationshipResult.close();
+                c.close();
+            }
+        }
+
+        return result;
+    }
+    
+    public static List getHdwStatLocTable(HttpSession session, Integer hardwareTypeId, String lsst_num, String manu, String myGroup) throws SQLException {
         List<HdwStatusLoc> result = new ArrayList<>();
         // Map<String,HdwStatLoc> travelerStatusMap = new HashMap<>(); 
 
@@ -479,8 +686,9 @@ public class QueryUtils {
         try {
             c = ConnectionManager.getConnection(session);
 
-            Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu);
-            String hdwTypeSet = getCCDHardwareTypes(session);
+            Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu, myGroup);
+            String hdwTypeSet = getAnyHardwareTypes(session, myGroup);
+            
             for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
                 // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
                 PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
@@ -819,7 +1027,7 @@ public class QueryUtils {
                 floatManualStatement.setInt(1, Integer.valueOf(activityId));
                 ResultSet floatMResult = floatManualStatement.executeQuery();
                 if (floatMResult.next()) return true;
-                PreparedStatement intManualStatement = c.prepareStatement("SELECT activityId FROM InttResultManual "
+                PreparedStatement intManualStatement = c.prepareStatement("SELECT activityId FROM IntResultManual "
                         + "WHERE activityId=?");
                 intManualStatement.setInt(1, Integer.valueOf(activityId));
                 ResultSet intMResult = intManualStatement.executeQuery();
@@ -1124,6 +1332,11 @@ public class QueryUtils {
             cal.set(Calendar.DAY_OF_MONTH, 4);
             long millisecond= cal.getTimeInMillis();
             java.util.Date goodVendorDataPathDate = new java.util.Date(millisecond);
+ 
+            // Vendor data for E2V is now stored in a subdirectory called "E2V" rather than "e2v"
+            java.util.Calendar cal2 = new java.util.GregorianCalendar(2015, 11, 15, 0, 0, 0); // Dec 15, 2015
+            long millisecond2= cal2.getTimeInMillis();
+            java.util.Date e2vVendorDataDate = new java.util.Date(millisecond2);
             
             // List of Sensors
             List<ComponentData> compIds = getComponentList(session, hardwareTypeId);
@@ -1144,6 +1357,9 @@ public class QueryUtils {
                 // Find Vendor Data
                 List<Integer> vendActList = getOutputActivityFromTraveler(session,
                         travelerList, "SR-RCV-1", "vendorIngest", hdwId);
+                List<Integer> vendActList2 = getOutputActivityFromTraveler(session,
+                        travelerList, "SR-RCV-01", "vendorIngest", hdwId);
+                vendActList.addAll(vendActList2);
 
                 Iterator<Integer> vendAct = vendActList.iterator();
                 
@@ -1171,7 +1387,15 @@ public class QueryUtils {
                 if (hasVendorData) { // first in the list should be most recent
                     Integer act = (vendAct.next());
                     String vendPath = "/LSST/vendorData/";
-                    vendPath += comp.getManufacturer() + "/" + lsst_num + "/" + dataSourceFolder + "/" + act;
+                    String manu;
+                    if ((registrationDate.compareTo(e2vVendorDataDate) > 0) && Objects.equals(comp.getManufacturer().toLowerCase(),"e2v")) {
+                        manu = "E2V";
+                    } else if (Objects.equals(comp.getManufacturer().toLowerCase(), "e2v")) {
+                        manu = "e2v";
+                    } else
+                        manu = "ITL";
+                        
+                    vendPath += manu + "/" + lsst_num + "/" + dataSourceFolder + "/" + act;
                     repData.setVendDataPath(vendPath);
                 }
                 if (hasOfflineData) {

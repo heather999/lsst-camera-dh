@@ -49,7 +49,8 @@
 </filter:filterTable>
 
 <srs_utils:refresh />
-<c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId, lsst_num, manu)}"/>
+<c:set var="ccdGroup" value="Generic-CCD"/>
+<c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId, lsst_num, manu, ccdGroup)}"/>
 
 <%-- defaultsort index starts from 1 --%>
 <display:table name="${hdwStatLocTable}" export="true" defaultsort="9" defaultorder="descending" class="datatable" id="hdl" >

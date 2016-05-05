@@ -52,13 +52,10 @@
         <%-- Selected HdwType: ${ccdHdwTypeId} --%>
 
         <%-- List of CCD ids --%>
-        <c:set var="lsstIdQuery" value="${portal:getFilteredComponentIds(pageContext.session, ccdHdwTypeId, lsst_num, manu)}"/>
+        <c:set var="ccdGroup" value="Generic-CCD"/>
+        <c:set var="lsstIdQuery" value="${portal:getFilteredComponentIds(pageContext.session, ccdHdwTypeId, lsst_num, manu, ccdGroup)}"/>
 
-        <%-- Retrieve full list of current hardware status and location for all CCDs --%>
-        <%--
-        <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId)}"/>
-        --%>
-
+        
 
         <br>
         <br>
