@@ -32,12 +32,11 @@
         <actionName>CUSTOM-lsst-deploy-dev</actionName>
         <displayName>tomcat LSST deploy (dev)</displayName>
         <goals>
-            <goal>clean</goal>
-            <goal>install</goal>
             <goal>package</goal>
             <goal>tomcat7:deploy</goal>
         </goals>
         <activatedProfiles>
+            <activatedProfile>deploy-dev-custom</activatedProfile>
             <activatedProfile>deploy-dev</activatedProfile>
             <activatedProfile>LSST-CAMERA</activatedProfile>
         </activatedProfiles>
