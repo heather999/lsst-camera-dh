@@ -1,9 +1,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
     <parent>
-        <groupId>srs</groupId>
-        <artifactId>org-srs-maven-project-war</artifactId>
-        <version>4.4</version>
+        <groupId>org.lsst.camera</groupId>
+        <artifactId>org-lsst-camera-maven-project-war</artifactId>
+        <version>1.0.4-SNAPSHOT</version>
         <relativePath />
     </parent>
 
@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.lsst.camera</groupId>
     <artifactId>org-lsst-camera-portal-web</artifactId>
-    <version>0.1.7</version>
+    <version>0.1.9-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>LSST Camera Data Portal</name>    
 
@@ -21,11 +21,15 @@
             <name>SRS Maven 2 central repository</name>
             <url>http://srs.slac.stanford.edu/nexus/content/groups/srs-maven2-public/</url>
         </repository>
+        <repository>
+            <id>lsst-dh-maven2-public</id>
+            <name>LSST Data Handling Maven Central repository</name>
+            <url>http://srs.slac.stanford.edu/nexus/content/groups/lsst-dh-maven2-public/</url>
+        </repository>
     </repositories>
 
 
     <build>
-        <finalName>DataPortal</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -125,6 +129,7 @@
 
     <properties>
         <netbeans.hint.deploy.server>Apache Tomcat 7.0.59</netbeans.hint.deploy.server>
+        <org.lsst.camera.project.finalName>DataPortal</org.lsst.camera.project.finalName>
     </properties>
 
 </project>
