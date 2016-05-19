@@ -153,7 +153,27 @@ public class QueryUtils {
         } 
     }
     
-    public static String getAnyHardwareTypes(HttpSession session, String group) throws SQLException {
+    public static String stringFromList(List<Integer> theList) {
+        String result="";
+        if (theList.isEmpty()) return (""); // If no items, return empty string
+            // Create String to use in Queries
+            Iterator<Integer> iterator = theList.iterator();
+            int counter=0;
+            while (iterator.hasNext()) {
+                if (counter==0)
+                    result+="(";
+                ++counter;
+                result += (iterator.next());
+                if (counter == theList.size()) {
+                    result += ")";
+                } else {
+                    result += ", ";
+                }
+            }
+            return result;
+    }
+    
+    public static String getHardwareTypesFromGroup(HttpSession session, String group) throws SQLException {
         List<Integer> typeList = new ArrayList<>();
         String result = "";
 
@@ -174,6 +194,7 @@ public class QueryUtils {
                 while (r2.next())
                     typeList.add(r2.getInt("hardwareTypeId"));
             }
+            if (typeList.isEmpty()) return (""); // If no items, return empty string
             // Create String to use in Queries
             Iterator<Integer> iterator = typeList.iterator();
             int counter=0;
@@ -199,41 +220,43 @@ public class QueryUtils {
         return result;
     }
     
-    
-    public static String getCCDHardwareTypes(HttpSession session) throws SQLException {
+    public static String getHardwareTypesFromSubsystem(HttpSession session, String subsystem) throws SQLException {
         List<Integer> typeList = new ArrayList<>();
+        List<Integer> subList = new ArrayList<>();
         String result = "";
 
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
 
-            PreparedStatement findGroupStatement = c.prepareStatement("SELECT id, name FROM "
-                    + "HardwareGroup WHERE name = 'Generic-CCD'");
-            ResultSet r = findGroupStatement.executeQuery();
+            PreparedStatement findSubStatement = c.prepareStatement("SELECT id, name FROM "
+                    + "Subsystem WHERE name = ?");
+            findSubStatement.setString(1, subsystem);
+            ResultSet r = findSubStatement.executeQuery();
+            
             while (r.next()) {
-                Integer groupId = r.getInt("id");
-                PreparedStatement findHdwTypeStatement = c.prepareStatement("SELECT hardwareTypeId FROM "
-                        + "HardwareTypeGroupMapping WHERE hardwareGroupId = ?");
-                findHdwTypeStatement.setInt(1, groupId);
-                ResultSet r2 = findHdwTypeStatement.executeQuery();
-                while (r2.next())
-                    typeList.add(r2.getInt("hardwareTypeId"));
-            }
-            // Create String to use in Queries
-            Iterator<Integer> iterator = typeList.iterator();
-            int counter=0;
-            while (iterator.hasNext()) {
-                if (counter==0)
-                    result+="(";
-                ++counter;
-                result += (iterator.next());
-                if (counter == typeList.size()) {
-                    result += ")";
-                } else {
-                    result += ", ";
+                Integer subId = r.getInt("id");
+                subList.add(subId);
+                // Find Children subsystems, if any
+                PreparedStatement findChildStatement = c.prepareStatement("SELECT id, name FROM "
+                + "Subsystem WHERE parentId = ?");
+                findChildStatement.setInt(1, subId);
+                ResultSet children = findChildStatement.executeQuery();
+                while (children.next()){
+                    subList.add(children.getInt("id"));
                 }
             }
+            if (subList.isEmpty()) return ("");
+            String subStr = stringFromList(subList);
+            PreparedStatement findHdwTypeStatement = c.prepareStatement("SELECT id FROM "
+                        + "HardwareType WHERE subsystemId IN " + subStr);
+                //findHdwTypeStatement.setString(1, subStr);
+                ResultSet r2 = findHdwTypeStatement.executeQuery();
+                while (r2.next())
+                    typeList.add(r2.getInt("id"));
+            if (typeList.isEmpty()) return (""); // If no items, return empty string
+            result = stringFromList(typeList);
+            
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -245,6 +268,8 @@ public class QueryUtils {
         return result;
     }
     
+    
+     
     public static Set getActivitySet(HttpSession session, Integer hdwId, Boolean reverseOrder) {
         Set result = null;
         TreeMap<Integer, Activity> actMap=null;
@@ -309,13 +334,13 @@ public class QueryUtils {
     
      // Retrieve all the LsstIds of a certain HardwareType
     // Return a Map of id, LsstId
-    public static List getComponentList(HttpSession session, Integer hdwType) throws SQLException {
+    public static List getComponentList(HttpSession session, String group) throws SQLException {
         List<ComponentData> result = new ArrayList<>();
 
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
-            String hdwTypeSet = getCCDHardwareTypes(session);
+            String hdwTypeSet = getHardwareTypesFromGroup(session, group);
             PreparedStatement idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId, Hardware.manufacturer, "
                     + "Hardware.creationTS "
                     + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id and "
@@ -341,42 +366,9 @@ public class QueryUtils {
     }
 
     
-
     // Retrieve all the LsstIds of a certain HardwareType
     // Return a Map of id, LsstId
-    public static Map getComponentIds(HttpSession session, Integer hdwType) throws SQLException {
-        HashMap<Integer, String> result = new HashMap<>();
-
-        Connection c = null;
-        try {
-            c = ConnectionManager.getConnection(session);
-            String hdwTypeSet = getCCDHardwareTypes(session);
-            PreparedStatement idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId "
-                    + "from Hardware,HardwareType where Hardware.hardwareTypeId=HardwareType.id and "
-                    + "HardwareType.id IN " + hdwTypeSet);
-            //idStatement.setInt(1, hdwType);
-            ResultSet r = idStatement.executeQuery();
-            while (r.next()) {
-                result.put(r.getInt("id"), r.getString("lsstId"));
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (c != null) {
-                //Close the connection
-                c.close();
-            }
-        }
-
-        return result;
-
-    }
-    
-    
-    // Retrieve all the LsstIds of a certain HardwareType
-    // Return a Map of id, LsstId
-    public static Map getFilteredComponentIds(HttpSession session, Integer hdwType, String lsst_num, String manu, String myGroup) throws SQLException {
+    public static Map getFilteredComponentIds(HttpSession session, Integer hdwType, String lsst_num, String manu, String myGroup, Boolean byGroup) throws SQLException {
         HashMap<Integer, String> result = new HashMap<>();
 
         String lower_lsst_num = lsst_num.toLowerCase();
@@ -384,7 +376,9 @@ public class QueryUtils {
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
-            String hdwTypeSet = getAnyHardwareTypes(session, myGroup);
+            String hdwTypeSet = "";
+            if (byGroup) hdwTypeSet = getHardwareTypesFromGroup(session, myGroup);
+            else hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
             
             PreparedStatement idStatement;
             if (lower_manu.equals("any")) {
@@ -547,8 +541,8 @@ public class QueryUtils {
         try {
             c = ConnectionManager.getConnection(session);
 
-            Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu, myGroup);
-            String hdwTypeSet = getAnyHardwareTypes(session, myGroup);
+            Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu, myGroup, true);
+            String hdwTypeSet = getHardwareTypesFromGroup(session, myGroup);
             
             for (Iterator<Map.Entry<Integer, String>> it = compIds.entrySet().iterator(); it.hasNext();) {
                 Map.Entry<Integer, String> entry = it.next();
@@ -678,7 +672,7 @@ public class QueryUtils {
         return result;
     }
     
-    public static List getHdwStatLocTable(HttpSession session, Integer hardwareTypeId, String lsst_num, String manu, String myGroup) throws SQLException {
+    public static List getHdwStatLocTable(HttpSession session, Integer hardwareTypeId, String lsst_num, String manu, String myGroup, Boolean byGroup) throws SQLException {
         List<HdwStatusLoc> result = new ArrayList<>();
         // Map<String,HdwStatLoc> travelerStatusMap = new HashMap<>(); 
 
@@ -686,8 +680,10 @@ public class QueryUtils {
         try {
             c = ConnectionManager.getConnection(session);
 
-            Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu, myGroup);
-            String hdwTypeSet = getAnyHardwareTypes(session, myGroup);
+            Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu, myGroup, byGroup);
+            String hdwTypeSet = "";
+            if (byGroup) hdwTypeSet = getHardwareTypesFromGroup(session, myGroup);
+            else hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
             
             for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
                 // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
@@ -808,15 +804,14 @@ public class QueryUtils {
     }
 
     // Return the summary Hardware Status Location for a particule LSST Id
-    public static HdwStatusLoc getHdwStatLoc(HttpSession session, String lsstId) throws SQLException {
+    public static HdwStatusLoc getHdwStatLoc(HttpSession session, String lsstId, String group) throws SQLException {
         HdwStatusLoc result = new HdwStatusLoc();
 
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
-            String hdwTypeSet = getCCDHardwareTypes(session);
-            //Map<Integer, String> compIds = getComponentIds(session, hardwareTypeId);
-            //for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
+            String hdwTypeSet = getHardwareTypesFromGroup(session, group);
+ 
             // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
             PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
                     + "HardwareStatusHistory.hardwareStatusId from Hardware, HardwareStatusHistory, HardwareStatus "
@@ -1318,7 +1313,7 @@ public class QueryUtils {
    //     return result;
    // }
 
-    public static List getReportsTable(HttpSession session, Integer hardwareTypeId, String dataSourceFolder, Boolean removeDups) throws SQLException {
+    public static List getReportsTable(HttpSession session, String groupName, String dataSourceFolder, Boolean removeDups) throws SQLException {
         List<ReportData> result = new ArrayList<>();
 
         Connection c = null;
@@ -1339,7 +1334,7 @@ public class QueryUtils {
             java.util.Date e2vVendorDataDate = new java.util.Date(millisecond2);
             
             // List of Sensors
-            List<ComponentData> compIds = getComponentList(session, hardwareTypeId);
+            List<ComponentData> compIds = getComponentList(session, groupName);
             Iterator<ComponentData> compIt = compIds.iterator();
             while (compIt.hasNext()) { // iterate over sensors
                 Boolean hasVendorData = false;

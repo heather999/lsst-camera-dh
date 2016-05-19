@@ -18,8 +18,8 @@
 <head>
     <title>CCD Overview</title>
 </head>
-
-<c:set var="ccdTypeString" value="${portal:getCCDHardwareTypes(pageContext.session)}"/>
+<c:set var="ccdGroup" value="Generic-CCD" scope="page"/>
+<c:set var="ccdTypeString" value="${portal:getHardwareTypesFromGroup(pageContext.session,ccdGroup)}"/>
 <sql:query var="manufacturerQ">
     SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${ccdTypeString} ORDER BY manufacturer;
 </sql:query>
@@ -49,8 +49,7 @@
 </filter:filterTable>
 
 <srs_utils:refresh />
-<c:set var="ccdGroup" value="Generic-CCD"/>
-<c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId, lsst_num, manu, ccdGroup)}"/>
+<c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId, lsst_num, manu, ccdGroup, true)}"/>
 
 <%-- defaultsort index starts from 1 --%>
 <display:table name="${hdwStatLocTable}" export="true" defaultsort="9" defaultorder="descending" class="datatable" id="hdl" >

@@ -19,9 +19,9 @@
 
         <h1>CCD Sensor Data and Reports</h1>
 
-        <%-- This code ends up searching on HdwTypes 1, 9, 10 --%>
-        <c:set var="ccdHdwTypeId" value="1" scope="page"/>  
 
+        <c:set var="repGroupName" value="Generic-CCD" scope="page"/>
+        
         <%-- Determine the data source: Prod, Dev, or Test --%>
         <c:choose>
             <c:when test="${'Prod' == appVariables.dataSourceMode}">
@@ -37,7 +37,8 @@
 
         <c:set var="moreOnlineFiles" value=""/>
         
-        <c:set var="h_reportsTable" value="${portal:getReportsTable(pageContext.session,ccdHdwTypeId,dataSourceFolder,false)}" scope="session"/>
+        <%-- ccdHdwTypeId --%>
+        <c:set var="h_reportsTable" value="${portal:getReportsTable(pageContext.session,repGroupName,dataSourceFolder,false)}" scope="session"/>
 
         <display:table name="${h_reportsTable}" export="true" defaultsort="2" defaultorder="descending" class="datatable" id="rep" >
             <display:column title="LSST_NUM" sortable="true">${rep.lsst_num}</display:column>
@@ -58,11 +59,11 @@
                             <c:param name="folderPath" value="${rep.vendDataPath}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
-                        <a href="${vendDataLink}" target="_blank"><c:out value="${rep.vendDataPath}"/></a> 
+                        <a href="${vendDataLink}" target="_blank"><c:out value="Most Recent Vendor Data"/></a> 
                     </c:otherwise>
                 </c:choose>
             </display:column>
-            <display:column title="SR-EOT-1 Vendor Ingest Test Report" sortable="true" >
+            <display:column title="SR-EOT-1 Test Report" sortable="true" >
                 <c:choose>
                     <c:when test="${rep.testReportOnlineDirPath == 'NA'}">
                         <c:out value="NA"/>
@@ -88,7 +89,7 @@
                     </c:otherwise>
                 </c:choose>
             </display:column>
-            <display:column title="SR-EOT-02 T3 Test Report" sortable="true" >
+            <display:column title="SR-EOT-02 Test Report" sortable="true" >
                 <c:choose>
                     <c:when test="${rep.testReportOfflineDirPath == 'NA'}">
                         <c:out value="NA"/>

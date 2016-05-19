@@ -14,13 +14,16 @@
         <title>Home</title>
     </head>
     <body> 
-        <h1>Sensor Quick Links</h1>
+        <h1>Quick Links</h1>
 
 
         <c:url var="ccdStatusLink" value="/ccdStatus.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
         <c:url var="ccdExplorerLink" value="/oneComponent.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
+        <c:url var="crExplorerLink" value="/oneCrComponent.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
         <c:url var="reportsLink" value="/reports.jsp">
@@ -38,6 +41,8 @@
             <li><a href="${ccdStatusLink}" title="CCD Status" style=""><strong>Overview All CCDs</strong></a></li>
 
             <li><a href="${ccdExplorerLink}" title="CCD Explorer" style=""><strong>CCD Explorer</strong></a></li>
+            
+            <li><a href="${crExplorerLink}" title="Corner Raft Explorer" style=""><strong>Corner Raft Explorer</strong></a></li>
 
             <%-- <li><a href="/DataPortal/eTravelerPortal.jsp" title "eTraveler Portal" style=""><strong>eTraveler Portal</strong></a></li> --%>
             <li> <a href="${reportsLink}" title "Data and Reports" style=""><strong>Data and Reports</strong></a></li>

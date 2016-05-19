@@ -10,33 +10,33 @@
         </function-signature>
     </function>
     <function>
-        <name>getCCDHardwareTypes</name>
+        <name>stringFromList</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.lang.String getCCDHardwareTypes(javax.servlet.http.HttpSession)
+        <function-signature>java.lang.String stringFromList(java.util.List)
         </function-signature>
     </function>
     <function>
-        <name>getAnyHardwareTypes</name>
+        <name>getHardwareTypesFromGroup</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.lang.String getAnyHardwareTypes(javax.servlet.http.HttpSession,java.lang.String)
+        <function-signature>java.lang.String getHardwareTypesFromGroup(javax.servlet.http.HttpSession, java.lang.String)
+        </function-signature>
+    </function>
+    <function>
+        <name>getHardwareTypesFromSubsystem</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.lang.String getHardwareTypesFromSubsystem(javax.servlet.http.HttpSession, java.lang.String)
         </function-signature>
     </function>
     <function>
         <name>getComponentList</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.List getComponentList(javax.servlet.http.HttpSession,java.lang.Integer)
-        </function-signature>
-    </function>
-    <function>
-        <name>getComponentIds</name>
-        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.Map getComponentIds(javax.servlet.http.HttpSession,java.lang.Integer)
+        <function-signature>java.util.List getComponentList(javax.servlet.http.HttpSession,java.lang.String)
         </function-signature>
     </function>
     <function>
         <name>getFilteredComponentIds</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.Map getFilteredComponentIds(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String)
+        <function-signature>java.util.Map getFilteredComponentIds(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean)
         </function-signature>
     </function>
     <function>
@@ -62,12 +62,12 @@
     <function>
         <name>getHdwStatLocTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String)</function-signature>
+        <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean)</function-signature>
     </function>
     <function>
         <name>getHdwStatLoc</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>org.lsst.camera.portal.data.HdwStatusLoc getHdwStatLoc(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
+        <function-signature>org.lsst.camera.portal.data.HdwStatusLoc getHdwStatLoc(javax.servlet.http.HttpSession,java.lang.String,java.lang.String)</function-signature>
     </function>
     <function>
         <name>getHardwareStatus</name>
@@ -129,7 +129,7 @@
     <function>
         <name>getReportsTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.List getReportsTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.Boolean)
+        <function-signature>java.util.List getReportsTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.String,java.lang.Boolean)
         </function-signature>
     </function>
     <function>
