@@ -26,6 +26,9 @@
         <c:url var="crExplorerLink" value="/oneCrComponent.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
+        <c:url var="crStatusLink" value="/crStatus.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
         <c:url var="reportsLink" value="/reports.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
@@ -43,6 +46,8 @@
             <li><a href="${ccdExplorerLink}" title="CCD Explorer" style=""><strong>CCD Explorer</strong></a></li>
             
             <li><a href="${crExplorerLink}" title="Corner Raft Explorer" style=""><strong>Corner Raft Explorer</strong></a></li>
+
+            <li><a href="${crStatusLink}" title="Corner Raft Overview" style=""><strong>Corner Raft Overview</strong></a></li>
 
             <%-- <li><a href="/DataPortal/eTravelerPortal.jsp" title "eTraveler Portal" style=""><strong>eTraveler Portal</strong></a></li> --%>
             <li> <a href="${reportsLink}" title "Data and Reports" style=""><strong>Data and Reports</strong></a></li>
