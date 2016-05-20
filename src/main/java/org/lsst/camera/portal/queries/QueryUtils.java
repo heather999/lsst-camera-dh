@@ -1260,25 +1260,7 @@ public class QueryUtils {
     }
 
   
-    public static String intListToString(List<Integer> intList) {
-        String result = "";
-        Iterator<Integer> iterator = intList.iterator();
-            int counter=0;
-            while (iterator.hasNext()) {
-                if (counter==0)
-                    result+="(";
-                result += (iterator.next());
-                ++counter;
-               
-                if (counter == intList.size()) {
-                    result += ")";
-                } else {
-                    result += ", ";
-                }
-            }
-            return result;
-    }
-    
+   
       //public static String getActString(HttpSession session, Integer travelerActId, Integer hardwareId) throws SQLException {
       //  String result = "";
 
@@ -1445,7 +1427,7 @@ public class QueryUtils {
                 fileStatement.setInt(1, mostRecentTestReport);
                 r = fileStatement.executeQuery();
             } else { // getAll == true
-                String actString = intListToString(actIdList);
+                String actString = stringFromList(actIdList);
                 PreparedStatement fileStatement = c.prepareStatement("SELECT virtualPath, "
                         + "catalogKey, creationTS FROM "
                         + "FilepathResultHarnessed "

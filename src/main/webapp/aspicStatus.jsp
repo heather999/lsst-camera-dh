@@ -54,9 +54,11 @@
     <display:column title="Site" sortable="true" >${hdl.site}</display:column>
     <display:column title="Location" sortable="true" >${hdl.location}</display:column>
     <display:column title="Relationship" sortable="true" >${hdl.relationshipName}</display:column>
+    <%--
     <display:column title="Current Traveler" sortable="true" >${hdl.curTravelerName}</display:column>
     <display:column title="Current Process Step" sortable="true" >${hdl.curActivityProcName}</display:column>
     <display:column title="Current Process Step Status" sortable="true" >${hdl.curActivityStatus}</display:column>
+    --%>
     <display:column title="Most Recent Timestamp" sortable="true" >${hdl.curActivityLastTime}</display:column>
     <display:column title="NCR" sortable="true" >${hdl.inNCR}</display:column>
     <display:setProperty name="export.excel.filename" value="sensorStatus.xls"/> 

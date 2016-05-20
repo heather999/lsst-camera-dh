@@ -23,7 +23,7 @@
 
         <c:set var="lsstNum" value="${param.lsstNum}" scope="page"/> 
         <c:set var="hdwGroup" value="${param.hdwGroup}" scope="page"/>
-        <c:set var="hdwTypeStr" value="${portal:geHardwareTypesFromGroup(pageContext.session,hdwGroup)}"/> 
+        <c:set var="hdwTypeStr" value="${portal:getHardwareTypesFromGroup(pageContext.session,hdwGroup)}"/> 
         <sql:query  var="hdwData" scope="page" >
             SELECT Hardware.id from Hardware where Hardware.lsstId=?
             <sql:param value="${lsstNum}"/>
