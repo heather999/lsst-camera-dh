@@ -12,7 +12,7 @@
 
 
 <%@attribute name="sub" required="true"%>
-
+<%@attribute name="explorer" required="true"%>
 
 <c:set var="hdwTypeString" value="${portal:getHardwareTypesFromSubsystem(pageContext.session,sub)}"/>
 <c:if test="${! empty hdwTypeString}">
@@ -40,7 +40,7 @@
     <display:table name="${hdwStatLocTable}" export="true" defaultsort="9" defaultorder="descending" class="datatable" id="hdl" >
         <%-- <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column> --%>
         <display:column title="LSST_NUM" sortable="true">
-            <c:url var="explorerLink" value="oneComponent.jsp">
+            <c:url var="explorerLink" value="${explorer}">
                 <c:param name="lsstIdValue" value="${hdl.lsstId}"/>
             </c:url>                
             <a href="${explorerLink}"><c:out value="${hdl.lsstId}"/></a>

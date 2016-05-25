@@ -19,4 +19,4 @@
 <head>
     <title>Corner Raft Overview</title>
 </head>
-<dp:subsystem sub="Corner Raft"/>
+<dp:subsystem sub="Corner Raft" explorer="oneCrComponent.jsp"/>
