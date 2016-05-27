@@ -20,7 +20,7 @@ import org.srs.web.base.db.ConnectionManager;
  */
 public class SummaryUtils {
 
-    public static Map<String, Map<String, List<Object>>> getReportValues(HttpSession session, Integer actParentId) throws SQLException, ServletException, JspException {
+    public static Map<String, Map<String, List<Object>>> getReportValues(HttpSession session, Integer actParentId, Integer reportId) throws SQLException, ServletException, JspException {
 
         Map<String, Map<String, List<Object>>> result = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
 
@@ -28,7 +28,8 @@ public class SummaryUtils {
             // FIXME: We should not hard-wire the DEV connection here.
             try (Connection oraconn = ConnectionManager.getConnection(session)) {
 
-                PreparedStatement stmt = c.prepareStatement("select rkey, id, query from report_queries");
+                PreparedStatement stmt = c.prepareStatement("select rkey, id, query from report_queries where report=?");
+                stmt.setInt(1, reportId);
                 ResultSet r = stmt.executeQuery();
                 while (r.next()) {
                     String key = r.getString("rkey");

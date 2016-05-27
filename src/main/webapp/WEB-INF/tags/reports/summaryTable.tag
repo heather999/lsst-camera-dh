@@ -14,11 +14,14 @@
 <%-- The list of normal or fragment attributes can be specified here: --%>
 <%@attribute name="sectionNum" type="java.lang.String" required="true"%>
 <%@attribute name="data" type="java.util.Map" required="true"%>
+<%@attribute name="reportId" type="java.lang.Integer" required="true"%>
+
 
 <sql:query var="specs" dataSource="jdbc/config-prod">
-    select specid, description, spec_display, jexl_status, jexl_measurement, jexl_jobid from report_specs
+    select specid, description, spec_display, jexl_status, jexl_measurement, jexl_jobid from report_specs where report=?
+    <sql:param value="${reportId}"/>
     <c:if test="${sectionNum != '1'}">
-        where section=? <sql:param value="${sectionNum}"/>
+        and section=? <sql:param value="${sectionNum}"/>
     </c:if>
 </sql:query>
 
