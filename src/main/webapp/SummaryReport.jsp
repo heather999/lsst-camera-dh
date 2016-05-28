@@ -7,7 +7,6 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@taglib uri="http://displaytag.sf.net" prefix="display" %>
 <%@taglib prefix="ru" tagdir="/WEB-INF/tags/reports"%>
-<%@taglib prefix="datacat" uri="http://srs.slac.stanford.edu/tlds/datacat"%>
 <%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
 
 <html>
@@ -67,16 +66,18 @@
                 <sql:param value="${reportId}"/>
             </sql:query>
             <c:forEach var="image" items="${images.rows}">
-                <datacat:query var="datasets">
-                    <datacat:folderPath value="${appVariables.datacatSearch}${actId}"/>
-                    site=='SLAC' && dataType=='LSSTSENSORTEST' && fileFormat='png' && name='${lsstId}${image.image_url}'
-                </datacat:query>
-                <c:if test="${empty datasets}">
-                    Missing image: ${lsstId}${image.image}
+                <sql:query var="filepath">
+                    select catalogKey from FilepathResultHarnessed res 
+                    join Activity act on res.activityId=act.id where act.parentActivityId=?
+                    and virtualPath like ?
+                    <sql:param value="${parentActivityId}"/>
+                    <sql:param value="%${lsstId}${image.image_url}"/>
+                </sql:query>
+                <c:if test="${filepath.rowCount==0}">
+                    Missing image: ${lsstId}${image.image_url}
                 </c:if>
-                <c:forEach var="dataset" items="${datasets}">
-                    <c:set var="pk" value="${dataset.viewInfo.getLocation('SLAC').pk}"/>
-                    <img src="http://srs.slac.stanford.edu/DataCatalog/get?datasetLocation=${pk}" alt="${lsstId}${image.image_url}"/>
+                <c:forEach var="dataset" items="${filepath.rows}">
+                    <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${dataset.catalogKey}" alt="${lsstId}${image.image_url}"/>
                 </c:forEach>
             </c:forEach>
             
