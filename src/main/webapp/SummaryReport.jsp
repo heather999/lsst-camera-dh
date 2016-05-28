@@ -25,7 +25,7 @@
             select hw.lsstId, act.end, act.id, pr.name from Activity act 
             join Hardware hw on act.hardwareId=hw.id 
             join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
-            where statusHist.activityStatusId=1 and pr.name='test_report_offline' and act.parentActivityId = ?
+            where statusHist.activityStatusId=1 and act.id = ?
             <sql:param value="${param.parentActivityId}"/>
         </sql:query> 
         <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
