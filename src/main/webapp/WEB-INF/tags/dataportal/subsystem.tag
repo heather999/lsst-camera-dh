@@ -13,29 +13,60 @@
 
 <%@attribute name="sub" required="true"%>
 <%@attribute name="explorer" required="true"%>
+<%@attribute name="bygroup" required="false"%>
 
-<c:set var="hdwTypeString" value="${portal:getHardwareTypesFromSubsystem(pageContext.session,sub)}"/>
+<c:choose>
+    <c:when test = "${empty bygroup}">    
+        <c:set var="hdwTypeString" value="${portal:getHardwareTypesFromSubsystem(pageContext.session,sub)}"/>
+        <c:set var="bygroupFlag" value="false"/>
+    </c:when>
+    <c:otherwise>
+        <c:set var="hdwTypeString" value="${portal:getHardwareTypesFromGroup(pageContext.session,sub)}"/>
+        <c:set var="bygroupFlag" value="true"/>
+    </c:otherwise>
+</c:choose>
+
 <c:if test="${! empty hdwTypeString}">
     <sql:query var="manufacturerQ">
         SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${hdwTypeString} ORDER BY manufacturer;
     </sql:query>
 
+    <sql:query var="labelQ">
+        SELECT DISTINCT name, HardwareStatus.id FROM HardwareStatus INNER JOIN HardwareStatusHistory ON HardwareStatus.id = HardwareStatusHistory.hardwareStatusId 
+        INNER JOIN Hardware ON Hardware.id = HardwareStatusHistory.hardwareId AND Hardware.hardwareTypeId IN ${hdwTypeString}
+        WHERE isStatusValue=0 ORDER BY name;
+    </sql:query>
 
-    <h1>Current Status and Location</h1>
-
-    <filter:filterTable>
-        <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
-        <filter:filterSelection title="Manufacturer" var="manu" defaultValue="any">
-            <filter:filterOption value="any">Any</filter:filterOption>
-                <c:forEach var="hdw" items="${manufacturerQ.rows}">
-                <filter:filterOption value="${hdw.manufacturer}"><c:out value="${hdw.manufacturer}"/></filter:filterOption>
-                </c:forEach>
-        </filter:filterSelection>
-    </filter:filterTable>
+        <h1>Current Status and Location</h1>
+        <c:if test="${ ! empty labelsQ.rows}"> 
+            TESTING
+        </c:if>
+        <filter:filterTable>
+            <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
+            <filter:filterSelection title="Manufacturer" var="manu" defaultValue="any">
+                <filter:filterOption value="any">Any</filter:filterOption>
+                    <c:forEach var="hdw" items="${manufacturerQ.rows}">
+                    <filter:filterOption value="${hdw.manufacturer}"><c:out value="${hdw.manufacturer}"/></filter:filterOption>
+                    </c:forEach>
+            </filter:filterSelection>
+                <filter:filterSelection title="Labels" var="labelsChosen" multiple="true">
+                        <c:forEach var="label" items="${labelQ.rows}">
+                        <filter:filterOption value="${label.id}"><c:out value="${label.name}"/></filter:filterOption>
+                        </c:forEach>                        
+                </filter:filterSelection>
+        </filter:filterTable>
 
     <srs_utils:refresh />
-    <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId, lsst_num, manu, sub, false)}"/>
+    <c:set var="hdwStatLocTable" value="${portal:getHdwStatLocTable(pageContext.session,ccdHdwTypeId, lsst_num, manu, sub, bygroupFlag)}"/>
 
+    <c:forEach var='parameter' items='${paramValues}'> 
+        <c:out value='${parameter.key}'/>
+        <c:forEach var='value' items='${parameter.value}'>
+           <c:out value='${value}'/>   
+        </c:forEach>
+  </c:forEach>
+    
+    
     <%-- defaultsort index starts from 1 --%>
     <display:table name="${hdwStatLocTable}" export="true" defaultsort="9" defaultorder="descending" class="datatable" id="hdl" >
         <%-- <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column> --%>

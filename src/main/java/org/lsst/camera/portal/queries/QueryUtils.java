@@ -571,7 +571,7 @@ public class QueryUtils {
                 PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
                         + "HardwareStatusHistory.hardwareStatusId FROM Hardware, HardwareStatusHistory, HardwareStatus "
                         + "WHERE Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
-                        + "AND Hardware.lsstId=? AND "
+                        + "AND Hardware.lsstId=? AND HardwareStatus.isStatusValue = 1 AND "
                         + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareStatusHistory.creationTS DESC");
                 hdwStatusStatement.setString(1, lsstId);
                 ResultSet statusResult = hdwStatusStatement.executeQuery();
@@ -690,7 +690,7 @@ public class QueryUtils {
                 PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
                         + "HardwareStatusHistory.hardwareStatusId FROM Hardware, HardwareStatusHistory, HardwareStatus "
                         + "WHERE Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
-                        + "AND Hardware.lsstId=? AND "
+                        + "AND Hardware.lsstId=? AND HardwareStatus.isStatusValue=1 AND "
                         + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareStatusHistory.creationTS DESC");
                 hdwStatusStatement.setString(1, lsstId);
                 //hdwStatusStatement.setInt(2, Integer.valueOf(hardwareTypeId));
@@ -816,7 +816,7 @@ public class QueryUtils {
             PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
                     + "HardwareStatusHistory.hardwareStatusId from Hardware, HardwareStatusHistory, HardwareStatus "
                     + "WHERE Hardware.id=HardwareStatusHistory.hardwareId and HardwareStatus.id = HardwareStatusHistory.hardwareStatusId "
-                    + "AND Hardware.lsstId=? AND "
+                    + "AND Hardware.lsstId=? AND HardwareStatus.isStatusValue = 1 AND "
                     + "Hardware.hardwareTypeId IN " + hdwTypeSet + " ORDER BY HardwareStatusHistory.creationTS DESC");
             hdwStatusStatement.setString(1, lsstId);
             //  hdwStatusStatement.setInt(2, Integer.valueOf(hardwareTypeId));
