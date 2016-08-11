@@ -20,8 +20,10 @@ public class NcrData {
     private Boolean finalStatus;
     private Integer statusId;
     private String statusName;
+    private java.util.Date ncrCreationTime;
     
-    public NcrData(int actId, int rootId, String lsstId, String typeName, int sId, String sName, Date b, Boolean f) {
+    public NcrData(int actId, int rootId, String lsstId, String typeName, int sId, String sName, Date b, Boolean f,
+            Date create) {
         this.activityId = actId;
         this.rootActivityId = rootId;
        // this.hdwId = hardwareId;
@@ -31,6 +33,7 @@ public class NcrData {
         this.hdwType = typeName == null || "".equals(typeName) ? "NA" : typeName;
         this.beginTime = b;
         this.finalStatus = f;
+        this.ncrCreationTime = create;
        
     }
 
@@ -103,6 +106,14 @@ public class NcrData {
 
     public Boolean getFinalStatus() {
        return finalStatus;
+    }
+    
+    public Date getNcrCreationTime() {
+        return ncrCreationTime;
+    }
+
+    public void setNcrCreationTime(Date b) {
+        this.ncrCreationTime = b;
     }
     
 }

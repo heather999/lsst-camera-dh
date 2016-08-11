@@ -345,21 +345,37 @@ public class QueryUtils {
             //idStatement.setInt(1, hdwType);
             ResultSet r = ncrStatement.executeQuery();
             while (r.next()) {
-                PreparedStatement actStatement = c.prepareStatement("SELECT max(A.id) AS actId, A.rootActivityId, A.creationTS "
-                        + "FROM Activity A WHERE A.inNCR='TRUE' AND A.hardwareId=?");
-                actStatement.setInt(1,r.getInt("hdwId"));
+                PreparedStatement actStatement = c.prepareStatement("SELECT A.id AS actId, A.rootActivityId, A.creationTS "
+                        + "FROM Activity A WHERE A.inNCR='TRUE' AND A.hardwareId=? ORDER BY rootActivityId DESC");
+                actStatement.setInt(1, r.getInt("hdwId"));
                 ResultSet a = actStatement.executeQuery();
-                a.first();
-                PreparedStatement detailStatement = c.prepareStatement("SELECT ASH.id, ASH.activityStatusId, AFS.name, "
-                        + "AFS.isFinal AS final FROM ActivityStatusHistory ASH " 
-                        + "INNER JOIN ActivityFinalStatus AFS ON AFS.id = ASH.activityStatusId " 
-                        + "WHERE ASH.activityId = ? ORDER BY ASH.id DESC");
-                detailStatement.setInt(1,a.getInt("actId"));
-                ResultSet d = detailStatement.executeQuery();
-                d.first();
-                NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), r.getString("lsstid"), r.getString("hdwType"), 
-                        d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"));
-                result.add(ncr);
+                int lastRootActId=0;
+                Boolean firstTime = true;
+                while (a.next()) {
+                    int curRootActId = a.getInt("rootActivityId");
+
+                    if ((!firstTime) && (curRootActId == lastRootActId)) {
+                        continue;
+                    }
+                    PreparedStatement ncrStartStatement = c.prepareStatement("SELECT creationTS FROM Activity "
+                            + "WHERE Activity.rootActivityId=?");
+                    ncrStartStatement.setInt(1, a.getInt("rootActivityId"));
+                    ResultSet startResult = ncrStartStatement.executeQuery();
+                    startResult.first();
+                    PreparedStatement detailStatement = c.prepareStatement("SELECT ASH.id, ASH.activityStatusId, AFS.name, "
+                            + "AFS.isFinal AS final FROM ActivityStatusHistory ASH "
+                            + "INNER JOIN ActivityFinalStatus AFS ON AFS.id = ASH.activityStatusId "
+                            + "WHERE ASH.activityId = ? ORDER BY ASH.id DESC");
+                    detailStatement.setInt(1, a.getInt("actId"));
+                    ResultSet d = detailStatement.executeQuery();
+                    d.first();
+                    NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), r.getString("lsstid"), r.getString("hdwType"),
+                            d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
+                            startResult.getTimestamp("creationTS"));
+                    result.add(ncr);
+                    lastRootActId = a.getInt("rootActivityId");
+                    firstTime = false;
+                }
             }
 
         } catch (Exception e) {
