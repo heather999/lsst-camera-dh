@@ -29,6 +29,7 @@ import org.lsst.camera.portal.data.HardwareStatus;
 import org.lsst.camera.portal.data.HdwStatusLoc;
 import org.lsst.camera.portal.data.HdwStatusRelationship;
 import org.lsst.camera.portal.data.Activity;
+import org.lsst.camera.portal.data.NcrData;
 import org.lsst.camera.portal.data.TravelerInfo;
 import org.lsst.camera.portal.data.ReportData;
 import org.lsst.camera.portal.data.TestReportPathData;
@@ -331,6 +332,48 @@ public class QueryUtils {
         return activityMap;
     }
     
+    public static List getNcrTable(HttpSession session, String lsstNum) throws SQLException {
+        List<NcrData> result = new ArrayList<>();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            // Find all Hardware components with NCRs
+            PreparedStatement ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H " 
+                    + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                    + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE')");
+            //idStatement.setInt(1, hdwType);
+            ResultSet r = ncrStatement.executeQuery();
+            while (r.next()) {
+                PreparedStatement actStatement = c.prepareStatement("SELECT max(A.id) AS actId, A.rootActivityId, A.creationTS "
+                        + "FROM Activity A WHERE A.inNCR='TRUE' AND A.hardwareId=?");
+                actStatement.setInt(1,r.getInt("hdwId"));
+                ResultSet a = actStatement.executeQuery();
+                a.first();
+                PreparedStatement detailStatement = c.prepareStatement("SELECT ASH.id, ASH.activityStatusId, AFS.name, "
+                        + "AFS.isFinal AS final FROM ActivityStatusHistory ASH " 
+                        + "INNER JOIN ActivityFinalStatus AFS ON AFS.id = ASH.activityStatusId " 
+                        + "WHERE ASH.activityId = ? ORDER BY ASH.id DESC");
+                detailStatement.setInt(1,a.getInt("actId"));
+                ResultSet d = detailStatement.executeQuery();
+                d.first();
+                NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), r.getString("lsstid"), r.getString("hdwType"), 
+                        d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"));
+                result.add(ncr);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+
+    }
     
      // Retrieve all the LsstIds of a certain HardwareType
     // Return a Map of id, LsstId

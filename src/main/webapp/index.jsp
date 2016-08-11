@@ -35,6 +35,9 @@
         <c:url var="actStatusLink" value="/activityStatus.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
+        <c:url var="ncrStatusLink" value="/ncrStatus.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
         <c:url var="aspicLink" value="/aspicStatus.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
@@ -53,6 +56,7 @@
             <li> <a href="${reportsLink}" title "Data and Reports" style=""><strong>Data and Reports</strong></a></li>
 
             <li><a href="${actStatusLink}" title="Activity Status" style=""><strong>All eTraveler Activity Status</strong></a></li>
+            <li><a href="${ncrStatusLink}" title="NCR Status" style=""><strong>All NCR Status</strong></a></li>
 
         </ul>   
             
