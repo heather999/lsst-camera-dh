@@ -16,7 +16,7 @@
 <%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
 <head>
-    <title>CCD Overview</title>
+    <title>Science Raft Sensor Overview</title>
 </head>
 <c:set var="ccdGroup" value="Generic-CCD" scope="page"/>
 <c:set var="ccdTypeString" value="${portal:getHardwareTypesFromGroup(pageContext.session,ccdGroup)}"/>
@@ -35,7 +35,7 @@
 
 
 
-<h1>CCD Current Status and Location</h1>
+<h1>Science Raft Sensor Current Status and Location</h1>
 
 
 <filter:filterTable>

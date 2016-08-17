@@ -13,6 +13,9 @@
 
 <%@attribute name="sub" required="true"%>
 <%@attribute name="explorer" required="true"%>
+<%@attribute name="title" required="true"%>
+
+<h1>${title}</h1>
 
 <c:set var="hdwTypeString" value="${portal:getHardwareTypesFromSubsystem(pageContext.session,sub)}"/>
 <c:if test="${! empty hdwTypeString}">
@@ -20,8 +23,6 @@
         SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${hdwTypeString} ORDER BY manufacturer;
     </sql:query>
 
-
-    <h1>Current Status and Location</h1>
 
     <filter:filterTable>
         <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>

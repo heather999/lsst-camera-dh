@@ -332,25 +332,54 @@ public class QueryUtils {
         return activityMap;
     }
     
-    public static List getNcrTable(HttpSession session, String lsstNum) throws SQLException {
+    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId) throws SQLException {
         List<NcrData> result = new ArrayList<>();
-
+        String lower_lsstNum = lsstNum.toLowerCase();
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
             // Find all Hardware components with NCRs
-            PreparedStatement ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H " 
-                    + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
-                    + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE')");
-            //idStatement.setInt(1, hdwType);
+            PreparedStatement ncrStatement;
+            if (subsysId <= 0) { // No subsystem filtering
+                if (lower_lsstNum.equals("")) {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE')");
+                } else {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
+                            + "AND LOWER(H.lsstId) LIKE concat('%', ?, '%')");
+                    ncrStatement.setString(1, lower_lsstNum);
+                }
+
+            } else {
+                if (lower_lsstNum.equals("")) {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "INNER JOIN Subsystem ON HardwareType.subsystemId = Subsystem.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
+                            + "AND HardwareType.subsystemId = ?");
+                    ncrStatement.setInt(1, subsysId);
+                } else {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "INNER JOIN Subsystem ON HardwareType.subsystemId = Subsystem.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
+                            + "AND HardwareType.subsystemId = ? AND LOWER(H.lsstId) LIKE concat('%', ?, '%')");
+                    ncrStatement.setInt(1, subsysId);
+                    ncrStatement.setString(2, lower_lsstNum);
+                }
+            }
             ResultSet r = ncrStatement.executeQuery();
             while (r.next()) {
                 PreparedStatement actStatement = c.prepareStatement("SELECT A.id AS actId, A.rootActivityId, A.creationTS "
                         + "FROM Activity A WHERE A.inNCR='TRUE' AND A.hardwareId=? ORDER BY rootActivityId DESC");
                 actStatement.setInt(1, r.getInt("hdwId"));
                 ResultSet a = actStatement.executeQuery();
-                int lastRootActId=0;
+                int lastRootActId = 0;
                 Boolean firstTime = true;
+                // Loop over all NCR associated activites, dumping duplicates
                 while (a.next()) {
                     int curRootActId = a.getInt("rootActivityId");
 
@@ -362,11 +391,12 @@ public class QueryUtils {
                     ncrStartStatement.setInt(1, a.getInt("rootActivityId"));
                     ResultSet startResult = ncrStartStatement.executeQuery();
                     startResult.first();
+                    // Find the status on the root activity
                     PreparedStatement detailStatement = c.prepareStatement("SELECT ASH.id, ASH.activityStatusId, AFS.name, "
                             + "AFS.isFinal AS final FROM ActivityStatusHistory ASH "
                             + "INNER JOIN ActivityFinalStatus AFS ON AFS.id = ASH.activityStatusId "
                             + "WHERE ASH.activityId = ? ORDER BY ASH.id DESC");
-                    detailStatement.setInt(1, a.getInt("actId"));
+                    detailStatement.setInt(1, a.getInt("rootActivityId"));
                     ResultSet d = detailStatement.executeQuery();
                     d.first();
                     NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), r.getString("lsstid"), r.getString("hdwType"),

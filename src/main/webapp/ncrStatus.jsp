@@ -18,33 +18,29 @@
 <head>
     <title>NCR Overview</title>
 </head>
-<c:set var="ccdGroup" value="Generic-CCD" scope="page"/>
-<c:set var="ccdTypeString" value="${portal:getHardwareTypesFromGroup(pageContext.session,ccdGroup)}"/>
-<sql:query var="manufacturerQ">
-    SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${ccdTypeString} ORDER BY manufacturer;
+
+<sql:query var="subsystemQ">
+    SELECT id, name FROM Subsystem;
 </sql:query>
-
-
 
 
 <h1>NCR Current Status</h1>
 
-
 <filter:filterTable>
     <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
-    <filter:filterSelection title="Manufacturer" var="manu" defaultValue="any">
-        <filter:filterOption value="any">Any</filter:filterOption>
-            <c:forEach var="hdw" items="${manufacturerQ.rows}">
-            <filter:filterOption value="${hdw.manufacturer}"><c:out value="${hdw.manufacturer}"/></filter:filterOption>
+    <filter:filterSelection title="Subsystem" var="subsystem" defaultValue="0">
+        <filter:filterOption value="0">Any</filter:filterOption>
+            <c:forEach var="sub" items="${subsystemQ.rows}">
+            <filter:filterOption value="${sub.id}"><c:out value="${sub.name}"/></filter:filterOption>
             </c:forEach>
     </filter:filterSelection>
 </filter:filterTable>
 
-<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, lsst_num)}"/>
+<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, lsst_num, subsystem)}"/>
 
 
 <%-- defaultsort index starts from 1 --%>
-<display:table name="${ncrTable}" export="true" defaultsort="7" defaultorder="descending" class="datatable" id="hdl" >
+<display:table name="${ncrTable}" export="true" defaultsort="4" defaultorder="descending" class="datatable" id="hdl" >
     <display:column title="NCR ID" sortable="true">
         <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
             <c:param name="activityId" value="${hdl.rootActivityId}"/>
@@ -61,7 +57,24 @@
     <display:column title="Hardware Type" sortable="true" >${hdl.hdwType}</display:column>
     <display:column title="NCR Start Time" sortable="true" >${hdl.ncrCreationTime}</display:column>
     <display:column title="Current NCR Status" sortable="true" >${hdl.statusName}</display:column>
-    <display:column title="Final Status?" sortable="true" >${hdl.finalStatus}</display:column>
+    <display:column title="Closed?" sortable="true" >
+        <c:choose>
+            <c:when test="${hdl.finalStatus == true}">
+                <b>
+                <font color="green">
+                <c:out value="DONE"/>
+                </font>
+                </b>
+            </c:when>
+            <c:otherwise>
+                <font color="purple">
+                <b>
+                <c:out value="OPEN"/>
+                </b>
+                </font>
+            </c:otherwise>
+        </c:choose>
+    </display:column>
     <display:setProperty name="export.excel.filename" value="ncrStatus.xls"/> 
     <display:setProperty name="export.csv.filename" value="ncrStatus.csv"/> 
     <display:setProperty name="export.xml.filename" value="ncrStatus.xml"/> 

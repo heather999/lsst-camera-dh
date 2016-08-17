@@ -44,26 +44,30 @@
 
         <ul>   
 
-            <li><a href="${ccdStatusLink}" title="CCD Status" style=""><strong>Overview All CCDs</strong></a></li>
+            <li><a href="${ccdStatusLink}" title="Science Raft CCD Overview" style=""><strong>Science Raft CCD Overview</strong></a></li>
 
-            <li><a href="${ccdExplorerLink}" title="CCD Explorer" style=""><strong>CCD Explorer</strong></a></li>
-            
-            <li><a href="${crExplorerLink}" title="Corner Raft Explorer" style=""><strong>Corner Raft Explorer</strong></a></li>
-
-            <li><a href="${crStatusLink}" title="Corner Raft Overview" style=""><strong>Corner Raft Overview</strong></a></li>
+            <li><a href="${ccdExplorerLink}" title="Science Raft CCD Explorer" style=""><strong>Science Raft CCD Explorer</strong></a></li>
 
             <%-- <li><a href="/DataPortal/eTravelerPortal.jsp" title "eTraveler Portal" style=""><strong>eTraveler Portal</strong></a></li> --%>
-            <li> <a href="${reportsLink}" title "Data and Reports" style=""><strong>Data and Reports</strong></a></li>
+            <li> <a href="${reportsLink}" title "Science Raft CCD Data and Reports" style=""><strong>Science Raft CCD Data and Reports</strong></a></li>
+        </ul>
+        
+        <ul>
+            <li><a href="${crStatusLink}" title="Corner Raft CCD Overview" style=""><strong>Corner Raft CCD Overview</strong></a></li>
 
+            <li><a href="${crExplorerLink}" title="Corner Raft CCD Explorer" style=""><strong>Corner Raft CCD Explorer</strong></a></li>
+        </ul>
+        
+        <ul>
             <li><a href="${actStatusLink}" title="Activity Status" style=""><strong>All eTraveler Activity Status</strong></a></li>
             <li><a href="${ncrStatusLink}" title="NCR Status" style=""><strong>All NCR Status</strong></a></li>
 
         </ul>   
-            
-            <ul>
-                <li><a href="${aspicLink}" title="ASPICs" style=""><strong>Overview All ASPICs</strong></a></li>
-                
-            </ul>
+
+        <ul>
+            <li><a href="${aspicLink}" title="ASPICs" style=""><strong>Overview All ASPICs</strong></a></li>
+
+        </ul>
 
         <section>
 
