@@ -48,12 +48,14 @@
         </c:url>
         <a href="${actLink}" target="_blank">${hdl.rootActivityId}</a>
     </display:column>
-    <display:column title="LSST_NUM" sortable="true">
+        <display:column title="LSST_NUM" sortable="true"> ${hdl.lsstNum}</display:column>
+        <%--  disable linking until we can search on HdwTypeId
         <c:url var="explorerLink" value="oneComponent.jsp">
             <c:param name="lsstIdValue" value="${hdl.lsstNum}"/>
         </c:url>                
         <a href="${explorerLink}"><c:out value="${hdl.lsstNum}"/></a>
     </display:column>
+        --%>
     <display:column title="Hardware Type" sortable="true" >${hdl.hdwType}</display:column>
     <display:column title="NCR Start Time" sortable="true" >${hdl.ncrCreationTime}</display:column>
     <display:column title="Current NCR Status" sortable="true" >${hdl.statusName}</display:column>
