@@ -17,7 +17,7 @@
     <body> 
 
 
-        <h1>CCD Sensor Data and Reports</h1>
+        <h1>Science Raft CCD Sensor Data and Reports</h1>
 
 
         <c:set var="repGroupName" value="Generic-CCD" scope="page"/>

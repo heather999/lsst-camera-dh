@@ -29,6 +29,7 @@ import org.lsst.camera.portal.data.HardwareStatus;
 import org.lsst.camera.portal.data.HdwStatusLoc;
 import org.lsst.camera.portal.data.HdwStatusRelationship;
 import org.lsst.camera.portal.data.Activity;
+import org.lsst.camera.portal.data.NcrData;
 import org.lsst.camera.portal.data.TravelerInfo;
 import org.lsst.camera.portal.data.ReportData;
 import org.lsst.camera.portal.data.TestReportPathData;
@@ -331,6 +332,94 @@ public class QueryUtils {
         return activityMap;
     }
     
+    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId) throws SQLException {
+        List<NcrData> result = new ArrayList<>();
+        String lower_lsstNum = lsstNum.toLowerCase();
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            // Find all Hardware components with NCRs
+            PreparedStatement ncrStatement;
+            if (subsysId <= 0) { // No subsystem filtering
+                if (lower_lsstNum.equals("")) {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE')");
+                } else {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
+                            + "AND LOWER(H.lsstId) LIKE concat('%', ?, '%')");
+                    ncrStatement.setString(1, lower_lsstNum);
+                }
+
+            } else {
+                if (lower_lsstNum.equals("")) {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "INNER JOIN Subsystem ON HardwareType.subsystemId = Subsystem.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
+                            + "AND HardwareType.subsystemId = ?");
+                    ncrStatement.setInt(1, subsysId);
+                } else {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "INNER JOIN Subsystem ON HardwareType.subsystemId = Subsystem.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
+                            + "AND HardwareType.subsystemId = ? AND LOWER(H.lsstId) LIKE concat('%', ?, '%')");
+                    ncrStatement.setInt(1, subsysId);
+                    ncrStatement.setString(2, lower_lsstNum);
+                }
+            }
+            ResultSet r = ncrStatement.executeQuery();
+            while (r.next()) {
+                PreparedStatement actStatement = c.prepareStatement("SELECT A.id AS actId, A.rootActivityId, A.creationTS "
+                        + "FROM Activity A WHERE A.inNCR='TRUE' AND A.hardwareId=? ORDER BY rootActivityId DESC");
+                actStatement.setInt(1, r.getInt("hdwId"));
+                ResultSet a = actStatement.executeQuery();
+                int lastRootActId = 0;
+                Boolean firstTime = true;
+                // Loop over all NCR associated activites, dumping duplicates
+                while (a.next()) {
+                    int curRootActId = a.getInt("rootActivityId");
+
+                    if ((!firstTime) && (curRootActId == lastRootActId)) {
+                        continue;
+                    }
+                    PreparedStatement ncrStartStatement = c.prepareStatement("SELECT creationTS FROM Activity "
+                            + "WHERE Activity.rootActivityId=?");
+                    ncrStartStatement.setInt(1, a.getInt("rootActivityId"));
+                    ResultSet startResult = ncrStartStatement.executeQuery();
+                    startResult.first();
+                    // Find the status on the root activity
+                    PreparedStatement detailStatement = c.prepareStatement("SELECT ASH.id, ASH.activityStatusId, AFS.name, "
+                            + "AFS.isFinal AS final FROM ActivityStatusHistory ASH "
+                            + "INNER JOIN ActivityFinalStatus AFS ON AFS.id = ASH.activityStatusId "
+                            + "WHERE ASH.activityId = ? ORDER BY ASH.id DESC");
+                    detailStatement.setInt(1, a.getInt("rootActivityId"));
+                    ResultSet d = detailStatement.executeQuery();
+                    d.first();
+                    NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), r.getString("lsstid"), r.getString("hdwType"),
+                            d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
+                            startResult.getTimestamp("creationTS"));
+                    result.add(ncr);
+                    lastRootActId = a.getInt("rootActivityId");
+                    firstTime = false;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+
+    }
     
      // Retrieve all the LsstIds of a certain HardwareType
     // Return a Map of id, LsstId
@@ -435,6 +524,91 @@ public class QueryUtils {
 
     }
     
+        // Retrieve all the LsstIds of a certain HardwareType
+    // Return a Map of id, LsstId
+    public static Map getLabelFilteredComponentIds(HttpSession session, Integer hdwType, String lsst_num, String manu, String myGroup, Boolean byGroup, Integer labelId) throws SQLException {
+        HashMap<Integer, String> result = new HashMap<>();
+
+        String lower_lsst_num = lsst_num.toLowerCase();
+        String lower_manu = manu.toLowerCase();
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            String hdwTypeSet = "";
+            if (byGroup) hdwTypeSet = getHardwareTypesFromGroup(session, myGroup);
+            else hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
+            
+            PreparedStatement idStatement;
+            if (lower_manu.equals("any")) {
+                if (lower_lsst_num.equals("")) {
+                    idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId "
+                    + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND "
+                    + " HardwareType.id IN " + hdwTypeSet);
+                    //idStatement.setInt(1,hdwType);
+                }
+                else {
+                    idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId "
+                    + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND "
+                    + "LOWER(Hardware.lsstId) LIKE concat('%', ?, '%') AND "
+                    + "HardwareType.id IN " + hdwTypeSet);
+                    idStatement.setString(1, lower_lsst_num);
+                    //idStatement.setInt(2, hdwType);
+                }
+            } 
+            else {
+                if (lsst_num.equals("")) {
+                    idStatement = c.prepareStatement("select Hardware.id,Hardware.lsstId "
+                    + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND LOWER(Hardware.manufacturer) = ? AND "
+                    + "HardwareType.id IN " + hdwTypeSet);
+                    idStatement.setString(1, lower_manu);
+                    //idStatement.setInt(2, hdwType);
+                }
+                else {
+                    idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId "
+                    + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND LOWER(Hardware.manufacturer) = ? AND "
+                    + "LOWER(Hardware.lsstId) LIKE concat('%', ?, '%') AND "
+                    + "HardwareType.id IN " + hdwTypeSet );
+                
+                    idStatement.setString(1, lower_manu);
+                    idStatement.setString(2, lower_lsst_num);
+                    //idStatement.setInt(3, hdwType);
+                }
+            }
+           
+            ResultSet r = idStatement.executeQuery();
+            while (r.next()) {
+                String lsstId = r.getString("lsstId");
+                if (labelId > 0) {
+
+                    PreparedStatement labelStatement = c.prepareStatement("SELECT HSH.id, HSH.adding, HSH.hardwareId "
+                            + "FROM HardwareStatusHistory HSH "
+                            + "INNER JOIN Hardware H ON H.id = HSH.hardwareId "
+                            + "WHERE H.lsstId =? AND HSH.hardwareStatusId = ? "
+                            + "ORDER BY HSH.id DESC");
+                    labelStatement.setString(1, lsstId);
+                    labelStatement.setInt(2, labelId);
+                    ResultSet labelResult = labelStatement.executeQuery();
+                    if ((labelResult.first() == false)
+                            || (labelResult.getInt("adding") != 1)) // skip components that do not satisy the label
+                    {
+                        continue;
+                    }
+                }
+                result.put(r.getInt("id"), lsstId);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+
+    }
     
 
     public static String getTravelerStatus(TravelerStatus status, String travelerUniqueId) {
@@ -650,11 +824,12 @@ public class QueryUtils {
                 hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
                         locResult.getString("sname"), locResult.getTimestamp("creationTS"),
                         travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
-                if (relationshipExists)
-                    hsl.setRelationship(relationshipResult.getString("actionName"),true,relationshipResult.getString("lsstId"), 
-                        relationshipResult.getString("hardwareName"));
-                else
-                    hsl.setRelationship("",false,"","");
+                if (relationshipExists) {
+                    hsl.setRelationship(relationshipResult.getString("actionName"), true, relationshipResult.getString("lsstId"),
+                            relationshipResult.getString("hardwareName"));
+                } else {
+                    hsl.setRelationship("", false, "", "");
+                }
                 result.add(hsl);
             }
 
@@ -663,16 +838,20 @@ public class QueryUtils {
         } finally {
             if (c != null) {
                 //Close the connection
-                if (locResult != null) locResult.close();
-                if (relationshipResult != null) relationshipResult.close();
+                if (locResult != null) {
+                    locResult.close();
+                }
+                if (relationshipResult != null) {
+                    relationshipResult.close();
+                }
                 c.close();
             }
         }
 
         return result;
     }
-    
-    public static List getHdwStatLocTable(HttpSession session, Integer hardwareTypeId, String lsst_num, String manu, String myGroup, Boolean byGroup) throws SQLException {
+
+    public static List getHdwStatLocTable(HttpSession session, Integer hardwareTypeId, String lsst_num, String manu, String myGroup, Boolean byGroup, Integer labelId) throws SQLException {
         List<HdwStatusLoc> result = new ArrayList<>();
         // Map<String,HdwStatLoc> travelerStatusMap = new HashMap<>(); 
 
@@ -682,10 +861,29 @@ public class QueryUtils {
 
             Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsst_num, manu, myGroup, byGroup);
             String hdwTypeSet = "";
-            if (byGroup) hdwTypeSet = getHardwareTypesFromGroup(session, myGroup);
-            else hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
-            
+            if (byGroup) {
+                hdwTypeSet = getHardwareTypesFromGroup(session, myGroup);
+            } else {
+                hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
+            }
+
             for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
+                if (labelId > 0) {
+                    PreparedStatement labelStatement = c.prepareStatement("SELECT HSH.id, HSH.adding, HSH.hardwareId "
+                            + "FROM HardwareStatusHistory HSH "
+                            + "INNER JOIN Hardware H ON H.id = HSH.hardwareId "
+                            + "WHERE H.lsstId =? AND HSH.hardwareStatusId = ? "
+                            + "ORDER BY HSH.id DESC");
+                    labelStatement.setString(1, lsstId);
+                    labelStatement.setInt(2, labelId);
+                    ResultSet labelResult = labelStatement.executeQuery();
+                    if ((labelResult.first() == false)
+                            || (labelResult.getInt("adding") != 1)) // skip components that do not satisy the label
+                    {
+                        continue;
+                    }
+                }
+                
                 // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
                 PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
                         + "HardwareStatusHistory.hardwareStatusId FROM Hardware, HardwareStatusHistory, HardwareStatus "

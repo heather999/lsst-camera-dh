@@ -28,6 +28,12 @@
         </function-signature>
     </function>
     <function>
+        <name>getNcrTable</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getNcrTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
         <name>getComponentList</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.util.List getComponentList(javax.servlet.http.HttpSession,java.lang.String)
@@ -37,6 +43,12 @@
         <name>getFilteredComponentIds</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.util.Map getFilteredComponentIds(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean)
+        </function-signature>
+    </function>
+    <function>
+        <name>getLabelFilteredComponentIds</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.Map getLabelFilteredComponentIds(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean,java.lang.Integer)
         </function-signature>
     </function>
     <function>
@@ -62,7 +74,7 @@
     <function>
         <name>getHdwStatLocTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean)</function-signature>
+        <function-signature>java.util.List getHdwStatLocTable(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean,java.lang.Integer)</function-signature>
     </function>
     <function>
         <name>getHdwStatLoc</name>

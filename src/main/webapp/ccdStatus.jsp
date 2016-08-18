@@ -17,9 +17,9 @@
 <%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
 <head>
-    <title>CCD Overview</title>
+    <title>Science Raft Sensor Overview</title>
 </head>
 
-<dp:subsystem sub="Generic-CCD" explorer="oneComponent.jsp" bygroup="1"/>
+<dp:subsystem sub="Generic-CCD" explorer="oneComponent.jsp" bygroup="1" title="Science Raft Sensor Current Status and Location" />
 
 

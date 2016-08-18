@@ -10,5 +10,6 @@
 <%@taglib prefix="dp" tagdir="/WEB-INF/tags/dataportal"%>
 <%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
         
-<dp:explorer groupName="Generic-Wavefront-CCD" title="Corner Raft Explorer"/>
+<dp:explorer groupName="Generic-Wavefront-CCD" title="Corner Raft Sensor Explorer" sub="Corner Raft"/>
         
+ 

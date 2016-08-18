@@ -11,4 +11,4 @@
 <%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
 
-<dp:explorer groupName="Generic-CCD" title="CCD Explorer"/>
+<dp:explorer groupName="Generic-CCD" title="Science Raft Sensor Explorer" bygroup="1"/>

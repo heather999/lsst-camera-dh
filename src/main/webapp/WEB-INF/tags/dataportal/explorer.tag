@@ -14,8 +14,21 @@
 
 <%@attribute name="groupName" required="true"%>
 <%@attribute name="title" required="true"%>
+<%@attribute name="sub" required="false"%>
+<%@attribute name="bygroup" required="false"%>
 
 <h1>${title}</h1>
+
+<c:choose>
+    <c:when test = "${empty bygroup}">    
+        <c:set var="hdwTypeString" value="${portal:getHardwareTypesFromSubsystem(pageContext.session,sub)}" scope="page"/>
+        <c:set var="bygroupFlag" value="false" scope="page"/>
+    </c:when>
+    <c:otherwise>
+        <c:set var="hdwTypeString" value="${portal:getHardwareTypesFromGroup(pageContext.session,groupName)}" scope="page"/>
+        <c:set var="bygroupFlag" value="true" scope="page"/>
+    </c:otherwise>
+</c:choose>
 
 <c:set var="ccdManuString" value="${portal:getHardwareTypesFromGroup(pageContext.session, groupName)}" scope="page" />
 <c:if test="${! empty ccdManuString}">
@@ -23,7 +36,11 @@
         SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${ccdManuString} ORDER BY manufacturer;
     </sql:query>
 
-
+    <sql:query var="labelQ" scope="page">
+        SELECT DISTINCT name, HardwareStatus.id FROM HardwareStatus INNER JOIN HardwareStatusHistory ON HardwareStatus.id = HardwareStatusHistory.hardwareStatusId 
+        INNER JOIN Hardware ON Hardware.id = HardwareStatusHistory.hardwareId AND Hardware.hardwareTypeId IN ${hdwTypeString}
+        WHERE isStatusValue=0 ORDER BY name;
+    </sql:query>
 
     <filter:filterTable>
         <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
@@ -32,6 +49,12 @@
                 <c:forEach var="hdw" items="${manuQ.rows}">
                 <filter:filterOption value="${hdw.manufacturer}"><c:out value="${hdw.manufacturer}"/></filter:filterOption>
                 </c:forEach>
+        </filter:filterSelection>
+        <filter:filterSelection title="Labels" var="labelId" defaultValue="0">
+            <filter:filterOption value="0">Any</filter:filterOption>
+            <c:forEach var="label" items="${labelQ.rows}">
+                <filter:filterOption value="${label.id}"><c:out value="${label.name}"/></filter:filterOption>
+                </c:forEach>                        
         </filter:filterSelection>
     </filter:filterTable>
 
@@ -56,7 +79,7 @@
 
     <%-- List of CCD ids --%>
     <c:set var="ccdGroup" value="${groupName}" scope="page"/>
-    <c:set var="lsstIdQuery" value="${portal:getFilteredComponentIds(pageContext.session, ccdHdwTypeId, lsst_num, manu, ccdGroup, true)}"/>
+    <c:set var="lsstIdQuery" value="${portal:getLabelFilteredComponentIds(pageContext.session, ccdHdwTypeId, lsst_num, manu, ccdGroup, true, labelId)}"/>
 
 
 
