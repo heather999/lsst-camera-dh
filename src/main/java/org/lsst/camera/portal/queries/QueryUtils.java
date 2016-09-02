@@ -174,6 +174,40 @@ public class QueryUtils {
             return result;
     }
     
+    public static HashMap getAllActiveLabels(HttpSession session, String lsstId) throws SQLException {
+        HashMap<Integer, String> labelMap = new HashMap<>();
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            // Get all label activity for this lsstNum
+            PreparedStatement labelStatement = c.prepareStatement("SELECT HSH.id, HSH.adding, HSH.hardwareId, "
+                    + "HS.id AS labelId, HS.name "
+                    + "FROM HardwareStatusHistory HSH "
+                    + "JOIN Hardware H ON H.id = HSH.hardwareId "
+                    + "INNER JOIN HardwareStatus HS ON HSH.hardwareStatusId=HS.id "
+                    + "WHERE H.lsstId = ? AND HS.isStatusValue = 0 ORDER BY HSH.id ASC");
+                    labelStatement.setString(1, lsstId);
+            ResultSet r = labelStatement.executeQuery();
+            while (r.next()) {
+                if (r.getInt("adding")==1)  {
+                    labelMap.put(r.getInt("labelId"), r.getString("name"));
+                } else {
+                    labelMap.remove(r.getInt("labelId"));
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return labelMap;
+    }
+
     public static String getHardwareTypesFromGroup(HttpSession session, String group) throws SQLException {
         List<Integer> typeList = new ArrayList<>();
         String result = "";
@@ -895,6 +929,9 @@ public class QueryUtils {
 
                 ResultSet statusResult = hdwStatusStatement.executeQuery();
                 statusResult.first();
+                
+                // Retrieve all active labels 
+                HashMap<Integer, String> labelMap = getAllActiveLabels(session, lsstId);
 
                 // Retrieve the list of locations associated with this CCD, ordered by creation time in descending order
                 PreparedStatement hdwLocStatement = c.prepareStatement("SELECT Hardware.lsstId, Hardware.id, Hardware.creationTS,"
@@ -985,6 +1022,7 @@ public class QueryUtils {
                 hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
                         locResult.getString("sname"), locResult.getTimestamp("creationTS"),
                         travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
+                hsl.setLabelMap(labelMap);
                 result.add(hsl);
 
             }

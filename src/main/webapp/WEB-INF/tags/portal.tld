@@ -16,6 +16,12 @@
         </function-signature>
     </function>
     <function>
+        <name>getAllActiveLabels</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.Map getAllActiveLabels(javax.servlet.http.HttpSession, java.lang.String)
+        </function-signature>
+    </function>
+    <function>
         <name>getHardwareTypesFromGroup</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.lang.String getHardwareTypesFromGroup(javax.servlet.http.HttpSession, java.lang.String)

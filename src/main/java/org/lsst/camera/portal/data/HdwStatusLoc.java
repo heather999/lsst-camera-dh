@@ -5,6 +5,7 @@
  */
 package org.lsst.camera.portal.data;
 import java.util.Date;
+import java.util.HashMap;
 /**
  *
  * @author heather
@@ -23,6 +24,7 @@ public class HdwStatusLoc {
     private java.util.Date curActivityLastTime;
     private long elapsedTravTime;
     private Boolean inNCR;
+    private HashMap<Integer,String> labelMap = new HashMap<>();
     
    
     public void setLsstId(String id) {
@@ -71,6 +73,19 @@ public class HdwStatusLoc {
         curActivityLastTime = actLastTime;
         inNCR = ncr;
     }
+    
+    public void setLabelMap(HashMap<Integer,String> labels) {
+        if (!labels.isEmpty()) labelMap.putAll(labels);
+    }
+    
+    public HashMap<Integer,String> getLabelMap() {
+        return labelMap;
+    }
+    
+    public String getLabel(Integer labelId) {
+        return labelMap.get(labelId);
+    }
+    
     public String getLsstId() {
         return lsstId;
     }
