@@ -174,6 +174,19 @@ public class QueryUtils {
             return result;
     }
     
+    public static String truncateString(String inputStr, String token) {
+        return inputStr.substring(0, inputStr.lastIndexOf(token));
+    }
+    
+    
+    
+    public static List getAllActiveLabelsList(HttpSession session, String lsstId) throws SQLException {
+        HashMap<Integer,String> labelMap = getAllActiveLabels(session, lsstId);
+        List<String> result = new ArrayList<>();
+        result.addAll(labelMap.values());
+        return result;
+    }
+    
     public static HashMap getAllActiveLabels(HttpSession session, String lsstId) throws SQLException {
         HashMap<Integer, String> labelMap = new HashMap<>();
         Connection c = null;

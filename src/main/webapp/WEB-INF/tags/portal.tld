@@ -16,9 +16,15 @@
         </function-signature>
     </function>
     <function>
-        <name>getAllActiveLabels</name>
+        <name>truncateString</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.Map getAllActiveLabels(javax.servlet.http.HttpSession, java.lang.String)
+        <function-signature>java.lang.String truncateString(java.lang.String,java.lang.String)
+        </function-signature>
+    </function>
+        <function>
+        <name>getAllActiveLabelsList</name>List
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getAllActiveLabelsList(javax.servlet.http.HttpSession, java.lang.String)
         </function-signature>
     </function>
     <function>

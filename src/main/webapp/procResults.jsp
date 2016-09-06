@@ -39,9 +39,12 @@
                         <c:out value="${row.value}"/>
                     </c:when>
                     <c:otherwise>
+                        <c:set var="curPath" value="${portal:truncateString(row.virtualPath,'/')}" scope="page"/>
                         <c:url var="dcLink" value="http://srs.slac.stanford.edu/DataCatalog/">
-                            <c:param name="dataset" value="${row.catalogKey}"/>
+                            <%-- <c:param name="dataset" value="${row.catalogKey}"/> --%>
+                            <c:param name="folderPath" value="${curPath}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
+                            <c:param name="showFileList" value="true"/>
                         </c:url>
                         <a href="${dcLink}" target="_blank"><c:out value="${row.virtualPath}"/></a>
                     </c:otherwise>

@@ -58,6 +58,7 @@
 
             <c:set var="firstTime" value="true"/>
             <c:set var="actListWithOutput" value="${portal:getActivityListWithOutput(pageContext.session,actList)}"/>
+            <ul>
             <c:forEach var="curAct" items="${actListWithOutput}" varStatus="status">
 
                 <%-- Note use of concat in the query, the AS statement was not working otherwise 
@@ -65,8 +66,10 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
                 --%>
 
                 <c:if test="${firstTime==true}">
+                </ul>
                     <h3>${curTraveler.name} activityId: ${curTraveler.actId}</h3>
                     <c:set var="firstTime" value="false"/>
+                    <ul>
                 </c:if>
                 <sql:query var="moreProcessInfo" scope="page">
                     SELECT A.id, concat(P.name,'') as process, A.processId, A.iteration,
@@ -81,10 +84,33 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
                     <c:param name="version" value="${processInfo.version}"/>
                     <c:param name="travName" value="${curTraveler.name}"/>
                 </c:url>
-                <h4><a target="_blank" href="${resultsLink}">Link to ${processInfo.process} version ${processInfo.version} iteration ${processInfo.iteration} activityId: ${curAct}</a></h4>
+                <li>
+                <h4><a target="_blank" href="${resultsLink}">Summary of ${processInfo.process} v${processInfo.version} iter ${processInfo.iteration} actId: ${curAct}</a>
+                   
+                    <font color="purple">
+                    <b>
+                <sql:query var="downloadQuery" scope="page">
+                    SELECT virtualPath FROM FilepathResultHarnessed 
+                    WHERE FilepathResultHarnessed.activityId=?<sql:param value="${curAct}"/>
+                </sql:query>
+                <c:if test="${downloadQuery.rowCount>0}" >
+                    &nbsp;&nbsp;&nbsp;&nbsp  <%-- poor practice but quick for now --%>
+                    <c:set var="firstRow" value="${downloadQuery.rows[0]}" scope="page"/>
+                    <c:set var="curPath" value="${portal:truncateString(firstRow.virtualPath,'/')}" scope="page"/>
+                    <c:url var="dcLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                        <c:param name="folderPath" value="${curPath}"/>
+                        <c:param name="experiment" value="LSST-CAMERA"/>
+                        <c:param name="showFileList" value="true"/>
+                    </c:url>
+                    <a href="${dcLink}" target="_blank"><c:out value="Download All Files"/></a>
 
+                </c:if>
+                </b>
+                    </font>
+                </h4>
+                </li>
             </c:forEach> <%-- End Activity Loop --%>
-
+            </ul>
 
         </c:forEach>  <%-- End Traveler Loop --%>
 

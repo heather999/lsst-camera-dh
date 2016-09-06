@@ -130,14 +130,37 @@
                     <display:column title="NCR" sortable="true" >${hdl.inNCR}</display:column>
                 </display:table>
 
+            </section>
+                <section>
+                
+<%-- Disable for now - come bac to this later
+                <c:set var="labelList" value="${portal:getAllActiveLabelsList(pageContext.session,selectedLsstId)}" scope="page"/>
 
+                <style>
+                    nav {
+    float: left;
+    max-width: 160px;
+    margin: 0;
+    padding-top: 0;
+    padding: 0;
+   
+}
+                </style>
+                <c:if test="${! empty labelList}">
+                    <nav>
+                        <display:table name="${labelList}" id="curlabel" class="datatable">
+                        <display:column title="Labels" sortable="true" >${curlabel}</display:column>
+                    </display:table>
+                    </nav>
+                </c:if>
+                --%>
 
                 <%-- <display:table name="${hdwData.rows}" class="datatable"/>  --%>
                 <display:table name="${hdwData.rows}" class="datatable" id="hdw"> 
                     <display:column title="Manufacture Date"> <c:out value="${hdw.manufactureDate}"/> </display:column> 
                     <display:column title="Manufacturer"> <c:out value="${hdw.manufacturer}"/> </display:column> 
                     <display:column title="Model"> <c:out value="${hdw.model}"/> </display:column> 
-                </display:table>       
+                </display:table>   
             </section>
 
 
