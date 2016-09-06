@@ -22,12 +22,7 @@
         
         <h1>Data and Results</h1>
 
-            <c:set var="hdwId" value="${param.hdwId}" scope="page"/> 
-
-        <c:set var="travelerList" value="${portal:getTravelerCol(pageContext.session,hdwId,true)}" scope="page"/>
-
-
-        <c:set var="vendActList" value="${portal:getOutputActivityFromTraveler(pageContext.session,travelerList,'SR-RCV-1','vendorIngest', hdwId)}" scope="page"/>
+            <c:set var="hdwId" value="${param.hdwId}" scope="page"/>
 
         <%-- Determine the data source: Prod, Dev, or Test --%>
         <c:choose>
@@ -42,23 +37,14 @@
             </c:otherwise>
         </c:choose>
         
-        <c:forEach var="vendAct" items="${vendActList}">
-            <c:set var="vendPath" value="/LSST/vendorData"/>
-            <c:set var="vendPath" value="${vendPath}/${param.vendor}/${param.lsstId}/${dataSourceFolder}/${vendAct}"/>
-            <c:url var="vendDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">
-                <c:param name="folderPath" value="${vendPath}"/>
-                <c:param name="experiment" value="LSST-CAMERA"/>
-                <%-- <c:param name="showFileList" value="true"/> --%>
-            </c:url>
-    <big><b> <a href="${vendDataLink}" target="_blank"><c:out value="Click here for Vendor Data"/></a> </b></big>
-        </c:forEach>
 
-        <c:forEach var="curTraveler" items="${travelerList}"> 
 
-            <c:set var="actList" value="${portal:getActivitiesForTraveler(pageContext.session,curTraveler.actId,hdwId)}"/> 
+            <c:set var="actList" value="${portal:getActivitiesForTraveler(pageContext.session,param.travActId,hdwId)}"/> 
 
             <c:set var="firstTime" value="true"/>
             <c:set var="actListWithOutput" value="${portal:getActivityListWithOutput(pageContext.session,actList)}"/>
+            <c:choose>
+                <c:when test="${fn:length(actListWithOutput)>0}" >
             <ul>
             <c:forEach var="curAct" items="${actListWithOutput}" varStatus="status">
 
@@ -68,7 +54,7 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 
                 <c:if test="${firstTime==true}">
                 </ul>
-                    <h3>${curTraveler.name} activityId: ${curTraveler.actId}</h3>
+                    <h3>${param.travName} activityId: ${param.travActId}</h3>
                     <c:set var="firstTime" value="false"/>
                     <ul>
                 </c:if>
@@ -83,12 +69,11 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
                     <c:param name="activityId" value="${curAct}"/>
                     <c:param name="process" value="${processInfo.process}"/>
                     <c:param name="version" value="${processInfo.version}"/>
-                    <c:param name="travName" value="${curTraveler.name}"/>
+                    <c:param name="travName" value="${param.travName}"/>
                 </c:url>
                 <li>
-                <h4><a target="_blank" href="${resultsLink}">Summary of ${processInfo.process} v${processInfo.version} iter ${processInfo.iteration} actId: ${curAct}</a>
+                <a target="_blank" href="${resultsLink}">Summary of ${processInfo.process} v${processInfo.version} iter ${processInfo.iteration} actId: ${curAct}</a>
                    
-                    <font color="purple">
                     <b>
                 <sql:query var="downloadQuery" scope="page">
                     SELECT virtualPath FROM FilepathResultHarnessed 
@@ -106,14 +91,18 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
                     <a href="${dcLink}" style="color: rgb(6,82,32)" target="_blank"><c:out value="Download Files"/></a>
 
                 </c:if>
-                </b>
-                    </font>
-                </h4>
+                    </b>
+                
                 </li>
             </c:forEach> <%-- End Activity Loop --%>
             </ul>
+            </c:when>
+                    <c:otherwise>
+                       No Data Available 
+                    </c:otherwise>
+            </c:choose>
+                    
 
-        </c:forEach>  <%-- End Traveler Loop --%>
         
         
     </body>

@@ -104,6 +104,13 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
         <display:column property="status" sortable="true" headerClass="sortable"/>
     </c:if>
     <display:column property="end" sortable="true" headerClass="sortable"/>
-    <display:column property="closedBy" sortable="true" headerClass="sortable"/>
+    <display:column title="Output">
+        <c:url var="dataDirLink" value="showAllActs.jsp">
+                            <c:param name="hdwId" value="${hardwareId}"/>
+                            <c:param name="travActId" value="${row.activityId}"/>
+                            <c:param name="travName" value="${row.processName}"/>
+                        </c:url>
+                        <a href="${dataDirLink}" target="_blank"><c:out value="Get Data"/></a>
+    </display:column>
 </display:table>        
  
