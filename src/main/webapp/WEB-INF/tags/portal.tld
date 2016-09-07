@@ -64,6 +64,12 @@
         </function-signature>
     </function>
     <function>
+        <name>getLabelFilteredComponentList</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getLabelFilteredComponentList(javax.servlet.http.HttpSession,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean,java.lang.Integer,java.lang.String,java.lang.String,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
         <name>getTravelerStatusTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.util.List getTravelerStatusTable(javax.servlet.http.HttpSession,java.lang.String)</function-signature>
@@ -153,7 +159,7 @@
     <function>
         <name>getReportsTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.List getReportsTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.String,java.lang.Boolean)
+        <function-signature>java.util.List getReportsTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.String,java.lang.Boolean,java.lang.String,java.lang.String,java.lang.Integer)
         </function-signature>
     </function>
     <function>

@@ -22,6 +22,8 @@
 
         <c:set var="repGroupName" value="Generic-CCD" scope="page"/>
 
+        <c:set var="hdwTypeString" value="${portal:getHardwareTypesFromGroup(pageContext.session,repGroupName)}" scope="page"/>
+
         <%-- Determine the data source: Prod, Dev, or Test --%>
         <c:choose>
             <c:when test="${'Prod' == appVariables.dataSourceMode}">
@@ -36,9 +38,38 @@
         </c:choose>
 
         <c:set var="moreOnlineFiles" value=""/>
+        
+        <sql:query var="manufacturerQ" scope="page">
+        SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${hdwTypeString} ORDER BY manufacturer;
+    </sql:query>
+        
+           <sql:query var="labelQ" scope="page">
+        SELECT DISTINCT name, HardwareStatus.id FROM HardwareStatus INNER JOIN HardwareStatusHistory ON HardwareStatus.id = HardwareStatusHistory.hardwareStatusId 
+        INNER JOIN Hardware ON Hardware.id = HardwareStatusHistory.hardwareId AND Hardware.hardwareTypeId IN ${hdwTypeString}
+        WHERE isStatusValue=0 ORDER BY name;
+    </sql:query>
+
+    
+    <filter:filterTable>
+        <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
+        <filter:filterSelection title="Manufacturer" var="manu" defaultValue="any">
+            <filter:filterOption value="any">Any</filter:filterOption>
+                <c:forEach var="hdw" items="${manufacturerQ.rows}">
+                <filter:filterOption value="${hdw.manufacturer}"><c:out value="${hdw.manufacturer}"/></filter:filterOption>
+                </c:forEach>
+        </filter:filterSelection>
+        <filter:filterSelection title="Labels" var="labelsChosen" defaultValue="0">
+            <filter:filterOption value="0">Any</filter:filterOption>
+            <c:forEach var="label" items="${labelQ.rows}">
+                <filter:filterOption value="${label.id}"><c:out value="${label.name}"/></filter:filterOption>
+                </c:forEach>                        
+        </filter:filterSelection>
+    </filter:filterTable>
+
+        
 
         <%-- ccdHdwTypeId --%>
-        <c:set var="h_reportsTable" value="${portal:getReportsTable(pageContext.session,repGroupName,dataSourceFolder,false)}" scope="session"/>
+        <c:set var="h_reportsTable" value="${portal:getReportsTable(pageContext.session,repGroupName,dataSourceFolder,false,lsst_num,manu,labelsChosen)}" scope="session"/>
 
         <display:table name="${h_reportsTable}" export="true" defaultsort="2" defaultorder="descending" class="datatable" id="rep" >
             <display:column title="LSST_NUM" sortable="true">${rep.lsst_num}</display:column>
@@ -78,6 +109,7 @@
                         <c:url var="offlineDirLink" value="http://srs.slac.stanford.edu/DataCatalog/">
                             <c:param name="folderPath" value="${rep.testReportOfflineDirPath}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
+                            <c:param name="showFileList" value="true"/>
                         </c:url>
                         <a href="${offlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
                         <c:if test="${rep.pastOffline == true}">
