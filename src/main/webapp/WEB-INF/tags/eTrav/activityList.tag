@@ -125,14 +125,22 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
             </sql:query>
             <c:choose>
             <c:when test="${downloadQuery.rowCount>0}" >
-                <c:set var="firstRow" value="${downloadQuery.rows[0]}" scope="page"/>
-                <c:set var="curPath" value="${portal:truncateString(firstRow.virtualPath,'/')}" scope="page"/>
-                <c:url var="dcLink" value="http://srs.slac.stanford.edu/DataCatalog/">
-                    <c:param name="folderPath" value="${curPath}"/>
-                    <c:param name="experiment" value="LSST-CAMERA"/>
-                    <c:param name="showFileList" value="true"/>
-                </c:url>
-                    <a href="${dcLink}" style="color: rgb(6,82,32)" target="_blank"><c:out value="Download Files"/></a>
+                <c:set var="firstRow" value="${downloadQuery.rows[0]}" />
+                <c:set var="curPath" value="${portal:truncateString(firstRow.virtualPath,'/')}" />
+                <c:choose>
+                    <c:when test="${curPath != null}" >
+                        <c:url var="dcLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                            <c:param name="folderPath" value="${curPath}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                            <c:param name="showFileList" value="true"/>
+                        </c:url>
+                        <a href="${dcLink}" style="color: rgb(6,82,32)" target="_blank"><c:out value="Download Files"/></a>
+                    </c:when>
+                    <c:otherwise>
+                        <c:out value="EMPTY"/>
+                    </c:otherwise>
+                </c:choose>
+
             </c:when>
             <c:otherwise>
                 <c:out value="NA"/>

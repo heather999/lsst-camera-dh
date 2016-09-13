@@ -175,7 +175,16 @@ public class QueryUtils {
     }
     
     public static String truncateString(String inputStr, String token) {
-        return inputStr.substring(0, inputStr.lastIndexOf(token));
+        if (inputStr != null) {
+            Integer ind = inputStr.lastIndexOf(token);
+            if (ind >= 0) {
+                return inputStr.substring(0, ind);
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
     }
     
     
