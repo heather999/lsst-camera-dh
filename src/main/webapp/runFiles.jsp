@@ -24,6 +24,7 @@
                         document.selectForm.elements[i].checked = set;
                     }
                 }
+                CountSelected();
             }
             function ToggleAll() {
                 for (var i = 0; i < document.selectForm.elements.length; i++) {
@@ -31,6 +32,7 @@
                         document.selectForm.elements[i].checked = !(document.selectForm.elements[i].checked);
                     }
                 }
+                CountSelected();
             }
             function CountSelected() {
                 count = 0;
