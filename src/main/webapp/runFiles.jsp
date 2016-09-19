@@ -16,7 +16,6 @@
 
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
         <title>Files for run ${param.run}</title>
         <script language="JavaScript" type="text/javascript">
             function ShowAll(set) {
@@ -158,7 +157,7 @@
         <h2>Root Path: ${root}</h2>
         To download multiple files use checkboxes on left and controls at bottom of table.
         <form id="downloadForm" name="selectForm"  method="post"  action="downloadFiles.jsp" >
-            <display:table name="${files.rows}" sort="list" defaultsort="1" defaultorder="ascending" class="datatable" id="file" >
+            <display:table name="${files.rows}" sort="list" defaultsort="2" defaultorder="ascending" class="datatable" id="file" >
                 <display:column title=" " class="admin">
                     <input type="checkbox" name="datasetToDwnld" value="${file.id}" onclick="CountSelected()" />
                 </display:column>
@@ -174,7 +173,6 @@
                         <c:param name="dataset" value="${file.catalogKey}"/>
                     </c:url>
                     <a href="${downloadURL}">Download</a><c:if test="${fn:endsWith(file.virtualPath, '.png')}">, <a onclick="preview('${downloadURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a></c:if>
-
                 </display:column>
                 <display:footer>
                     <tr>
