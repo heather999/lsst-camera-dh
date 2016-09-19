@@ -26,14 +26,15 @@
 
         <sql:query var="runs">
             select * from (
-                select a.id,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, 
+                select a.id,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,
                 (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount
                 from Activity a 
                 join Process p on (a.processId=p.id)
                 join Hardware h on (a.hardwareId=h.id)
+                join HardwareType t on (h.hardwareTypeId = t.id)
                 join ActivityStatusHistory s on (s.id = (select max(id) from ActivityStatusHistory ss where ss.activityId=a.id))
                 join ActivityFinalStatus f on (f.id=s.activityStatusId)
-                where parentActivityId is null
+                where a.parentActivityId is null and a.id=(select max(id) from Activity aaa where aaa.processId=a.processId and aaa.hardwareId=a.hardwareId) 
             ) x
         </sql:query>
 
@@ -41,6 +42,7 @@
             <display:column property="id" title="Run" sortable="true"/>
             <display:column property="name" title="Traveler" sortable="true"/>
             <display:column property="lsstid" title="Device" sortable="true"/>
+            <display:column property="hardwareType" title="Device Type" sortable="true"/>
             <display:column property="status" title="Status" sortable="true"/>
             <display:column sortProperty="begin" title="Begin (UTC)" sortable="true">
                 <fmt:formatDate value="${run.begin}" pattern="yyyy-MM-dd HH:mm:ss"/>
