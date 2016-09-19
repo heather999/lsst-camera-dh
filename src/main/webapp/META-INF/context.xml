@@ -2,12 +2,12 @@
 <Context path="/DataPortal">
   <ResourceLink global="jdbc/config-prod" name="jdbc/config-prod" type="javax.sql.DataSource"/>
   <ResourceLink global="jdbc/config-srs" name="jdbc/config-srs" type="javax.sql.DataSource"/>
-  <ResourceLink global="jdbc/rd-lsst-cam" name="jdbc/rd-lsst-cam" type="javax.sql.DataSource" />
-  <ResourceLink global="jdbc/rd-lsst-cam-dev" name="jdbc/rd-lsst-cam-dev" type="javax.sql.DataSource" />
-  <ResourceLink global="jdbc/rd-lsst-cmft" name="jdbc/rd-lsst-cmft" type="javax.sql.DataSource" />
-  <ResourceLink global="jdbc/rd-lsst-camt" name="jdbc/rd-lsst-camt" type="javax.sql.DataSource" />
-  <ResourceLink global="jdbc/rd-lsst-cam-ro" name="jdbc/rd-lsst-cam-ro" type="javax.sql.DataSource" />
-  <ResourceLink global="jdbc/rd-lsst-cam-dev-ro" name="jdbc/rd-lsst-cam-dev-ro" type="javax.sql.DataSource" />
-  <ResourceLink global="jdbc/rd-lsst-cmft-ro" name="jdbc/rd-lsst-cmft-ro" type="javax.sql.DataSource" />
-  <ResourceLink global="jdbc/rd-lsst-camt-ro" name="jdbc/rd-lsst-camt-ro" type="javax.sql.DataSource" />
+  <ResourceLink global="jdbc/rd-lsst-cam" name="jdbc/rd-lsst-cam" type="javax.sql.DataSource"/>
+  <ResourceLink global="jdbc/rd-lsst-cam-dev" name="jdbc/rd-lsst-cam-dev" type="javax.sql.DataSource"/>
+  <ResourceLink global="jdbc/rd-lsst-cmft" name="jdbc/rd-lsst-cmft" type="javax.sql.DataSource"/>
+  <ResourceLink global="jdbc/rd-lsst-camt" name="jdbc/rd-lsst-camt" type="javax.sql.DataSource"/>
+  <ResourceLink global="jdbc/rd-lsst-cam-ro" name="jdbc/rd-lsst-cam-ro" type="javax.sql.DataSource"/>
+  <ResourceLink global="jdbc/rd-lsst-cam-dev-ro" name="jdbc/rd-lsst-cam-dev-ro" type="javax.sql.DataSource"/>
+  <ResourceLink global="jdbc/rd-lsst-cmft-ro" name="jdbc/rd-lsst-cmft-ro" type="javax.sql.DataSource"/>
+  <ResourceLink global="jdbc/rd-lsst-camt-ro" name="jdbc/rd-lsst-camt-ro" type="javax.sql.DataSource"/>
 </Context>

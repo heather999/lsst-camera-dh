@@ -4,6 +4,7 @@
        <pattern>*updateTestResult.jsp*</pattern>
        <pattern>*plotTree.jsp*</pattern>
        <pattern>*plotMain.jsp*</pattern>
+       <pattern>*downloadFiles.jsp*</pattern>
        <!--<pattern>*actResults.jsp*</pattern>-->
     </excludes>
     
