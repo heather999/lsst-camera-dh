@@ -33,6 +33,19 @@
                     }
                 }
             }
+            function CountSelected() {
+                count = 0;
+                for (var i = 0; i < document.selectForm.elements.length; i++) {
+                    if (document.selectForm.elements[i].type === 'checkbox') {
+                        count += (document.selectForm.elements[i].checked) ? 1 : 0;
+                    }
+                }
+                for (var i = 0; i < document.selectForm.elements.length; i++) {
+                    if (document.selectForm.elements[i].type === 'submit') {
+                        document.selectForm.elements[i].disabled = (count === 0);
+                    }
+                }
+            }
         </script>
         <style>
             table.datatable td.admin { background-color: pink; padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px; }
@@ -135,18 +148,19 @@
         </div>
 
         <sql:query var="files">
-            select f.virtualPath,f.size,f.catalogKey,f.activityId,f.creationTS from Activity a 
+            select f.id,f.virtualPath,f.size,f.catalogKey,f.activityId,f.creationTS from Activity a 
             join FilepathResultHarnessed f on (a.id=f.activityId)
             WHERE a.rootActivityId=?
             <sql:param value="${param.run}"/>
         </sql:query>
 
         <c:set var="root" value="${file:commonRoot(file:getColumnFromResult(files,'virtualPath'))}"/>
-        Root Path: ${root} 
-        <form id="downloadForm" name="selectForm"  method="post"  action="filelist.jsp" >
+        <h2>Root Path: ${root}</h2>
+        To download multiple files use checkboxes on left and controls at bottom of table.
+        <form id="downloadForm" name="selectForm"  method="post"  action="downloadFiles.jsp" >
             <display:table name="${files.rows}" sort="list" defaultsort="1" defaultorder="ascending" class="datatable" id="file" >
                 <display:column title=" " class="admin">
-                    <input type="checkbox" name="datasetToDwnld" value="${file.catalogKey}" />
+                    <input type="checkbox" name="datasetToDwnld" value="${file.id}" onclick="CountSelected()" />
                 </display:column>
                 <display:column sortProperty="virtualPath" title="Path" sortable="true" class="leftAligned">
                     ${file:relativize(root,file.virtualPath)}
@@ -154,8 +168,8 @@
                 <display:column sortProperty="created" title="Create Date (UTC)" sortable="true">
                     <fmt:formatDate value="${file.creationTS}" pattern="yyyy-MM-dd HH:mm:ss"/>
                 </display:column>
-                <display:column property="size" title="Size" decorator="org.srs.web.base.decorator.ByteColumnDecorator" sortable="true"/>
-                <display:column title="Links" class="leftAligned">
+                <display:column sortProperty="size" property="size" title="Size" decorator="org.srs.web.base.decorator.ByteColumnDecorator" sortable="true"/>
+                <display:column title="Actions" class="leftAligned">
                     <c:url var="downloadURL" value="http://srs.slac.stanford.edu/DataCatalog/get">
                         <c:param name="dataset" value="${file.catalogKey}"/>
                     </c:url>
@@ -168,6 +182,9 @@
                             <a href="javascript:void(0)" onClick="ShowAll(true);">Select all</a>&nbsp;.&nbsp;
                             <a href="javascript:void(0)" onClick="ShowAll(false);">Deselect all</a>&nbsp;.&nbsp;
                             <a href="javascript:void(0)" onClick="ToggleAll();">Toggle selection</a>
+                            <input type="submit" name="zip" value="Download selected as .zip" disabled/>
+                            <input type="hidden" name="run" value="${param.run}"/>
+                            <input type="hidden" name="root" value="${root}"/>
                         </td>
                     </tr>
                 </display:footer>

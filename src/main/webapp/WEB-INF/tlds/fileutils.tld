@@ -3,6 +3,52 @@
     <tlib-version>1.0</tlib-version>
     <short-name>fileutils</short-name>
     <uri>http://portal.lsst.org/fileutils</uri>
+    <tag>
+        <name>zip</name>
+        <tag-class>org.lsst.camera.portal.utils.ZipFileHandler</tag-class>
+        <body-content>scriptless</body-content>
+        <attribute>
+            <name>fileName</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        <attribute>
+            <name>comment</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+    </tag>
+    <tag>
+        <name>entry</name>
+        <tag-class>org.lsst.camera.portal.utils.ZipEntryHandler</tag-class>
+        <body-content>empty</body-content>
+        <attribute>
+            <name>name</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        <attribute>
+            <name>url</name>
+            <required>true</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+        <attribute>
+            <name>createDate</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.sql.timestamp</type>
+        </attribute>
+        <attribute>
+            <name>comment</name>
+            <required>false</required>
+            <rtexprvalue>true</rtexprvalue>
+            <type>java.lang.String</type>
+        </attribute>
+    </tag>
     <function>
         <name>getColumnFromResult</name>
         <function-class>org.lsst.camera.portal.utils.FileUtils</function-class>
