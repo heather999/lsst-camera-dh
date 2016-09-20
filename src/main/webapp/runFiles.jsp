@@ -174,7 +174,20 @@
                     <c:url var="downloadURL" value="http://srs.slac.stanford.edu/DataCatalog/get">
                         <c:param name="dataset" value="${file.catalogKey}"/>
                     </c:url>
-                    <a href="${downloadURL}">Download</a><c:if test="${fn:endsWith(file.virtualPath, '.png')}">, <a onclick="preview('${downloadURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a></c:if>
+                    <a href="${downloadURL}">Download</a>
+                    <c:if test="${fn:endsWith(file.virtualPath, '.png')}">, 
+                        <a onclick="preview('${downloadURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a>
+                    </c:if>
+                    <c:if test="${fn:endsWith(file.virtualPath, '.fits')}">, 
+                        <c:url var="previewURL" value="/converter" context="/FitsViewer">
+                            <c:param name="file" value="${downloadURL}"/>
+                        </c:url>
+                        <a onclick="preview('${previewURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a>,
+                        <c:url var="headerURL" value="/" context="/FitsViewer">
+                            <c:param name="file" value="${downloadURL}"/>
+                        </c:url>
+                        <a href="${headerURL}">Headers</a>
+                    </c:if>
                 </display:column>
                 <display:footer>
                     <tr>
