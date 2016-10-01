@@ -6,6 +6,7 @@
 <%@taglib uri="http://displaytag.sf.net" prefix="display" %>
 <%@taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %>
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
+<%@taglib prefix="display" uri="http://displaytag.sf.net" %>		
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
 <%-- 
