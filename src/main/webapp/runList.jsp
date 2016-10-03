@@ -59,13 +59,22 @@
                     <filter:filterOption value="${row.name}">${row.name}</filter:filterOption>
                 </c:forEach>
             </filter:filterSelection>
+            <filter:filterSelection title="Site" var="site" defaultValue="any">
+                <filter:filterOption value="any">Any</filter:filterOption>
+                <sql:query var="sites">
+                    select name from Site order by name
+                </sql:query>
+                <c:forEach var="row" items="${sites.rows}">
+                    <filter:filterOption value="${row.name}">${row.name}</filter:filterOption>
+                </c:forEach>
+            </filter:filterSelection>
             <filter:filterInput title="Run min" var="runMin"/>
             <filter:filterInput title="Run max" var="runMax"/>
         </filter:filterTable>
 
         <sql:query var="runs">
             select * from (
-            select a.id,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,
+            select a.id,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,
             (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount
             from Activity a 
             join Process p on (a.processId=p.id)
@@ -75,6 +84,9 @@
             join Subsystem ss on (ss.id=tt.subsystemId)
             join ActivityStatusHistory s on (s.id = (select max(id) from ActivityStatusHistory ss where ss.activityId=a.id))
             join ActivityFinalStatus f on (f.id=s.activityStatusId)
+            join HardwareLocationHistory hlh on (hlh.id= (select max(id) from HardwareLocationHistory ll where ll.id=h.id and (a.end is null or ll.creationTS < a.end)))
+            join Location l on (l.id=hlh.locationId)
+            join Site i on (i.id=l.siteId)
             where a.parentActivityId is null 
             <c:if test="${mostRecent}">
                 and a.id=(select max(id) from Activity aaa where aaa.processId=a.processId and aaa.hardwareId=a.hardwareId)
@@ -95,7 +107,11 @@
                 and ss.name=?
                 <sql:param value="${subsystem}"/>
             </c:if>   
-                <c:choose>
+            <c:if test="${site!='any'}">
+                and i.name=?
+                <sql:param value="${site}"/>
+            </c:if> 
+            <c:choose>
                 <c:when test="${status>=0}">
                     and f.id=?
                     <sql:param value="${status}"/>
@@ -117,6 +133,7 @@
             <display:column property="lsstid" title="Device" sortable="true"/>
             <display:column property="status" title="Status" sortable="true"/>
             <display:column property="subsystem" title="Subsystem" sortable="true"/>
+            <display:column property="site" title="Site" sortable="true"/>
             <display:column sortProperty="begin" title="Begin (UTC)" sortable="true">
                 <fmt:formatDate value="${run.begin}" pattern="yyyy-MM-dd HH:mm:ss"/>
             </display:column>
