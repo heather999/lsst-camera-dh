@@ -50,18 +50,29 @@
                     <filter:filterOption value="${row.name}">${row.name}</filter:filterOption>
                 </c:forEach>
             </filter:filterSelection>
+            <filter:filterSelection title="Subsystem" var="subsystem" defaultValue="any">
+                <filter:filterOption value="any">Any</filter:filterOption>
+                <sql:query var="subsystems">
+                    select name from Subsystem order by name
+                </sql:query>
+                <c:forEach var="row" items="${subsystems.rows}">
+                    <filter:filterOption value="${row.name}">${row.name}</filter:filterOption>
+                </c:forEach>
+            </filter:filterSelection>
             <filter:filterInput title="Run min" var="runMin"/>
             <filter:filterInput title="Run max" var="runMax"/>
         </filter:filterTable>
 
         <sql:query var="runs">
             select * from (
-            select a.id,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,
+            select a.id,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,
             (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount
             from Activity a 
             join Process p on (a.processId=p.id)
             join Hardware h on (a.hardwareId=h.id)
             join HardwareType t on (h.hardwareTypeId = t.id)
+            join TravelerType tt on (p.id=tt.rootProcessId)
+            join Subsystem ss on (ss.id=tt.subsystemId)
             join ActivityStatusHistory s on (s.id = (select max(id) from ActivityStatusHistory ss where ss.activityId=a.id))
             join ActivityFinalStatus f on (f.id=s.activityStatusId)
             where a.parentActivityId is null 
@@ -80,7 +91,11 @@
                 and p.name=?
                 <sql:param value="${traveler}"/>
             </c:if>           
-            <c:choose>
+            <c:if test="${subsystem!='any'}">
+                and ss.name=?
+                <sql:param value="${subsystem}"/>
+            </c:if>   
+                <c:choose>
                 <c:when test="${status>=0}">
                     and f.id=?
                     <sql:param value="${status}"/>
@@ -101,6 +116,7 @@
             <display:column property="hardwareType" title="Device Type" sortable="true"/>
             <display:column property="lsstid" title="Device" sortable="true"/>
             <display:column property="status" title="Status" sortable="true"/>
+            <display:column property="subsystem" title="Subsystem" sortable="true"/>
             <display:column sortProperty="begin" title="Begin (UTC)" sortable="true">
                 <fmt:formatDate value="${run.begin}" pattern="yyyy-MM-dd HH:mm:ss"/>
             </display:column>
