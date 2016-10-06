@@ -50,21 +50,21 @@
         </script>
         <style>
             table.datatable td.admin { background-color: pink; padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px; }
-            
+
             #taglist {
-              padding: 0;
-              display: inline;
-              list-style: none;
+                padding: 0;
+                display: inline;
+                list-style: none;
             }
 
             #taglist li {
-              display: inline;
+                display: inline;
             }
 
             #taglist li + li:before {
                 content: ", ";
             }
-            
+
             #myImg {
                 border-radius: 5px;
                 cursor: pointer;
@@ -172,7 +172,12 @@
         </sql:query>
 
         <c:set var="root" value="${file:commonRoot(file:getColumnFromResult(files,'virtualPath'))}"/>
-        <h2>Root Path: ${root}</h2>
+        <c:url var="datacatURL" value="http://srs.slac.stanford.edu/DataCatalog/">
+            <%-- Note, this strips off trailing / (rather uglily) --%>
+            <c:param name="folderPath" value="${fn:substring(root,0,fn:length(root)-1)}"/>
+            <c:param name="experiment" value="LSST-CAMERA"/>
+        </c:url>
+        <h2>Root Path: ${root} (<a href="${datacatURL}">View in datacat</a>)</h2>
         To download multiple files use checkboxes on left and controls at bottom of table.
         <form id="downloadForm" name="selectForm"  method="post"  action="downloadFiles.jsp" >
             <display:table name="${files.rows}" sort="list" defaultsort="2" defaultorder="ascending" class="datatable" id="file" >
@@ -187,23 +192,29 @@
                 </display:column>
                 <display:column sortProperty="size" property="size" title="Size" decorator="org.srs.web.base.decorator.ByteColumnDecorator" sortable="true"/>
                 <display:column title="Actions" class="leftAligned">
-                    <c:url var="downloadURL" value="http://srs.slac.stanford.edu/DataCatalog/get">
-                        <c:param name="dataset" value="${file.catalogKey}"/>
-                    </c:url>
                     <ul id="taglist">
+                        <c:url var="downloadURL" value="http://srs.slac.stanford.edu/DataCatalog/get">
+                            <c:param name="dataset" value="${file.catalogKey}"/>
+                            <c:param name="experiment" value="LSST-CAMERA"/>
+                        </c:url>
                         <li><a href="${downloadURL}">Download</a></li>
+                            <c:url var="datacatURL" value="http://srs.slac.stanford.edu/DataCatalog/">
+                                <c:param name="dataset" value="${file.catalogKey}"/>
+                                <c:param name="experiment" value="LSST-CAMERA"/>
+                            </c:url>
+                        <li><a href="${datacatURL}">Datacat</a></li>
                             <c:if test="${fn:endsWith(file.virtualPath, '.png')}">
-                               <li><a onclick="preview('${downloadURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a></li>
+                            <li><a onclick="preview('${downloadURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a></li>
                             </c:if>
                             <c:if test="${fn:endsWith(file.virtualPath, '.fits')}">
                                 <c:url var="previewURL" value="/converter" context="/FitsViewer">
                                     <c:param name="file" value="${downloadURL}"/>
                                 </c:url>
-                                <li><a onclick="preview('${previewURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a></li>
-                                    <c:url var="headerURL" value="/" context="/FitsViewer">
-                                        <c:param name="file" value="${downloadURL}"/>
-                                    </c:url>
-                                <li><a href="${headerURL}">Headers</a></li>
+                            <li><a onclick="preview('${previewURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a></li>
+                                <c:url var="headerURL" value="/" context="/FitsViewer">
+                                    <c:param name="file" value="${downloadURL}"/>
+                                </c:url>
+                            <li><a href="${headerURL}">Headers</a></li>
                             </c:if>
                     </ul>
                 </display:column>
