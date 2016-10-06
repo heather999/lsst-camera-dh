@@ -8,7 +8,7 @@
 <%@taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql"%>
 <%@taglib prefix="display" uri="http://displaytag.sf.net"%>
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
-<%@taglib prefix="portal" uri="/WEB-INF/tags/portal.tld" %>
+<%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
 <%@taglib prefix="etraveler" tagdir="/WEB-INF/tags/eTrav"%>
 <%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
