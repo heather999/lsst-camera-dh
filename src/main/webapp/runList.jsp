@@ -25,6 +25,8 @@
         <h1>eTraveler Runs</h1>
         <fmt:setTimeZone value="UTC"/>
 
+        <b>Note:</b> There are currently no run numbers in prod, switch to dev to see anything.
+        
         <filter:filterTable>
             <filter:filterCheckbox title="Most Recent" var="mostRecent" defaultValue="true"/>
             <filter:filterSelection title="Status" var="status" defaultValue='-1'>
@@ -74,7 +76,7 @@
 
         <sql:query var="runs">
             select * from (
-            select a.id,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,
+            select r.runInt,r.runNumber,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,
             (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount
             from Activity a 
             join Process p on (a.processId=p.id)
@@ -87,16 +89,17 @@
             join HardwareLocationHistory hlh on (hlh.id= (select max(id) from HardwareLocationHistory ll where ll.id=h.id and (a.end is null or ll.creationTS < a.end)))
             join Location l on (l.id=hlh.locationId)
             join Site i on (i.id=l.siteId)
+            join RunNumber r on (r.rootActivityId=a.id)
             where a.parentActivityId is null 
             <c:if test="${mostRecent}">
                 and a.id=(select max(id) from Activity aaa where aaa.processId=a.processId and aaa.hardwareId=a.hardwareId)
             </c:if>
             <c:if test="${!empty runMin}">
-                and a.id>=?
+                and r.runInt>=?
                 <sql:param value="${runMin}"/>
             </c:if>
             <c:if test="${!empty runMax}">
-                and a.id<=?
+                and r.runInt<=?
                 <sql:param value="${runMax}"/>
             </c:if>
             <c:if test="${traveler!='any'}">
@@ -127,7 +130,7 @@
         </sql:query>
 
         <display:table name="${runs.rows}" sort="list" defaultsort="1" defaultorder="descending" class="datatable" id="run" >
-            <display:column property="id" title="Run" sortable="true"/>
+            <display:column property="runNumber" sortProperty="runInt" title="Run" sortable="true"/>
             <display:column property="name" title="Traveler" sortable="true"/>
             <display:column property="hardwareType" title="Device Type" sortable="true"/>
             <display:column property="lsstid" title="Device" sortable="true"/>
@@ -143,7 +146,7 @@
             <display:column title="Links" class="leftAligned">
                 <c:if test="${run.fileCount>0}">
                     <c:url var="files" value="runFiles.jsp">
-                        <c:param name="run" value="${run.id}"/>
+                        <c:param name="run" value="${run.runNumber}"/>
                     </c:url>
                     <a href="${files}">Files</a>
                 </c:if>

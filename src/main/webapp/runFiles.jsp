@@ -50,6 +50,21 @@
         </script>
         <style>
             table.datatable td.admin { background-color: pink; padding: 0px 0px 0px 0px; margin: 0px 0px 0px 0px; }
+            
+            #taglist {
+              padding: 0;
+              display: inline;
+              list-style: none;
+            }
+
+            #taglist li {
+              display: inline;
+            }
+
+            #taglist li + li:before {
+                content: ", ";
+            }
+            
             #myImg {
                 border-radius: 5px;
                 cursor: pointer;
@@ -151,7 +166,8 @@
         <sql:query var="files">
             select f.id,f.virtualPath,f.size,f.catalogKey,f.activityId,f.creationTS from Activity a 
             join FilepathResultHarnessed f on (a.id=f.activityId)
-            WHERE a.rootActivityId=?
+            join RunNumber r on (r.rootActivityId=a.rootActivityId)
+            WHERE r.RunNumber=?
             <sql:param value="${param.run}"/>
         </sql:query>
 
@@ -174,20 +190,22 @@
                     <c:url var="downloadURL" value="http://srs.slac.stanford.edu/DataCatalog/get">
                         <c:param name="dataset" value="${file.catalogKey}"/>
                     </c:url>
-                    <a href="${downloadURL}">Download</a>
-                    <c:if test="${fn:endsWith(file.virtualPath, '.png')}">, 
-                        <a onclick="preview('${downloadURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a>
-                    </c:if>
-                    <c:if test="${fn:endsWith(file.virtualPath, '.fits')}">, 
-                        <c:url var="previewURL" value="/converter" context="/FitsViewer">
-                            <c:param name="file" value="${downloadURL}"/>
-                        </c:url>
-                        <a onclick="preview('${previewURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a>,
-                        <c:url var="headerURL" value="/" context="/FitsViewer">
-                            <c:param name="file" value="${downloadURL}"/>
-                        </c:url>
-                        <a href="${headerURL}">Headers</a>
-                    </c:if>
+                    <ul id="taglist">
+                        <li><a href="${downloadURL}">Download</a></li>
+                            <c:if test="${fn:endsWith(file.virtualPath, '.png')}">
+                               <li><a onclick="preview('${downloadURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a></li>
+                            </c:if>
+                            <c:if test="${fn:endsWith(file.virtualPath, '.fits')}">
+                                <c:url var="previewURL" value="/converter" context="/FitsViewer">
+                                    <c:param name="file" value="${downloadURL}"/>
+                                </c:url>
+                                <li><a onclick="preview('${previewURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a></li>
+                                    <c:url var="headerURL" value="/" context="/FitsViewer">
+                                        <c:param name="file" value="${downloadURL}"/>
+                                    </c:url>
+                                <li><a href="${headerURL}">Headers</a></li>
+                            </c:if>
+                    </ul>
                 </display:column>
                 <display:footer>
                     <tr>
@@ -204,11 +222,11 @@
             </display:table>
         </form>
         <script>
-            
+
             var modal = document.getElementById('myModal');
             var modalImg = document.getElementById("img01");
             var captionText = document.getElementById("caption");
-            
+
             function preview(url, name) {
 
                 modal.style.display = "block";
