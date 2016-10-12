@@ -963,7 +963,7 @@ public class QueryUtils {
                     }
                 }
                 HdwStatusRelationship hsl = new HdwStatusRelationship();
-                hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
+                hsl.setValues(locResult.getString("lsstId"), locResult.getInt("id"), statusResult.getString("name"), locResult.getString("name"),
                         locResult.getString("sname"), locResult.getTimestamp("creationTS"),
                         travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
                 if (relationshipExists) {
