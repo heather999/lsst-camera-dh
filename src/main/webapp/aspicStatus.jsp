@@ -11,7 +11,7 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="display" uri="http://displaytag.sf.net" %>
-<%@taglib prefix="portal" uri="WEB-INF/tags/portal.tld" %>
+<%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
 <%@taglib prefix="srs_utils" uri="http://srs.slac.stanford.edu/utils" %>
 <%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
@@ -40,6 +40,14 @@
 <display:table name="${hdwStatLocTable}" export="true" defaultsort="9" defaultorder="descending" class="datatable" id="hdl" >
     <%-- <display:column title="LsstId" sortable="true" >${hdl.lsstId}</display:column> --%>
     <display:column title="LSST_NUM" sortable="true">
+        <c:url var="etLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+            <c:param name="hardwareId" value="${hdl.hdwId}"/>
+        </c:url>
+        <a href="${etLink}" target="_blank"><c:out value="${hdl.lsstId}"/></a>
+    </display:column>
+  <%--                      href="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp?dataSourceMode=${appVariables.dataSourceMode}&hardwareId=${hdl.hdwId}"/> --%>
+    <display:column title="Test Data" sortable="true">
         <c:url var="outLink" value="allHarnessedOutput.jsp">
             <c:param name="lsstNum" value="${hdl.lsstId}"/>
             <c:param name="hdwGroup" value="LCA-11721"/>
@@ -47,8 +55,8 @@
             <c:param name="major" value="activity_type"/>
             <c:param name="minor" value="status"/>
         </c:url>                
-        <a href="${outLink}" target="_blank"><c:out value="${hdl.lsstId}"/></a>
-    </display:column>
+        <a href="${outLink}" target="_blank"><c:out value="Get Data"/></a>
+    </display:column>  
     <display:column title="Date Registered" sortable="true" >${hdl.creationDate}</display:column>
     <display:column title="Overall Component Status" sortable="true" >${hdl.status}</display:column>
     <display:column title="Site" sortable="true" >${hdl.site}</display:column>

@@ -9,7 +9,7 @@
 <%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql"%>
 <%@taglib prefix="display" uri="http://displaytag.sf.net"%>
-<%@taglib prefix="portal" uri="/WEB-INF/tags/portal.tld" %>
+<%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
 
 <%@attribute name="done"%>
 <%@attribute name="hardwareId"%>

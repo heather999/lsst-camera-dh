@@ -12,6 +12,7 @@ import java.util.Date;
 public class HdwStatusRelationship {
     
     private String lsstId;
+    private Integer hdwId;
     private String status;
     private String location;
     private String site;
@@ -31,6 +32,9 @@ public class HdwStatusRelationship {
    
     public void setLsstId(String id) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
+    }
+    public void setHdwId(Integer id) {
+        hdwId = id;
     }
     public void setStatus(String s) {
         status = s == null || "".equals(s) ? "NA" : s; 
@@ -73,9 +77,10 @@ public class HdwStatusRelationship {
         otherHdwName = l == null || "".equals(l) ? "NA" : l; 
     }
     
-    public void setValues(String id, String stat, String loc, String s, Date c, String name,
+    public void setValues(String id, Integer hardwareId, String stat, String loc, String s, Date c, String name,
             String actName, String actStat, Date actLastTime, Date travBeginTime, Boolean ncr) {
-        lsstId = id == null || "".equals(id) ? "NA" : id; 
+        lsstId = id == null || "".equals(id) ? "NA" : id;
+        hdwId = hardwareId;
         status = stat == null || "".equals(stat) ? "NA" : stat; 
         location = loc == null || "".equals(loc) ? "NA" : loc; 
         site = s == null || "".equals(s) ? "NA" : s;
@@ -100,6 +105,9 @@ public class HdwStatusRelationship {
     }
     public String getLsstId() {
         return lsstId;
+    }
+    public Integer getHdwId() {
+        return hdwId;
     }
     public String getStatus() {
         return status;
