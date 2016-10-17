@@ -118,7 +118,13 @@
                 <c:set var="hdwStatLoc" value="${portal:getHdwStatLoc(pageContext.session,selectedLsstId,groupName)}" scope="page"/>
 
                 <display:table name="${hdwStatLoc}" class="datatable" id="hdl" >
-                    <display:column title="LSST_NUM" sortable="true" >${hdl.lsstId}</display:column>
+                    <display:column title="LSST_NUM" sortable="true" >
+                        <c:url var="hdwLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+                            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+                            <c:param name="hardwareId" value="${curHdwData.id}"/>
+                        </c:url>
+                        <a href="${hdwLink}" target="_blank"><c:out value="${hdl.lsstId}"/></a>
+                    </display:column>
                     <display:column title="Date Registered" sortable="true" >${hdl.creationDate}</display:column>
                     <display:column title="Overall Component Status" sortable="true" >${hdl.status}</display:column>
                     <display:column title="Site" sortable="true" >${hdl.site}</display:column>
