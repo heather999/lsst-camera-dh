@@ -458,6 +458,7 @@ public class QueryUtils {
                     NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), r.getString("lsstid"), r.getString("hdwType"),
                             d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
                             startResult.getTimestamp("creationTS"));
+                    ncr.setHdwId(r.getInt("hdwId"));
                     result.add(ncr);
                     lastRootActId = a.getInt("rootActivityId");
                     firstTime = false;
@@ -1704,7 +1705,7 @@ public class QueryUtils {
                 
                 ReportData repData = null;
                 if (hasVendorData || hasOfflineData || hasOnlineData) 
-                    repData = new ReportData(lsst_num, registrationDate);
+                    repData = new ReportData(lsst_num, hdwId, registrationDate);
                 
                 if (hasVendorData) { // first in the list should be most recent
                     Integer act = (vendAct.next());
