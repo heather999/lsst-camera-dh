@@ -72,13 +72,14 @@
         <c:set var="h_reportsTable" value="${portal:getReportsTable(pageContext.session,repGroupName,dataSourceFolder,false,lsst_num,manu,labelsChosen)}" scope="session"/>
 
         <display:table name="${h_reportsTable}" export="true" defaultsort="2" defaultorder="descending" class="datatable" id="rep" >
-            <display:column title="LSST_NUM" sortable="true">${rep.lsst_num}</display:column>
-            <%-- <c:url var="explorerLink" value="oneComponent.jsp">
-                 <c:param name="lsstIdValue" value="${rep.lsst_num}"/>
-             </c:url>                
-             <a href="${explorerLink}"><c:out value="${rep.lsst_num}"/></a>
-         </display:column>
-            --%>
+            <%-- <display:column title="LSST_NUM" sortable="true">${rep.lsst_num}</display:column> --%>
+            <display:column title="LSST_NUM" sortable="true" >
+                <c:url var="hdwRepLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+                    <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+                    <c:param name="hardwareId" value="${rep.hdwId}"/>
+                </c:url>
+                <a href="${hdwRepLink}" target="_blank"><c:out value="${rep.lsst_num}"/></a>
+            </display:column>
             <display:column title="Date Registered" sortable="true" >${rep.creationDate}</display:column>
             <display:column title="Vendor Data" sortable="true" >
                 <c:choose>

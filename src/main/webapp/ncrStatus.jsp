@@ -48,14 +48,14 @@
         </c:url>
         <a href="${actLink}" target="_blank">${hdl.rootActivityId}</a>
     </display:column>
-        <display:column title="LSST_NUM" sortable="true"> ${hdl.lsstNum}</display:column>
-        <%--  disable linking until we can search on HdwTypeId
-        <c:url var="explorerLink" value="oneComponent.jsp">
-            <c:param name="lsstIdValue" value="${hdl.lsstNum}"/>
-        </c:url>                
-        <a href="${explorerLink}"><c:out value="${hdl.lsstNum}"/></a>
+    <%-- <display:column title="LSST_NUM" sortable="true"> ${hdl.lsstNum}</display:column> --%>
+    <display:column title="LSST_NUM" sortable="true" >
+        <c:url var="hdwNcrLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+            <c:param name="hardwareId" value="${hdl.hdwId}"/>
+        </c:url>
+        <a href="${hdwNcrLink}" target="_blank"><c:out value="${hdl.lsstNum}"/></a>
     </display:column>
-        --%>
     <display:column title="Hardware Type" sortable="true" >${hdl.hdwType}</display:column>
     <display:column title="NCR Start Time" sortable="true" >${hdl.ncrCreationTime}</display:column>
     <display:column title="Current NCR Status" sortable="true" >${hdl.statusName}</display:column>
@@ -63,15 +63,15 @@
         <c:choose>
             <c:when test="${hdl.finalStatus == true}">
                 <b>
-                <font color="green">
-                <c:out value="DONE"/>
-                </font>
+                    <font color="green">
+                    <c:out value="DONE"/>
+                    </font>
                 </b>
             </c:when>
             <c:otherwise>
                 <font color="purple">
                 <b>
-                <c:out value="OPEN"/>
+                    <c:out value="OPEN"/>
                 </b>
                 </font>
             </c:otherwise>
@@ -82,4 +82,3 @@
     <display:setProperty name="export.xml.filename" value="ncrStatus.xml"/> 
 </display:table>
 
-  

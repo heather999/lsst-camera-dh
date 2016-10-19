@@ -15,6 +15,7 @@ import org.lsst.camera.portal.data.TestReportPathData;
 public class ReportData {
     
     private String lsst_num;
+    private Integer hdwId;
     private java.util.Date creationDate;
     private String vendDataPath;
     private Integer offlineReportCatKey;
@@ -28,8 +29,9 @@ public class ReportData {
     private Boolean pastOffline = false;
     private Boolean pastOnline = false;
    
-    public ReportData(String num, Date c) {
+    public ReportData(String num, Integer hId, Date c) {
         this.lsst_num = num == null || "".equals(num) ? "NA" : num;
+        this.hdwId = hId;
         this.creationDate = c;
         this.vendDataPath = "NA";
         this.testReportOfflinePath = "NA";
@@ -40,6 +42,10 @@ public class ReportData {
    
     public void setLsst_num(String id) {
         lsst_num = id == null || "".equals(id) ? "NA" : id; 
+    }
+    
+    public void setHdwId(Integer id) {
+        hdwId = id;
     }
     
     public void setCreationDate(Date l) {
@@ -99,6 +105,10 @@ public class ReportData {
     
     public String getLsst_num() {
         return lsst_num;
+    }
+    
+    public Integer getHdwId() {
+        return hdwId;
     }
     
     public Date getCreationDate() {
