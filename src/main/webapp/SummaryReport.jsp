@@ -66,7 +66,7 @@
                     <c:if test="${!empty x}">No data returned <br/></c:if>
                 </c:if>
                 <sql:query var="images"  dataSource="jdbc/config-prod">
-                    select image_url from report_image_info where section=? and report=? order by display_order asc
+                    select image_url, to_char(caption) caption from report_image_info where section=? and report=? order by display_order asc
                     <sql:param value="${sect.section}"/>
                     <sql:param value="${reportId}"/>
                 </sql:query>
@@ -83,6 +83,9 @@
                     </c:if>
                     <c:forEach var="dataset" items="${filepath.rows}">
                         <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${dataset.catalogKey}" alt="${lsstId}${image.image_url}"/>
+                        <c:if test="${!empty image.caption}">
+                        <center> <c:out value="${image.caption}"/></center>
+                        </c:if>
                     </c:forEach>
                 </c:forEach>
 
