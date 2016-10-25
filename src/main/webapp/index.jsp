@@ -29,7 +29,9 @@
         <c:url var="actStatusLink" value="/activityStatus.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
-
+        <c:url var="availReportLink" value="/AvailableReports.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
         <ul>   
 
             <li><a href="${ccdStatusLink}" title="CCD Status" style=""><strong>Overview All CCDs</strong></a></li>
@@ -38,7 +40,7 @@
 
             <%-- <li><a href="/DataPortal/eTravelerPortal.jsp" title "eTraveler Portal" style=""><strong>eTraveler Portal</strong></a></li> --%>
             <li> <a href="${reportsLink}" title "Data and Reports" style=""><strong>Data and Reports</strong></a></li>
-
+            <li> <a href="${availReportLink}" title "Web Reports" style=""><strong>Web Reports</strong></a></li>
             <li><a href="${actStatusLink}" title="Activity Status" style=""><strong>All eTraveler Activity Status</strong></a></li>
 
         </ul>   
