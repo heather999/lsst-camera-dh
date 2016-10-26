@@ -48,15 +48,20 @@
                 <display:table name="${theMap.entrySet()}" id="theMap"/>  <%-- shows what's in the map --%> 
             </c:if>
 
-            <h1>Summary Report for ${lsstId}</h1>
+           <%-- <h1>Summary Report for ${lsstId}</h1> --%>
+           <h1>Electro-Optical Test Results for Sensor ${lsstId}</h1>
             Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
 
             <sql:query var="sections" dataSource="jdbc/config-prod">
-                select section,title,extra_table,page_break from report_display_info where report=? order by display_order asc
+                select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
                 <sql:param value="${reportId}"/>
+                <c:if test="${sectionNum == '1'}">
+                   and displaytitle = 'Y' 
+                </c:if>
+                order by display_order asc 
             </sql:query>
             <c:forEach var="sect" items="${sections.rows}">  
-                <h2 class='${sect.page_break==1 ? 'break' : 'nobreak'}'>${sect.section} ${sect.title}</h2>
+                <h2 class='${sect.page_break==1 ? 'break' : 'nobreak'}'>${sect.displaytitle == 'Y' ? sect.section : ''}  ${sect.displaytitle =='Y' ? sect.title : ''}</h2>
                 <ru:summaryTable sectionNum="${sect.section}" data="${theMap}" reportId="${reportId}"/>
                 <c:if test="${!empty sect.extra_table}">
                     <c:catch var="x">
@@ -70,6 +75,7 @@
                     <sql:param value="${sect.section}"/>
                     <sql:param value="${reportId}"/>
                 </sql:query>
+                <%-- if more than one row is returned for images just take the 1st one. Per J. Chiang's email --%>    
                 <c:forEach var="image" items="${images.rows}">
                     <sql:query var="filepath">
                         select catalogKey from FilepathResultHarnessed res 
@@ -81,12 +87,17 @@
                     <c:if test="${filepath.rowCount==0}">
                         Missing image: ${image.image_url}
                     </c:if>
-                    <c:forEach var="dataset" items="${filepath.rows}">
-                        <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${dataset.catalogKey}" alt="${lsstId}${image.image_url}"/>
-                        <c:if test="${!empty image.caption}">
-                        <center> <c:out value="${image.caption}"/></center>
-                        </c:if>
-                    </c:forEach>
+                    <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${filepath.rows[0].catalogKey}" alt="${lsstId}${image.image_url}"/>
+                    <c:if test="${!empty image.caption}">
+                    <center> <c:out value="${image.caption}"/></center>
+                    </c:if>  
+                        <%--
+                    <c:forEach var="dataset" items="${filepath.rows}">  
+                    <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${dataset.catalogKey}" alt="${lsstId}${image.image_url}"/>
+                    <c:if test="${!empty image.caption}">
+                    <center> <c:out value="${image.caption}"/></center>
+                    </c:if>
+                     </c:forEach> --%>
                 </c:forEach>
 
                 <c:if test="${sect.title == 'Software Versions'}">

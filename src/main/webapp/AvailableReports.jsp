@@ -14,7 +14,7 @@
         <title>Reports Available</title>
     </head>
     <body>
-        <h1>Reports available</h1>
+        <h1>Reports Available</h1>
 
         <%-- get a list of all the parentActivityIds --%> 
         <sql:query var="sensor">
