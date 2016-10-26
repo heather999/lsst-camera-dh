@@ -21,8 +21,14 @@
         <function-signature>java.lang.String truncateString(java.lang.String,java.lang.String)
         </function-signature>
     </function>
-        <function>
-        <name>getAllActiveLabelsList</name>List
+    <function>
+        <name>getRunNumberFromRootActivityId</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.lang.String getRunNumberFromRootActivityId(javax.servlet.http.HttpSession, java.lang.Integer)
+        </function-signature>
+    </function>
+     <function>
+        <name>getAllActiveLabelsList</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.util.List getAllActiveLabelsList(javax.servlet.http.HttpSession, java.lang.String)
         </function-signature>

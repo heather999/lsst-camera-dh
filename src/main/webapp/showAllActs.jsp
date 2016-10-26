@@ -20,7 +20,7 @@
     <body> 
 
         
-        <h1>Data and Results</h1>
+        <h1>Data and Results for Run ${param.runNum}</h1>
 
             <c:set var="hdwId" value="${param.hdwId}" scope="page"/>
 

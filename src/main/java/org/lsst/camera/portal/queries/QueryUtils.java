@@ -188,6 +188,30 @@ public class QueryUtils {
     }
     
     
+    public static String getRunNumberFromRootActivityId(HttpSession session, Integer actId) throws SQLException {
+        String result = "";
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            // Get all label activity for this lsstNum
+            PreparedStatement rnStatement = c.prepareStatement("SELECT runNumber, runInt "
+                    + "FROM RunNumber RN "
+                    + "WHERE RN.rootActivityId = ? LIMIT 1");
+                    rnStatement.setInt(1, actId);
+            ResultSet r = rnStatement.executeQuery();
+            if (r.first() == true)
+                return (r.getString("runNumber"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return result;
+    }
     
     public static List getAllActiveLabelsList(HttpSession session, String lsstId) throws SQLException {
         HashMap<Integer,String> labelMap = getAllActiveLabels(session, lsstId);
@@ -354,7 +378,7 @@ public class QueryUtils {
             c = ConnectionManager.getConnection(session);
 
             PreparedStatement idStatement = c.prepareStatement("SELECT A.id, "
-                    + "A.hardwareId, A.processId, A.parentActivityId, ASH.activityStatusId, "
+                    + "A.hardwareId, A.processId, A.parentActivityId, A.rootActivityId, ASH.activityStatusId, "
                     + "AFS.name, A.end, A.begin, A.inNCR FROM "
                     + "Activity A INNER JOIN ActivityStatusHistory ASH ON ASH.activityId=A.id AND "
                     + "ASH.id=(select max(id) FROM ActivityStatusHistory WHERE activityId=A.id) "
@@ -370,7 +394,7 @@ public class QueryUtils {
                     parentId = -999;
                 }
                 // Use to keep track of order by activity Id
-                activityMap.put(r.getInt("id"), new Activity(r.getInt("id"), r.getInt("processId"), parentId, r.getInt("hardwareId"),
+                activityMap.put(r.getInt("id"), new Activity(r.getInt("id"), r.getInt("processId"), parentId, r.getInt("rootActivityId"), r.getInt("hardwareId"),
                         r.getInt("activityStatusId"), r.getString("name"), r.getTimestamp("begin"), r.getTimestamp("end"),
                         r.getBoolean("inNCR"), index));
                 index++;
@@ -455,7 +479,8 @@ public class QueryUtils {
                     detailStatement.setInt(1, a.getInt("rootActivityId"));
                     ResultSet d = detailStatement.executeQuery();
                     d.first();
-                    NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), r.getString("lsstid"), r.getString("hdwType"),
+                    String ncrRunNum = getRunNumberFromRootActivityId(session, a.getInt("rootActivityId"));
+                    NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), ncrRunNum, r.getString("lsstid"), r.getString("hdwType"),
                             d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
                             startResult.getTimestamp("creationTS"));
                     ncr.setHdwId(r.getInt("hdwId"));
@@ -1064,6 +1089,7 @@ public class QueryUtils {
                 Date curActLastTime = null;
                 java.util.Date travStartTime = null;
                 int processId = -1;
+                String runNum = "";
                 boolean found = false;
                 Activity a = null;
                 // Find the starting activity by searching for the one with index == 0
@@ -1106,6 +1132,7 @@ public class QueryUtils {
                             found = true;
                             processId = a.getProcessId();
                             travStartTime = a.getBeginTime();
+                            runNum = getRunNumberFromRootActivityId(session, a.getRootActivityId());
                             break;
                         } else {
                             int actId = a.getParentActivityId();
@@ -1123,7 +1150,7 @@ public class QueryUtils {
                     ResultSet travelerResult = travelerStatement.executeQuery();
                     travelerResult.first();
                     if (travelerResult != null) {
-                        travelerName = travelerResult.getString("name")+"_v"+travelerResult.getInt("version");
+                        travelerName = "Run: "+runNum+"<br>"+travelerResult.getString("name")+"_v"+travelerResult.getInt("version");
                     }
                 }
 
@@ -1191,6 +1218,7 @@ public class QueryUtils {
             Date curActLastTime = null;
             java.util.Date travStartTime = null;
             int processId = -1;
+            String runNum = "";
             boolean found = false;
             Activity a = null;
                 // Find the starting activity by searching for the one with index == 0
@@ -1227,6 +1255,7 @@ public class QueryUtils {
                         found = true;
                         processId = a.getProcessId();
                         travStartTime = a.getBeginTime();
+                        runNum = getRunNumberFromRootActivityId(session, a.getRootActivityId());
                         break;
                     } else {
                         int actId = a.getParentActivityId();
@@ -1244,7 +1273,7 @@ public class QueryUtils {
                 ResultSet travelerResult = travelerStatement.executeQuery();
                 travelerResult.first();
                 if (travelerResult != null) {
-                    travelerName = travelerResult.getString("name") + "_v" + travelerResult.getInt("version");
+                    travelerName = travelerResult.getString("name") + "_v" + travelerResult.getInt("version")+" / Run: "+runNum;
                 }
             }
 
@@ -1316,7 +1345,8 @@ public class QueryUtils {
                         if (travResult != null) {
                             travName = travResult.getString("name") + "_v" + travResult.getInt("version");
                         }
-                        TravelerInfo info = new TravelerInfo(travName, act.getActivityId(), act.getHdwId(), act.getStatusId(), act.getStatusName(), act.getBeginTime(), act.getEndTime(), act.getInNCR());
+                        String runNumber = getRunNumberFromRootActivityId(session, act.getRootActivityId());
+                        TravelerInfo info = new TravelerInfo(travName, runNumber, act.getActivityId(), act.getHdwId(), act.getStatusId(), act.getStatusName(), act.getBeginTime(), act.getEndTime(), act.getInNCR());
                         processList.add(act.getProcessId());
                         result.add(info);
                     }

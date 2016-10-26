@@ -68,7 +68,7 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 
                 <c:if test="${firstTime==true}">
                 </ul>
-                    <h3>${curTraveler.name} activityId: ${curTraveler.actId}</h3>
+                    <h3>${curTraveler.name} Run: ${curTraveler.runNumber} activityId: ${curTraveler.actId}</h3>
                     <c:set var="firstTime" value="false"/>
                     <ul>
                 </c:if>

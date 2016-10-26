@@ -14,6 +14,7 @@ import java.util.Date;
 public class TravelerInfo {
 
     private String name;
+    private String runNumber;
     private Integer actId;
     private Integer hdwId;
     private Integer statusId;
@@ -23,8 +24,9 @@ public class TravelerInfo {
     private java.util.Date endTime;
     private Boolean inNCR;
 
-    public TravelerInfo(String tName, int activityId, int hardwareId, int sId, String sName, Date b, Date e, Boolean ncr) {
+    public TravelerInfo(String tName, String runNum, int activityId, int hardwareId, int sId, String sName, Date b, Date e, Boolean ncr) {
         this.hdwId = hardwareId;
+        this.runNumber = runNum;
         this.actId = activityId;
         this.statusId = sId;
         this.name = tName == null || "".equals(tName) ? "NA" : tName;
@@ -42,6 +44,14 @@ public class TravelerInfo {
         this.name = tName == null || "".equals(tName) ? "NA" : tName;
     }
 
+    public String getRunNumber() {
+        return runNumber;
+    }
+    
+    public void setRunNumber(String rN) {
+        runNumber = rN;
+    }
+    
     public Integer getActId() {
         return actId;
     }

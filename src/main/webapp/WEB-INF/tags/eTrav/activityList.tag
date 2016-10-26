@@ -27,19 +27,20 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 --%>
 
 <sql:query var="result" >
-    select concat(A.id,'') as activityId, A.begin, A.end, A.createdBy, A.closedBy,
+    select concat(A.id,'') as activityId, A.rootActivityId, A.begin, A.end, A.createdBy, A.closedBy,
     concat(AFS.name,'') as status,
     P.id as processId, 
     concat(P.name, ' v', P.version) as processName,
     H.id as hardwareId, H.lsstId, H.manufacturerId,
     HT.name as hardwareName, HT.id as hardwareTypeId,
-    HI.identifier as nickName
+    HI.identifier as nickName, concat(RN.runNumber,'') as runNumber 
     from Activity A
     inner join Process P on A.processId=P.id
     inner join Hardware H on A.hardwareId=H.id
     inner join HardwareType HT on H.hardwareTypeId=HT.id
     inner join ActivityStatusHistory ASH on ASH.activityId=A.id and ASH.id=(select max(id) from ActivityStatusHistory where activityId=A.id)
     inner join ActivityFinalStatus AFS on AFS.id=ASH.activityStatusId
+    inner join RunNumber RN on RN.rootActivityId=A.rootActivityId 
     left join HardwareIdentifier HI on HI.hardwareId=H.id 
     and HI.authorityId=(select id from HardwareIdentifierAuthority where name=?<sql:param value="${preferences.idAuthName}"/>) 
     where true 
@@ -77,12 +78,14 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 <%-- should reuse eT preferences.jsp --%> 
 <display:table name="${result.rows}" id="row" class="datatable" sort="list"
                pagesize="${fn:length(result.rows) > 10 ? 10 : 0}">
-    <display:column title="Name" sortable="true" headerClass="sortable">
+    <display:column title="Name" sortable="true" headerClass="sortable" sortProperty="${row.processName}">
         <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
             <c:param name="activityId" value="${row.activityId}"/>
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
-        <a href="${actLink}" target="_blank">${row.processName} ${row.activityId}</a>
+        <a href="${actLink}" target="_blank">${row.processName}</a>
+        <br>
+        Run: ${row.runNumber} <%-- actId: ${row.activityId} --%>
     </display:column>
 
     <%--  href="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp" paramId="activityId" paramProperty="activityId"/> --%>
@@ -112,6 +115,7 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
                     <c:param name="hdwId" value="${hardwareId}"/>     
                     <c:param name="travActId" value="${row.activityId}"/>
                     <c:param name="travName" value="${row.processName}"/>
+                    <c:param name="runNum" value="${row.runNumber}"/>
                 </c:url>
                 <a href="${dataDirLink}" target="_blank"><c:out value="Get Data"/></a>
             </display:column>
