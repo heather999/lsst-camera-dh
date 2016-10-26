@@ -23,6 +23,9 @@
     <c:if test="${sectionNum != '1'}">
         and section=? <sql:param value="${sectionNum}"/>
     </c:if>
+    <c:if test="${sectionNum == '1'}">
+        and in_summary = 'Y' 
+    </c:if>
 </sql:query>
 
 <c:if test="${specs.rowCount != 0}">
