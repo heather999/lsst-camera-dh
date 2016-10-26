@@ -18,9 +18,11 @@ public class ReportData {
     private Integer hdwId;
     private java.util.Date creationDate;
     private String vendDataPath;
+    private String offlineRunNum;
     private Integer offlineReportCatKey;
     private String testReportOfflinePath;
     private String testReportOfflineDirPath;
+    private String onlineRunNum;
     private Integer onlineReportCatKey;
     private String testReportOnlinePath;
     private String testReportOnlineDirPath;
@@ -38,6 +40,8 @@ public class ReportData {
         this.testReportOfflineDirPath = "NA";
         this.testReportOnlinePath = "NA";
         this.testReportOnlineDirPath = "NA";
+        this.offlineRunNum = "";
+        this.onlineRunNum = "";
     }
    
     public void setLsst_num(String id) {
@@ -62,6 +66,16 @@ public class ReportData {
     
     public void setOnlineReportCatKey(Integer catKey) {
         onlineReportCatKey = catKey;
+    }
+    
+    public void setOfflineRunNum(String r) {
+        offlineRunNum = r == null || "".equals(r) ? "NA" : r;
+
+    }
+    
+    public void setOnlineRunNum(String r) {
+        onlineRunNum = r == null || "".equals(r) ? "NA" : r;
+
     }
     
     public void setValues(String id, Date c, String vDataPath) {
@@ -117,6 +131,14 @@ public class ReportData {
    
     public String getVendDataPath() {
          return vendDataPath;
+    }
+    
+    public String getOfflineRunNum () {
+        return offlineRunNum;
+    }
+    
+    public String getOnlineRunNum () {
+        return onlineRunNum;
     }
    
     public Integer getOfflineReportCatKey() {

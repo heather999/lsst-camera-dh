@@ -42,7 +42,7 @@
             </c:otherwise>
         </c:choose>
         
-        <c:forEach var="vendAct" items="${vendActList}">
+        <c:forEach var="vendAct" items="${vendActList.keySet}">
             <c:set var="vendPath" value="/LSST/vendorData"/>
             <c:set var="vendPath" value="${vendPath}/${param.vendor}/${param.lsstId}/${dataSourceFolder}/${vendAct}"/>
             <c:url var="vendDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">

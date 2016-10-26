@@ -1413,8 +1413,8 @@ public class QueryUtils {
         return result;
     }
     
-    public static List getOutputActivityFromTraveler(HttpSession session, List travelerList, String travName, String actName, Integer hdwId) throws SQLException {
-        List<Integer> result = new ArrayList<>();
+    public static HashMap getOutputActivityFromTraveler(HttpSession session, List travelerList, String travName, String actName, Integer hdwId) throws SQLException {
+        HashMap<Integer, String> result = new HashMap<>();
         try {
             // Find all travelers with this name "actName"
             Iterator<TravelerInfo> iterator = travelerList.iterator();
@@ -1423,7 +1423,7 @@ public class QueryUtils {
                  String name = t.getName();
                  if (name.contains(travName)) {
                      List<Integer> curActList = getActivitiesForTraveler(session,t.getActId(),hdwId);
-                     result.addAll(getOutputActivityId(session, curActList, actName));
+                     result.putAll(getOutputActivityId(session, curActList, actName));
                  }
             }
            
@@ -1437,8 +1437,8 @@ public class QueryUtils {
         return result;    
     }
     
-    public static List getOutputActivityId(HttpSession session, List actList, String actName) throws SQLException {
-        List<Integer> result = new ArrayList<>();
+    public static Map getOutputActivityId(HttpSession session, List actList, String actName) throws SQLException {
+        HashMap<Integer, String> result = new HashMap<>();
         PreparedStatement vendorIngestStatement=null;
         ResultSet vendorIngestResult = null;
         Connection c = null;
@@ -1460,7 +1460,7 @@ public class QueryUtils {
                 }
             }
             // Search for all processes with the name "vendorIngest" that ended with a final status of Success (1)
-            vendorIngestStatement = c.prepareStatement("SELECT Activity.id FROM Activity "
+            vendorIngestStatement = c.prepareStatement("SELECT Activity.id, Activity.rootActivityId FROM Activity "
                     + "INNER JOIN Process ON Activity.processId = Process.id "
                     + "INNER JOIN ActivityStatusHistory ASH ON Activity.id = ASH.activityId " 
                     + "AND ASH.id=(select max(id) FROM ActivityStatusHistory WHERE activityId=Activity.id) " 
@@ -1471,7 +1471,7 @@ public class QueryUtils {
                    
             vendorIngestResult = vendorIngestStatement.executeQuery();
             while (vendorIngestResult.next()) {
-                result.add(vendorIngestResult.getInt("Activity.id"));
+                result.put(vendorIngestResult.getInt("Activity.id"),getRunNumberFromRootActivityId(session, vendorIngestResult.getInt("Activity.rootActivityId")));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -1708,22 +1708,24 @@ public class QueryUtils {
                 List<TravelerInfo> travelerList = getTravelerCol(session, hdwId, removeDups);
 
                 // Find Vendor Data
-                List<Integer> vendActList = getOutputActivityFromTraveler(session,
-                        travelerList, "SR-RCV-1", "vendorIngest", hdwId);
-                List<Integer> vendActList2 = getOutputActivityFromTraveler(session,
-                        travelerList, "SR-RCV-01", "vendorIngest", hdwId);
+                List<Integer> vendActList = new ArrayList<> ();
+                vendActList.addAll(getOutputActivityFromTraveler(session,
+                        travelerList, "SR-RCV-1", "vendorIngest", hdwId).keySet());
+                List<Integer> vendActList2 = new ArrayList<> ();
+                vendActList2.addAll(getOutputActivityFromTraveler(session,
+                        travelerList, "SR-RCV-01", "vendorIngest", hdwId).keySet());
                 vendActList.addAll(vendActList2);
 
                 Iterator<Integer> vendAct = vendActList.iterator();
                 
                 // Find Offline Test Reports
-                List<Integer> offlineTestRepList = getOutputActivityFromTraveler(session,
+                HashMap<Integer,String> offlineTestRepList = getOutputActivityFromTraveler(session,
                         travelerList, "SR-EOT-02", "test_report_offline", hdwId);
                 
                 List<TestReportPathData> reportPaths = getTestReportPaths(session, offlineTestRepList, true);
                 
                 // Find Online Test Reports
-                List<Integer> onlineTestRepList = getOutputActivityFromTraveler(session,
+                HashMap<Integer,String> onlineTestRepList = getOutputActivityFromTraveler(session,
                         travelerList, "SR-EOT-1", "test_report", hdwId);
                 List<TestReportPathData> onlineReportPaths = getTestReportPaths(session, onlineTestRepList, true);
 
@@ -1756,6 +1758,7 @@ public class QueryUtils {
                     repData.setOfflineReportCatKey((offlineData.getCatalogKey()));
                     repData.setTestReportOfflinePath(offlineData.getTestReportPath());
                     repData.setTestReportOfflineDirPath(offlineData.getTestReportDirPath());
+                    repData.setOfflineRunNum(offlineData.getRunNum());
                     if (offlineReportIter.hasNext())
                        repData.setOfflineReportCol(reportPaths);
                 }
@@ -1764,6 +1767,7 @@ public class QueryUtils {
                     repData.setOnlineReportCatKey(onlineData.getCatalogKey());
                     repData.setTestReportOnlinePath(onlineData.getTestReportPath());
                     repData.setTestReportOnlineDirPath(onlineData.getTestReportDirPath());
+                    repData.setOnlineRunNum(onlineData.getRunNum());
                     if (onlineReportIter.hasNext())
                        repData.setOnlineReportCol(onlineReportPaths);
                 } 
@@ -1784,7 +1788,7 @@ public class QueryUtils {
         return result;
     }
     
-     public static List getTestReportPaths(HttpSession session, List<Integer> actIdList, Boolean getAll) throws SQLException {
+     public static List getTestReportPaths(HttpSession session, HashMap<Integer,String> actIdList, Boolean getAll) throws SQLException {
         List<TestReportPathData> result = new ArrayList<>();
         //TestReportPathData result = new TestReportPathData();
 
@@ -1792,7 +1796,7 @@ public class QueryUtils {
         try {
             c = ConnectionManager.getConnection(session);
             ResultSet r = null;
-            Integer mostRecentTestReport = Collections.max(actIdList, null);
+            Integer mostRecentTestReport = Collections.max(actIdList.keySet(), null);
             if (getAll == false) { // retrieve only the most recent
                 // Pull out the most recent PDF associated with this activity ID
                 PreparedStatement fileStatement = c.prepareStatement("SELECT virtualPath, "
@@ -1803,8 +1807,10 @@ public class QueryUtils {
                 fileStatement.setInt(1, mostRecentTestReport);
                 r = fileStatement.executeQuery();
             } else { // getAll == true
-                String actString = stringFromList(actIdList);
-                PreparedStatement fileStatement = c.prepareStatement("SELECT virtualPath, "
+                List<Integer> actList = new ArrayList<>();
+                actList.addAll(actIdList.keySet());
+                String actString = stringFromList(actList);
+                PreparedStatement fileStatement = c.prepareStatement("SELECT activityId, virtualPath, "
                         + "catalogKey, creationTS FROM "
                         + "FilepathResultHarnessed "
                         + "WHERE activityId IN " + actString + " AND virtualPath LIKE concat('%', 'pdf', '%') "
@@ -1814,6 +1820,7 @@ public class QueryUtils {
             Boolean DONE = false;
             while (r.next() && !DONE) {
                 TestReportPathData reportData = new TestReportPathData();
+                reportData.setRunNum(actIdList.get(r.getInt("activityId")));
                 String vPath = r.getString("virtualPath");
                 java.util.Date creation = r.getTimestamp("creationTS");
                 Integer lastSlash = vPath.lastIndexOf('/');
