@@ -42,7 +42,7 @@
             </c:otherwise>
         </c:choose>
         
-        <c:forEach var="vendAct" items="${vendActList}">
+        <c:forEach var="vendAct" items="${vendActList.keySet}">
             <c:set var="vendPath" value="/LSST/vendorData"/>
             <c:set var="vendPath" value="${vendPath}/${param.vendor}/${param.lsstId}/${dataSourceFolder}/${vendAct}"/>
             <c:url var="vendDataLink" value="http://srs.slac.stanford.edu/DataCatalog/">
@@ -68,7 +68,7 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 
                 <c:if test="${firstTime==true}">
                 </ul>
-                    <h3>${curTraveler.name} activityId: ${curTraveler.actId}</h3>
+                    <h3>${curTraveler.name} Run: ${curTraveler.runNumber} activityId: ${curTraveler.actId}</h3>
                     <c:set var="firstTime" value="false"/>
                     <ul>
                 </c:if>

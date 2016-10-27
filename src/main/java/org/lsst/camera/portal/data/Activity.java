@@ -14,6 +14,7 @@ public class Activity {
     private Integer activityId;
     private Integer processId;
     private Integer parentActivityId;
+    private Integer rootActivityId;
     private Integer hdwId;
     private Integer statusId;
     private String statusName;
@@ -22,9 +23,10 @@ public class Activity {
     private Boolean inNCR;
     private Integer index;
 
-    public Activity(int id, int pId, int parentId, int hardwareId, int sId, String sName, Date b, Date e, Boolean ncr, int ind) {
+    public Activity(int id, int pId, int parentId, int rootId, int hardwareId, int sId, String sName, Date b, Date e, Boolean ncr, int ind) {
         this.activityId = id;
         this.processId = pId;
+        this.rootActivityId = rootId;
         this.parentActivityId = parentId;
         this.hdwId = hardwareId;
         this.statusId = sId;
@@ -57,6 +59,14 @@ public class Activity {
 
     public void setParentActivityId(int pId) {
         parentActivityId = pId;
+    }
+    
+    public Integer getRootActivityId() {
+        return rootActivityId;
+    }
+    
+    public void setRootActivityId(int rId) {
+        rootActivityId = rId;
     }
 
     public boolean isParent() {
