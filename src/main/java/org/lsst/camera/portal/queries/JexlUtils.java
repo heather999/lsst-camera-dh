@@ -2,6 +2,7 @@ package org.lsst.camera.portal.queries;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -117,7 +118,12 @@ public class JexlUtils {
     public double median(List<Number> args) {
         // Collections does not have a comparator for Number so we have to make our own. 
         List<Number> tmpList = new ArrayList<>(args);
-        Collections.sort(tmpList, (Number o1, Number o2) -> (int) Math.signum(o1.doubleValue() - o2.doubleValue()));
+        Collections.sort(tmpList, new Comparator<Number>() {
+            @Override
+            public int compare(Number o1, Number o2) {
+                return (int) Math.signum(o1.doubleValue() - o2.doubleValue());
+            }
+        });
 
         int size = tmpList.size();
         boolean isOdd = size % 2 != 0;
