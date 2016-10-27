@@ -41,7 +41,7 @@
 
 <%-- defaultsort index starts from 1 --%>
 <display:table name="${ncrTable}" export="true" defaultsort="4" defaultorder="descending" class="datatable" id="hdl" >
-    <display:column title="NCR ID" sortable="true">
+    <display:column title="NCR Number" sortable="true">
         <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
             <c:param name="activityId" value="${hdl.rootActivityId}"/>
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
@@ -56,6 +56,7 @@
         </c:url>
         <a href="${hdwNcrLink}" target="_blank"><c:out value="${hdl.lsstNum}"/></a>
     </display:column>
+    <display:column title="Run Number" sortable="true" >${hdl.runNum}</display:column>
     <display:column title="Hardware Type" sortable="true" >${hdl.hdwType}</display:column>
     <display:column title="NCR Start Time" sortable="true" >${hdl.ncrCreationTime}</display:column>
     <display:column title="Current NCR Status" sortable="true" >${hdl.statusName}</display:column>

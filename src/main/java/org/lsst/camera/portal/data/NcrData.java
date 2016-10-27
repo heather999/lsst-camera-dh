@@ -13,6 +13,7 @@ public class NcrData {
 
     private Integer activityId;
     private Integer rootActivityId;
+    private String runNum;
     private Integer hdwId;
     private String lsstNum;
     private String hdwType;
@@ -22,12 +23,13 @@ public class NcrData {
     private String statusName;
     private java.util.Date ncrCreationTime;
     
-    public NcrData(int actId, int rootId, String lsstId, String typeName, int sId, String sName, Date b, Boolean f,
+    public NcrData(int actId, int rootId, String runN, String lsstId, String typeName, int sId, String sName, Date b, Boolean f,
             Date create) {
         this.activityId = actId;
         this.rootActivityId = rootId;
        // this.hdwId = hardwareId;
         this.statusId = sId;
+        this.runNum = runN == null || "".equals(runN) ? "NA" : runN;
         this.lsstNum = lsstId == null || "".equals(lsstId) ? "NA" : lsstId;
         this.statusName = sName == null || "".equals(sName) ? "NA" : sName;
         this.hdwType = typeName == null || "".equals(typeName) ? "NA" : typeName;
@@ -87,6 +89,13 @@ public class NcrData {
         hdwType = name == null || "".equals(name) ? "NA" : name;
     }
 
+    public String getRunNum() {
+        return runNum;
+    }
+    
+    public void setRunNum(String r) {
+        runNum = r == null || "".equals(r) ? "NA" : r;
+    }
     
     public String getLsstNum() {
         return lsstNum;

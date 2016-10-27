@@ -105,18 +105,18 @@
                             <c:param name="dataset" value="${rep.offlineReportCatKey}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
-                        <a href="${offlineReportLink}" target="_blank"><c:out value="Most Recent Report"/></a> 
+                        <a href="${offlineReportLink}" target="_blank"><c:out value="Most Recent Run ${rep.offlineRunNum} Report"/></a> 
                         <br>
                         <c:url var="offlineDirLink" value="http://srs.slac.stanford.edu/DataCatalog/">
                             <c:param name="folderPath" value="${rep.testReportOfflineDirPath}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
                             <c:param name="showFileList" value="true"/>
                         </c:url>
-                        <a href="${offlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
+                        <a href="${offlineDirLink}" target="_blank"><c:out value="All Run ${rep.offlineRunNum} Report Data"/></a>
                         <c:if test="${rep.pastOffline == true}">
                             <br>
 
-                            <a href="pastReports.jsp?row=${rep_rowNum}&lsstnum=${rep.lsst_num}&on=0">View Previous Reports</a>
+                            <a href="pastReports.jsp?row=${rep_rowNum}&lsstnum=${rep.lsst_num}&on=0" target="_blank">View Previous Reports</a>
 
                         </c:if>
                     </c:otherwise>
@@ -132,17 +132,17 @@
                             <c:param name="dataset" value="${rep.onlineReportCatKey}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
-                        <a href="${onlineReportLink}" target="_blank"><c:out value="Most Recent Report"/></a> 
+                        <a href="${onlineReportLink}" target="_blank"><c:out value="Most Recent Run ${rep.onlineRunNum} Report"/></a> 
                         <br>
                         <c:url var="onlineDirLink" value="http://srs.slac.stanford.edu/DataCatalog/">
                             <c:param name="folderPath" value="${rep.testReportOnlineDirPath}"/>
                             <c:param name="experiment" value="LSST-CAMERA"/>
                         </c:url>
-                        <a href="${onlineDirLink}" target="_blank"><c:out value="All Report Data"/></a>
+                        <a href="${onlineDirLink}" target="_blank"><c:out value="All Run ${rep.onlineRunNum} Report Data"/></a>
 
                         <c:if test="${rep.pastOnline == true}">
                             <br>
-                            <a href="pastReports.jsp?row=${rep_rowNum}&lsstnum=${rep.lsst_num}&on=1">View Previous Reports</a>
+                            <a href="pastReports.jsp?row=${rep_rowNum}&lsstnum=${rep.lsst_num}&on=1" target="_blank">View Previous Reports</a>
 
                         </c:if>
                     </c:otherwise>

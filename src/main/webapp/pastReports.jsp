@@ -32,6 +32,7 @@
                         
        
         <display:table name="${reportList}" export="true" defaultsort="1" defaultorder="descending" class="datatable" id="onrep" >
+            <display:column title="Run" sortable="true" >${onrep.runNum}</display:column>
             <display:column title="Date" sortable="true" >${onrep.creationDate}</display:column>
             <display:column title="SR-EOT-1 Test Report" sortable="true" >
                 <c:choose>

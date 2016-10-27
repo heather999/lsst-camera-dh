@@ -12,6 +12,7 @@ import java.util.Date;
 public class TestReportPathData {
     
     private String lsst_num;
+    private String runNum;
     private java.util.Date creationDate;
     private Integer activityId;
     private Integer catalogKey;
@@ -19,6 +20,7 @@ public class TestReportPathData {
     private String testReportDirPath;
     
     public TestReportPathData() {
+        runNum = "";
         lsst_num = "";
         testReportPath = "NA";
         testReportDirPath = "NA";
@@ -28,6 +30,7 @@ public class TestReportPathData {
    
     public TestReportPathData(String num, Date c, Integer id, Integer catKey, String tPath, String tDirPath) {
         this.lsst_num = num == null || "".equals(num) ? "NA" : num;
+        this.runNum = "";
         this.creationDate = c;
         this.activityId = id;
         this.catalogKey = catKey;
@@ -37,6 +40,10 @@ public class TestReportPathData {
    
     public void setLsst_num(String id) {
         lsst_num = id == null || "".equals(id) ? "NA" : id; 
+    }
+    
+    public void setRunNum(String r) {
+        runNum = r == null || "".equals(r) ? "NA" : r; 
     }
     
     public void setCreationDate(Date l) {
@@ -63,6 +70,10 @@ public class TestReportPathData {
     
     public String getLsst_num() {
         return lsst_num;
+    }
+    
+    public String getRunNum() {
+        return runNum;
     }
     
     public Date getCreationDate() {

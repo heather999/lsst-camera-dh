@@ -91,12 +91,12 @@
         <display:column title="Overall Component Status" sortable="true" >${hdl.status}</display:column>
         <display:column title="Site" sortable="true" >${hdl.site}</display:column>
         <display:column title="Location" sortable="true" >${hdl.location}</display:column>
-        <display:column title="Current Traveler" sortable="true" >${hdl.curTravelerName}</display:column>
+        <display:column title="Current Run/Traveler" sortable="true" >${hdl.curTravelerName}</display:column>
         <display:column title="Current Process Step" sortable="true" >${hdl.curActivityProcName}</display:column>
         <display:column title="Current Process Step Status" sortable="true" >${hdl.curActivityStatus}</display:column>
         <display:column title="Most Recent Timestamp" sortable="true" >${hdl.curActivityLastTime}</display:column>
         <display:column title="NCR" sortable="true" >${hdl.inNCR}</display:column>
-        <display:column title="Labels" >
+        <display:column title="Labels" sortable="true" >
             <ul>
                 <c:forEach var="l" items="${hdl.labelMap}">
                     <li>${l.value}</li>
