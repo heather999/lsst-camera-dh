@@ -14,9 +14,9 @@
             <activatedProfile>LSST-CAMERA</activatedProfile>
         </activatedProfiles>
     </action>
-    <action>
-        <actionName>CUSTOM-lsst-deploy-prod</actionName>
-        <displayName>tomcat LSST deploy (prod)</displayName>
+     <action>
+        <actionName>CUSTOM-lsst-deploy-dev</actionName>
+        <displayName>tomcat LSST deploy (dev)</displayName>
         <goals>
             <goal>clean</goal>
             <goal>install</goal>
@@ -24,20 +24,19 @@
             <goal>tomcat7:deploy</goal>
         </goals>
         <activatedProfiles>
-            <activatedProfile>deploy-prod</activatedProfile>
+            <activatedProfile>deploy-dev</activatedProfile>
             <activatedProfile>LSST-CAMERA</activatedProfile>
         </activatedProfiles>
     </action>
      <action>
-        <actionName>CUSTOM-lsst-deploy-dev</actionName>
-        <displayName>tomcat LSST deploy (dev)</displayName>
+        <actionName>CUSTOM-lsst-deploy-prod</actionName>
+        <displayName>tomcat LSST deploy (prod)</displayName>
         <goals>
             <goal>package</goal>
             <goal>tomcat7:deploy</goal>
         </goals>
         <activatedProfiles>
-            <activatedProfile>deploy-dev-custom</activatedProfile>
-            <activatedProfile>deploy-dev</activatedProfile>
+            <activatedProfile>deploy-prod</activatedProfile>
             <activatedProfile>LSST-CAMERA</activatedProfile>
         </activatedProfiles>
     </action>

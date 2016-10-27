@@ -35,13 +35,18 @@
         <c:url var="actStatusLink" value="/activityStatus.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
+        <c:url var="availReportLink" value="/AvailableReports.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
         <c:url var="ncrStatusLink" value="/ncrStatus.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
         <c:url var="aspicLink" value="/aspicStatus.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
-
+        <c:url var="runsLink" value="/runList.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
         <ul>   
 
             <li><a href="${ccdStatusLink}" title="Science Raft CCD Overview" style=""><strong>Science Raft CCD Overview</strong></a></li>
@@ -49,7 +54,10 @@
             <li><a href="${ccdExplorerLink}" title="Science Raft CCD Explorer" style=""><strong>Science Raft CCD Explorer</strong></a></li>
 
             <%-- <li><a href="/DataPortal/eTravelerPortal.jsp" title "eTraveler Portal" style=""><strong>eTraveler Portal</strong></a></li> --%>
-            <li> <a href="${reportsLink}" title "Science Raft CCD Data and Reports" style=""><strong>Science Raft CCD Data and Reports</strong></a></li>
+            <li> <a href="${reportsLink}" title="Science Raft CCD Data and Reports" style=""><strong>Science Raft CCD Data and Reports</strong></a></li>
+            <li> <a href="${availReportLink}" title="Web Reports" style=""><strong>Web Reports</strong></a></li>
+            <li> <a href="${runsLink}" title="Run by Run report" style=""><strong>Run by Run Report</strong></a></li>
+
         </ul>
         
         <ul>

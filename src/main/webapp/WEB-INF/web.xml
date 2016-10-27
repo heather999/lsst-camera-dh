@@ -16,7 +16,6 @@
         </param-value>
     </context-param>
 
-    <!-- Default database connection -->
     <context-param>
         <param-name>
             javax.servlet.jsp.jstl.sql.dataSource
@@ -25,7 +24,6 @@
             jdbc/rd-lsst-cam-ro
         </param-value>
     </context-param>
- 
 
     <context-param>
         <param-name>
@@ -175,7 +173,6 @@
         <param-name>org.srs.web.base.datasource.variable</param-name>
         <param-value>etravelerDb-ro</param-value>  
     </context-param>
-    
     <listener>
         <listener-class>org.srs.web.base.datasource.DefaultDataSourceSwitcher</listener-class>
     </listener>
