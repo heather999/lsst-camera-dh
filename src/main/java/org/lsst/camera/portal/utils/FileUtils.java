@@ -45,7 +45,7 @@ public class FileUtils {
             } else if (!file.startsWith(result)) {
                 List<String> split = Arrays.asList(file.split(FILE_DELIM));
                 for (int i = split.size(); i > 0; i--) {
-                    String join = String.join(FILE_DELIM, split.subList(0, i));
+                    String join = join(FILE_DELIM, split.subList(0, i));
                     if (result.startsWith(join)) {
                         result = join + FILE_DELIM;
                         break;
@@ -58,5 +58,16 @@ public class FileUtils {
 
     public static String relativize(String root, String file) {
         return file.startsWith(root) ? file.substring(root.length()) : file;
+    }
+
+    private static String join(String delim, List<String> list) {
+        //Java 8
+        //return String.join(delim,list);
+        StringBuilder result = new StringBuilder();
+        if (list.isEmpty()) return "";
+        for (String element : list) {
+            result.append(element).append(delim);
+        }
+        return result.substring(0, result.length()-1);
     }
 }
