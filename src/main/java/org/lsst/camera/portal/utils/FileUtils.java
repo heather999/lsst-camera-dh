@@ -63,8 +63,8 @@ public class FileUtils {
     private static String join(String delim, List<String> list) {
         //Java 8
         //return String.join(delim,list);
-        StringBuilder result = new StringBuilder();
         if (list.isEmpty()) return "";
+        StringBuilder result = new StringBuilder();
         for (String element : list) {
             result.append(element).append(delim);
         }
