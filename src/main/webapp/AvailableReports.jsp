@@ -24,8 +24,8 @@
         </sql:query> 
 
         <display:table name = "${sensor.rows}" id="row" class="datatable" defaultsort="2">
-            <display:column property="parentActivityId" title="Activity" href="SummaryReport.jsp" paramId="parentActivityId"/>
-            <display:column property="lsstId" title="Device"/>
+            <display:column property="parentActivityId" title="Activity" href="SummaryReport.jsp" paramId="parentActivityId" sortable="true" class="sortable"/>
+            <display:column property="lsstId" title="Device" sortable="true" class="sortable"/>
         </display:table>
 
     </body>
