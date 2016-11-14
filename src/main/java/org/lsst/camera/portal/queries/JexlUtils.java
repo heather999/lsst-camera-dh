@@ -101,8 +101,6 @@ public class JexlUtils {
     
     public List<Number> mergeArrays(List<Number> a1, List<Number> a2) {
         // given two arrays merge them into one list to be used by the measurement statement in REPORT_SPECS.
-        double max = Double.NaN;
-        int maxMergeIndex = -1;
         List<Number> mergedList = new ArrayList<>();
         mergedList.addAll(a1);
         mergedList.addAll(a2);
