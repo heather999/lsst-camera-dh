@@ -98,6 +98,15 @@ public class JexlUtils {
         }
         return maxIndex;
     }
+    
+    public List<Number> mergeArrays(List<Number> a1, List<Number> a2) {
+        // given two arrays merge them into one list to be used by the measurement statement in REPORT_SPECS.
+        List<Number> mergedList = new ArrayList<>();
+        mergedList.addAll(a1);
+        mergedList.addAll(a2);
+        
+        return mergedList;
+    }
 
     public List<Number> divide(List<Number> a1, List<Number> a2) {
         List<Number> result = new ArrayList<>();
