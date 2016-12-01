@@ -1,7 +1,7 @@
 <%-- 
     Document   : Sensor Acceptance Table
     Created on : Apr 20, 2016, 3:04:03 PM
-    Author     : chee
+    Author     : heather
 --%>
 <%@tag description="Sensor Acceptance Table" pageEncoding="UTF-8"%>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
@@ -16,6 +16,8 @@
 <%@attribute name="data" type="java.util.Map" required="true"%>
 <%@attribute name="reportId" type="java.lang.Integer" required="true"%>
 <%@attribute name="dataTS3" type="java.util.Map" required="false"%>
+<%@attribute name="dataVend" type="java.util.Map" required="false"%>
+
 
 
 <sql:query var="specs" dataSource="jdbc/config-prod">
@@ -29,70 +31,118 @@
     </c:if>
 </sql:query>
 
-<c:if test="${specs.rowCount != 0}">
-    <display:table name="${specs.rows}" id="row" defaultsort="1" class="datatable">
+<div id="SensorAcceptance" class="print">
+    <c:if test="${specs.rowCount != 0}">
+        <display:table name="${specs.rows}" id="row" defaultsort="1" class="datatable">
 
-        <display:column property="SpecId" title="Spec. ID"/>
-        <display:column property="Description"/>
-        <display:column property="Spec_Display" title="Specification"/>
-        <display:column title="SR-EOT-02">
-            <c:catch var="x">
-                ${portal:jexlEvaluateData(data, row.jexl_measurement)} 
-            </c:catch>
-            <c:if test="${!empty x}">???</c:if>
-        </display:column>
-        <display:column title="Status">
-            <c:catch var="x">
-                <c:set var="status" value="${portal:jexlEvaluateData(data, row.jexl_status)}"/>
-                ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
-            </c:catch>
-            <c:if test="${!empty x}">???</c:if>
-        </display:column>
-        <display:column title="Job Id">
-            <c:catch var="x">
-                <ru:jobLink id="${portal:jexlEvaluateData(data, row.jexl_jobid)}"/> 
-            </c:catch>
-            <c:if test="${!empty x}">???</c:if>
-        </display:column>
-        <display:column title="SR-EOT-1">
-            <c:choose>
-                <c:when test="${empty dataTS3}">
-                    NA
-                </c:when>
-                <c:otherwise>
-                    <c:catch var="x">
-                        ${portal:jexlEvaluateData(dataTS3, row.jexl_measurement)}     
-                    </c:catch>
-                    <c:if test="${!empty x}">???</c:if>
-                </c:otherwise>
-            </c:choose>
-        </display:column>
-        <display:column title="Status">
-            <c:choose>
-                <c:when test="${empty dataTS3}">
-                    NA
-                </c:when>
-                <c:otherwise>
-                    <c:catch var="x">
-                        <c:set var="status" value="${portal:jexlEvaluateData(dataTS3, row.jexl_status)}"/>
-                        ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
-                    </c:catch>
-                    <c:if test="${!empty x}">???</c:if>
-                </c:otherwise>
-            </c:choose>
-        </display:column>
-        <display:column title="Job Id">
-            <c:choose>
-                <c:when test="${empty dataTS3}">
-                    NA
-                </c:when>
-                <c:otherwise>
-                    <c:catch var="x">
-                        <ru:jobLink id="${portal:jexlEvaluateData(dataTS3, row.jexl_jobid)}"/> 
-                    </c:catch>
-                    <c:if test="${!empty x}">???</c:if>
-                </c:otherwise>
-            </c:choose>
-        </display:column>
-    </display:table>
-</c:if>
+            <display:column property="SpecId" title="Spec. ID"/>
+            <display:column property="Description"/>
+            <display:column property="Spec_Display" title="Specification"/>
+            <display:column title="SR-RCV-01">
+                <c:choose>
+                    <c:when test="${empty dataVend}">
+                        NA
+                    </c:when>
+                    <c:otherwise>
+                        <c:catch var="x">
+                            ${portal:jexlEvaluateData(dataVend, row.jexl_measurement)}     
+                        </c:catch>
+                        <c:if test="${!empty x}">???</c:if>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+            <display:column title="Status">
+                <c:choose>
+                    <c:when test="${empty dataVend}">
+                        NA
+                    </c:when>
+                    <c:otherwise>
+                        <c:catch var="x">
+                            <c:set var="status" value="${portal:jexlEvaluateData(dataVend, row.jexl_status)}"/>
+                            ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
+                        </c:catch>
+                        <c:if test="${!empty x}">???</c:if>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+                        <%--
+            <display:column title="Job Id">
+                <c:choose>
+                    <c:when test="${empty dataVend}">
+                        NA
+                    </c:when>
+                    <c:otherwise>
+                        <c:catch var="x">
+                            <ru:jobLink id="${portal:jexlEvaluateData(dataVend, row.jexl_jobid)}"/> 
+                        </c:catch>
+                        <c:if test="${!empty x}">???</c:if>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+                        --%>
+            <display:column title="SR-EOT-02">
+                <c:catch var="x">
+                    ${portal:jexlEvaluateData(data, row.jexl_measurement)} 
+                </c:catch>
+                <c:if test="${!empty x}">???</c:if>
+            </display:column>
+            <display:column title="Status">
+                <c:catch var="x">
+                    <c:set var="status" value="${portal:jexlEvaluateData(data, row.jexl_status)}"/>
+                    ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
+                </c:catch>
+                <c:if test="${!empty x}">???</c:if>
+            </display:column>
+                <%--
+            <display:column title="Job Id">
+                <c:catch var="x">
+                    <ru:jobLink id="${portal:jexlEvaluateData(data, row.jexl_jobid)}"/> 
+                </c:catch>
+                <c:if test="${!empty x}">???</c:if>
+            </display:column>
+                --%>
+            <display:column title="SR-EOT-1">
+                <c:choose>
+                    <c:when test="${empty dataTS3}">
+                        NA
+                    </c:when>
+                    <c:otherwise>
+                        <c:catch var="x">
+                            ${portal:jexlEvaluateData(dataTS3, row.jexl_measurement)}     
+                        </c:catch>
+                        <c:if test="${!empty x}">???</c:if>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+            <display:column title="Status">
+                <c:choose>
+                    <c:when test="${empty dataTS3}">
+                        NA
+                    </c:when>
+                    <c:otherwise>
+                        <c:catch var="x">
+                            <c:set var="status" value="${portal:jexlEvaluateData(dataTS3, row.jexl_status)}"/>
+                            ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
+                        </c:catch>
+                        <c:if test="${!empty x}">???</c:if>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+                        <%--
+            <display:column title="Job Id">
+                <c:choose>
+                    <c:when test="${empty dataTS3}">
+                        NA
+                    </c:when>
+                    <c:otherwise>
+                        <c:catch var="x">
+                            <ru:jobLink id="${portal:jexlEvaluateData(dataTS3, row.jexl_jobid)}"/> 
+                        </c:catch>
+                        <c:if test="${!empty x}">???</c:if>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+                        --%>
+        </display:table>
+    </c:if>
+</div>

@@ -13,16 +13,22 @@
 <html>
     <head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <title>Sensor Acceptance Report</title>
+        <title>Sensor_Acceptance_Report_${param.lsstId} </title>
         <style>
             img {page-break-before: avoid;}
             h2.break {page-break-before: always;}
+            body {visibility:hidden;}
+            .print {visibility:visible;}
         </style>
     </head>
     <body>
         <fmt:setTimeZone value="UTC"/>
         <c:set var="debug" value="false"/>
         <c:set var="HaveTS3Data" value="false"/>
+        <c:set var="HaveVendData" value="false"/>
+        <c:set var="HaveMetSpreadsheet" value="false"/>
+
+
         <sql:query var="sensor">
             select hw.lsstId, act.end, act.id, pr.name from Activity act 
             join Hardware hw on act.hardwareId=hw.id 
@@ -36,38 +42,91 @@
         <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="reportName" value="${sensor.rows[0].name}"/>
         <c:set var="parentActivityId" value="${param.parentActivityId}"/>
-       
-         <sql:query var="findTS3">
+
+        <sql:query var="vendorData">
+            SELECT hw.lsstId, act.end, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name FROM Activity act JOIN Hardware hw ON act.hardwareId=hw.id 
+            JOIN Process pr ON act.processId=pr.id JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId 
+            WHERE hw.lsstId = ? AND statusHist.activityStatusId=1 AND pr.name='vendorIngest' ORDER BY act.parentActivityId DESC   
+            <sql:param value="${lsstId}"/>
+        </sql:query> 
+
+        <c:if test="${vendorData.rowCount>0}">
+            <c:set var="vendActId" value="${vendorData.rows[0].parentActivityId}"/>
+            <%-- vendActId = ${vendActId} since vendorData is ${vendorData.rowCount} --%>
+
+            <c:set var="HaveVendData" value="true"/>
+            <c:set var="SRRCV1end" value="${vendorData.rows[0].end}"/>  
+
+            <%--
+            vendActId = ${vendActId}
+            ${HaveVendData}
+            rowCount ${sensorVend.rowCount}
+            --%>
+
+        </c:if>
+
+        <sql:query var="findTS3">
             SELECT hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id 
             JOIN Process pr ON act.processId=pr.id JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId 
             WHERE hw.lsstId = ? AND statusHist.activityStatusId=1 AND pr.name='test_report' ORDER BY act.parentActivityId DESC  
             <sql:param value="${lsstId}"/>
         </sql:query>
-            
-          <%--  hw.lsstId = ${lsstId} --%>
-            
-            <c:if test="${findTS3.rowCount>0}">
-                <c:set var="pActId2" value="${findTS3.rows[0].parentActivityId}"/>
-               <%-- pActId2 = ${pActId2} since findTS3 is ${findTS3.rowCount} --%>
-                <sql:query var="sensorTS3">
-                    select hw.lsstId, act.end, act.id, pr.name from Activity act 
-                    join Hardware hw on act.hardwareId=hw.id 
-                    join Process pr on act.processId=pr.id 
-                    join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
-                    where statusHist.activityStatusId=1 and act.id = ?
-                    <sql:param value="${pActId2}"/>
-                </sql:query> 
-                    <%-- query has rowCount ${sensorTS3.rowCount} --%>
-                <c:if test="${sensorTS3.rowCount>0}">
-                    <c:set var="HaveTS3Data" value="true"/>
-                    <%--
-                    pActId2 = ${pActId2}
-                    ${HaveTS3Data}
-                    rowCount ${sensorTS3.rowCount}
-                    --%>
-                </c:if>
+
+        <%--  hw.lsstId = ${lsstId} --%>
+
+        <c:if test="${findTS3.rowCount>0}">
+            <c:set var="pActId2" value="${findTS3.rows[0].parentActivityId}"/>
+            <%-- pActId2 = ${pActId2} since findTS3 is ${findTS3.rowCount} --%>
+            <sql:query var="sensorTS3">
+                select hw.lsstId, act.end, act.id, pr.name from Activity act 
+                join Hardware hw on act.hardwareId=hw.id 
+                join Process pr on act.processId=pr.id 
+                join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
+                where statusHist.activityStatusId=1 and act.id = ?
+                <sql:param value="${pActId2}"/>
+            </sql:query> 
+            <%-- query has rowCount ${sensorTS3.rowCount} --%>
+            <c:if test="${sensorTS3.rowCount>0}">
+                <c:set var="HaveTS3Data" value="true"/>
+                <c:set var="SREOT01end" value="${sensorTS3.rows[0].end}"/>  
+                <%--
+                pActId2 = ${pActId2}
+                ${HaveTS3Data}
+                rowCount ${sensorTS3.rowCount}
+                --%>
             </c:if>
-        
+        </c:if>
+
+        <%-- Find Metrology Data --%>
+
+        <%-- Peter's Spreadsheet --%>
+        <sql:query var="metTS2Q">
+            SELECT hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name FROM Activity act JOIN Hardware hw ON act.hardwareId=hw.id 
+            JOIN Process pr ON act.processId=pr.id JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId 
+            WHERE hw.lsstId = ? AND statusHist.activityStatusId=1 AND pr.name='Record_BNL_Sensor_Report' ORDER BY act.parentActivityId DESC
+            <sql:param value="${lsstId}"/>
+        </sql:query> 
+        <%-- Very few sensors have this traveler executed thus far --%>
+        <c:if test="${metTS2Q.rowCount>0}">
+            <c:set var="metSpreadActId" value="${metTS2Q.rows[0].id}"/>
+            <sql:query var="metSpreadsheetQ" scope="page">
+                SELECT creationTS, name, value, catalogKey, virtualPath FROM FilepathResultManual
+                WHERE FilepathResultManual.activityId=? 
+                <sql:param value="${metSpreadActId}"/>
+            </sql:query>
+            <c:if test="${metSpreadsheetQ.rowCount>0}">
+                <c:set var="HaveMetSpreadsheet" value="true"/>
+                <c:url var="metSpreadsheetLink" value="http://srs.slac.stanford.edu/DataCatalog/">
+                    <c:param name="dataset" value="${metSpreadsheetQ.rows[0].catalogKey}"/>
+                    <c:param name="experiment" value="LSST-CAMERA"/>
+                </c:url>
+
+            </c:if>
+
+        </c:if>
+
+        <%-- SR-MET-05 --%>
+
         <sql:query var="reports" dataSource="jdbc/config-prod">
             select id from report where name=?
             <sql:param value="${reportName}"/>
@@ -75,40 +134,81 @@
         <c:if test="${reports.rowCount==0}">
             Unknown report name ${reportName}
         </c:if>
-       
+
         <c:if test="${reports.rowCount>0}">
             <c:set var="reportId" value="${reports.rows[0].id}"/>
             <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId,reportId)}"/>
-                      
-            
+
+
             <c:if test="${debug}"> <%-- this doesn't seem to work any longer since the introduction of LinkedMap --%>
                 <display:table name="${theMap.entrySet()}" id="theMap"/>  <%-- shows what's in the map --%> 
             </c:if>
 
-           <%-- <h1>Summary Report for ${lsstId}</h1> --%>
-           <h1>Sensor Acceptance Status ${lsstId}</h1>
-            Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
-            <br/><br/><a href="#" onclick="window.print(); return false;">printable version</a>
-            <sql:query var="sections" dataSource="jdbc/config-prod">
-                select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
-                <sql:param value="${reportId}"/>
-                <c:if test="${sectionNum == '1'}">
-                   and displaytitle = 'Y' 
+            <div id="SensorAcceptanceReport" class="print">
+                <%-- <h1>Summary Report for ${lsstId}</h1> --%>
+                <h1>Sensor Acceptance Status ${lsstId}</h1>
+
+                <c:if test="${HaveVendData}">
+                    Generated SR-RCV-1 <fmt:formatDate value="${SRRCV1end}" pattern="yyy-MM-dd HH:mm z"/>
+                    <br/>
                 </c:if>
-                order by display_order asc 
-            </sql:query>
-            <%--<c:forEach var="sect" items="${sections.rows}">  --%>
+
+                Generated SR-EOT-02 <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/>
+
+                <c:if test="${HaveTS3Data}">
+                    <br/>
+                    Generated SR-EOT-01 <fmt:formatDate value="${SREOT01end}" pattern="yyy-MM-dd HH:mm z"/>
+                </c:if>
+
+                <br/><br/> <%-- <a href="#" onclick="window.print();
+                        return false;">printable version</a> --%>
+                <input type="submit" value="Print Report" onClick="window.print()"/> 
+
+                <sql:query var="sections" dataSource="jdbc/config-prod">
+                    select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
+                    <sql:param value="${reportId}"/>
+                    <c:if test="${sectionNum == '1'}">
+                        and displaytitle = 'Y' 
+                    </c:if>
+                    order by display_order asc 
+                </sql:query>
+                <%--<c:forEach var="sect" items="${sections.rows}">  --%>
                 <h2>Summary</h2>
                 <c:choose>
                     <c:when test="${HaveTS3Data}"> <%-- It is very likely this sensor has no TS3 data --%>
-                        <c:set var="theMap2" value="${portal:getReportValues(pageContext.session,pActId2,reportId)}"/>
-                        <dp:acceptance sectionNum="1" data="${theMap}" dataTS3="${theMap2}" reportId="${reportId}"/>
+                        <c:set var="theMap2" value="${portal:getReportValues(pageContext.session,vendActId,reportId)}"/>
+                        <c:choose>
+                            <c:when test="${HaveVendData}"> 
+                                <c:set var="theMapVend" value="${portal:getReportValues(pageContext.session,pActId2,reportId)}"/>
+                                <dp:acceptance sectionNum="1" data="${theMap}" dataTS3="${theMap2}" dataVend="${theMapVend}" reportId="${reportId}"/>
+                            </c:when>
+                            <c:otherwise>
+                                <dp:acceptance sectionNum="1" data="${theMap}" dataTS3="${theMap2}" reportId="${reportId}"/>
+                            </c:otherwise>
+                        </c:choose>
                     </c:when>
                     <c:otherwise>
-                        <dp:acceptance sectionNum="1" data="${theMap}" reportId="${reportId}"/>
+                        <c:choose>
+                            <c:when test="${HaveVendData}"> 
+                                <c:set var="theMapVend" value="${portal:getReportValues(pageContext.session,vendActId,reportId)}"/>
+                                <dp:acceptance sectionNum="1" data="${theMap}" dataVend="${theMapVend}" reportId="${reportId}"/>
+                            </c:when>
+                            <c:otherwise>
+                                <dp:acceptance sectionNum="1" data="${theMap}" reportId="${reportId}"/>
+                            </c:otherwise>
+                        </c:choose>
                     </c:otherwise>
                 </c:choose>
 
+                <%--
+                <c:if test="${HaveMetSpreadsheet}">
+                    <h2>Metrology</h2>
+
+                    <a href="${metSpreadsheetLink}" target="_blank"><c:out value="TS2 Spreadsheet"/></a> 
+
+                </c:if>
+--%>
+            </div>
         </c:if>
     </body>
 </html>
