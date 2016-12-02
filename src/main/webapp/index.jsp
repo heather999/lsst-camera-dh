@@ -38,6 +38,9 @@
         <c:url var="availReportLink" value="/AvailableReports.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
+        <c:url var="acceptanceReportLink" value="/SensorAcceptance.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+        </c:url>
         <c:url var="ncrStatusLink" value="/ncrStatus.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
         </c:url>
@@ -56,6 +59,7 @@
             <%-- <li><a href="/DataPortal/eTravelerPortal.jsp" title "eTraveler Portal" style=""><strong>eTraveler Portal</strong></a></li> --%>
             <li> <a href="${reportsLink}" title="Science Raft CCD Data and Reports" style=""><strong>Science Raft CCD Data and Reports</strong></a></li>
             <li> <a href="${availReportLink}" title="Web Reports" style=""><strong>Web Reports</strong></a></li>
+            <li> <a href="${acceptanceReportLink}" title="Sensor Acceptance" style=""><strong>Sensor Acceptance</strong></a></li>
             <li> <a href="${runsLink}" title="Run by Run report" style=""><strong>Run by Run Report</strong></a></li>
 
         </ul>
