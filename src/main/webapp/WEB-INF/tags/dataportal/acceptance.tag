@@ -38,7 +38,7 @@
             <display:column property="SpecId" title="Spec. ID"/>
             <display:column property="Description"/>
             <display:column property="Spec_Display" title="Specification"/>
-            <display:column title="SR-RCV-01">
+            <display:column title="Vendor-Vendor">
                 <c:choose>
                     <c:when test="${empty dataVend}">
                         NA
@@ -80,7 +80,7 @@
                 </c:choose>
             </display:column>
                         --%>
-            <display:column title="SR-EOT-02">
+            <display:column title="Vendor-LSST">
                 <c:catch var="x">
                     ${portal:jexlEvaluateData(data, row.jexl_measurement)} 
                 </c:catch>
@@ -101,7 +101,7 @@
                 <c:if test="${!empty x}">???</c:if>
             </display:column>
                 --%>
-            <display:column title="SR-EOT-1">
+            <display:column title="LSST-LSST">
                 <c:choose>
                     <c:when test="${empty dataTS3}">
                         NA
