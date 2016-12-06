@@ -27,7 +27,7 @@
         <c:set var="HaveMetSpreadsheet" value="false"/>
 
         <sql:query var="sensor">
-            select hw.lsstId, act.end, act.id, pr.name from Activity act 
+            select hw.id, hw.lsstId, act.end, pr.name from Activity act 
             join Hardware hw on act.hardwareId=hw.id 
             join Process pr on act.processId=pr.id 
             join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
@@ -35,7 +35,8 @@
             <sql:param value="${param.parentActivityId}"/>
         </sql:query> 
         <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
-        <c:set var="actId" value="${sensor.rows[0].id}"/>  
+        <c:set var="hdwId" value="${sensor.rows[0].id}"/>
+        <%--<c:set var="actId" value="${sensor.rows[0].id}"/>  --%>
         <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="reportName" value="${sensor.rows[0].name}"/>
         <c:set var="parentActivityId" value="${param.parentActivityId}"/>
@@ -141,9 +142,14 @@
                 <display:table name="${theMap.entrySet()}" id="theMap"/>  <%-- shows what's in the map --%> 
             </c:if>
 
+            <%-- Construct eT hdw page link --%>
+            <c:url var="hdwLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+                <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+                <c:param name="hardwareId" value="${hdwId}"/>
+            </c:url>
+
             <div id="SensorAcceptanceReport" class="print">
-                <%-- <h1>Summary Report for ${lsstId}</h1> --%>
-                <h1>Sensor Acceptance Status ${lsstId}</h1>
+                <h1>Sensor Acceptance Status <a href="${hdwLink}" target="_blank"><c:out value="${lsstId}"/></a></h1>
 
                 <c:if test="${HaveVendData}">
                     Generated Vendor-Vendor <fmt:formatDate value="${SRRCV1end}" pattern="yyy-MM-dd HH:mm z"/>
