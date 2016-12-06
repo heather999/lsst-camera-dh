@@ -146,15 +146,15 @@
                 <h1>Sensor Acceptance Status ${lsstId}</h1>
 
                 <c:if test="${HaveVendData}">
-                    Generated SR-RCV-1 <fmt:formatDate value="${SRRCV1end}" pattern="yyy-MM-dd HH:mm z"/>
+                    Generated Vendor-Vendor <fmt:formatDate value="${SRRCV1end}" pattern="yyy-MM-dd HH:mm z"/>
                     <br/>
                 </c:if>
 
-                Generated SR-EOT-02 <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/>
+                Generated Vendor-LSST <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/>
 
                 <c:if test="${HaveTS3Data}">
                     <br/>
-                    Generated SR-EOT-01 <fmt:formatDate value="${SREOT01end}" pattern="yyy-MM-dd HH:mm z"/>
+                    Generated LSST-LSST <fmt:formatDate value="${SREOT01end}" pattern="yyy-MM-dd HH:mm z"/>
                 </c:if>
 
                 <br/><br/> <ru:printButton/>
