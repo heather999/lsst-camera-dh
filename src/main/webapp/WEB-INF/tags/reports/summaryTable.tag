@@ -30,14 +30,14 @@
 
 <c:if test="${specs.rowCount != 0}">
     <display:table name="${specs.rows}" id="row" defaultsort="2" class="datatable">
-        <display:column title="Status">
+        <display:column title="Status" sortable="true" class="sortable">
             <c:catch var="x">
                 <c:set var="status" value="${portal:jexlEvaluateData(data, row.jexl_status)}"/>
                 ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
             </c:catch>
             <c:if test="${!empty x}">???</c:if>
         </display:column>
-        <display:column property="SpecId" title="Spec. ID"/>
+        <display:column property="SpecId" title="Spec. ID" sortable="true" class="sortable"/>
         <display:column property="Description"/>
         <display:column property="Spec_Display" title="Specification"/>
         <display:column title="Value">
