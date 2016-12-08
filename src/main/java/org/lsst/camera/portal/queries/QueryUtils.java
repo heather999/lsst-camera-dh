@@ -35,6 +35,7 @@ import org.lsst.camera.portal.data.ReportData;
 import org.lsst.camera.portal.data.TestReportPathData;
 import org.lsst.camera.portal.data.ComponentData;
 import org.lsst.camera.portal.data.CatalogFileData;
+import org.lsst.camera.portal.data.SensorAcceptanceData;
 import org.srs.web.base.db.ConnectionManager;
 
 
@@ -626,6 +627,7 @@ public class QueryUtils {
     // Retrieve all the LsstIds of a certain HardwareType
     // Return a Map of id, LsstId
     public static Map getFilteredComponentIds(HttpSession session, Integer hdwType, String lsst_num, String manu, String myGroup, Boolean byGroup) throws SQLException {
+        // Map of HdwIds, LSSTNums
         HashMap<Integer, String> result = new HashMap<>();
 
         String lower_lsst_num = lsst_num.toLowerCase();
@@ -821,6 +823,93 @@ public class QueryUtils {
                 c.close();
             }
         }
+        return result;
+    }
+    
+    //public static List getSensorAcceptanceTable(HttpSession session, Integer hardwareTypeId, String lsstNumPattern, String manu, String myGroup, Boolean byGroup, Integer labelId) throws SQLException {
+    public static List getSensorAcceptanceTable(HttpSession session) throws SQLException  {
+        List<SensorAcceptanceData> result = new ArrayList<>();
+
+        //  Sensor Acceptance Table will include these columns LSSTTD-811
+//    Grade (we'll get this from the label on the sensor)
+//    Vendor EO test date
+//    Vendor MET test date
+//    Ingest (when we ran SR-RCV-01)
+//    Vendor-LSST EO test date (when we ran SR-EOT-02)
+//    Vendor LSST MET date (when we ran SR-MET-05)
+//    Status (we can use the location to say "E2V/ITL", "under test at BNL", "wait Authorization to Ship" if sensor pre-ship traveler is running but has not closed out, ...?)
+//    Authorized (date of pre-ship authorization traveler or "Rejected")
+//    Received at BNL
+//    Tested at BNL ("EO & MET", "MET only", "EO only" from the travelers)
+//    Accepted (Date of acceptance traveler or "Returned to vendor")
+//    Any NCRs?
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+         //   Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsstNumPattern, manu, myGroup, byGroup);
+            //   String hdwTypeSet = "";
+            //   if (byGroup) {
+            //       hdwTypeSet = getHardwareTypesFromGroup(session, myGroup);
+            //   } else {
+            //       hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
+            //   }
+            PreparedStatement vendorS = c.prepareStatement("select hw.lsstId AS lsstId, hw.id AS hdwId, "
+                    + "act.id, act.parentActivityId, "
+                    + "statusHist.activityStatusId from Activity act "
+                    + "join Hardware hw on act.hardwareId=hw.id "
+                    + "join Process pr on act.processId=pr.id "
+                    + "join ActivityStatusHistory statusHist on act.id=statusHist.activityId "
+                    + "where statusHist.activityStatusId=1 and pr.name='vendorIngest' "
+                    + "order by act.parentActivityId desc");
+
+            ResultSet vendorR = vendorS.executeQuery();
+            while (vendorR.next()) { // loop over all sensors which have had a vendor ingest (SR-RCV-01)
+                Integer hdwId = vendorR.getInt("hdwId");
+                String lsstId = vendorR.getString("lsstId"); // LSSTNUM
+                PreparedStatement eot02S = c.prepareStatement("select hw.lsstId, act.id, "
+                        + "act.parentActivityId AS parentActId, "
+                        + "statusHist.activityStatusId, pr.name, SRH.name, SRH.value from Activity act "
+                        + "join Hardware hw on act.hardwareId=hw.id "
+                        + "join Process pr on act.processId=pr.id "
+                        + "join ActivityStatusHistory statusHist on act.id=statusHist.activityId "
+                        + "JOIN StringResultHarnessed SRH ON act.id=SRH.activityId "
+                        + "where hw.id=? AND statusHist.activityStatusId=1 and pr.name='test_report_offline' "
+                        + "AND SRH.name='eotest_version' "
+                        + "order by act.parentActivityId desc");
+                eot02S.setInt(1, hdwId);
+                ResultSet sreo02Result = eot02S.executeQuery();
+                if (sreo02Result.first() == false)  {
+                    continue; // skip the sensors with no SR-EOT-02 data for now
+                }
+                String eoVer = sreo02Result.getString("value");  // eoTest version
+                SensorAcceptanceData sensorData = new SensorAcceptanceData();
+                sensorData.setValues(lsstId, eoVer, sreo02Result.getInt("parentActId"));
+                PreparedStatement ts3S = c.prepareStatement("SELECT hw.lsstId, act.id, act.parentActivityId, "
+                        + "statusHist.activityStatusId, pr.name, SRH.name, SRH.value FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id "
+                        + "JOIN Process pr ON act.processId=pr.id "
+                        + "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId "
+                        + "JOIN StringResultHarnessed SRH ON act.id=SRH.activityId "
+                        + "WHERE hw.id = ? AND statusHist.activityStatusId=1 AND pr.name='test_report' "
+                        + "AND SRH.name='eotest_version' "
+                        + "ORDER BY act.parentActivityId DESC");
+                ts3S.setInt(1,hdwId);
+                ResultSet ts3R = ts3S.executeQuery();
+                if (ts3R.first() == true) {
+                sensorData.setTs3EoTestVer(ts3R.getString("value"));
+                }
+                result.add(sensorData);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
         return result;
     }
 
