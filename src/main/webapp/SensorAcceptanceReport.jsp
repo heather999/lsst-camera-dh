@@ -40,6 +40,7 @@
         <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="reportName" value="${sensor.rows[0].name}"/>
         <c:set var="parentActivityId" value="${param.parentActivityId}"/>
+        <c:set var="eotestVersion" value="${sensor.rows[0].value}"/>
 
         <sql:query var="vendorData">
             SELECT hw.lsstId, act.end, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name FROM Activity act JOIN Hardware hw ON act.hardwareId=hw.id 
@@ -51,10 +52,10 @@
         <c:if test="${vendorData.rowCount>0}">
             <c:set var="vendActId" value="${vendorData.rows[0].parentActivityId}"/>
             <%-- vendActId = ${vendActId} since vendorData is ${vendorData.rowCount} --%>
-
+            <c:set var="vendIngestActId" value="${vendorData.rows[0].id}"/>
             <c:set var="HaveVendData" value="true"/>
             <c:set var="SRRCV1end" value="${vendorData.rows[0].end}"/>  
-
+            
             <%--
             vendActId = ${vendActId}
             ${HaveVendData}
@@ -74,7 +75,8 @@
 
         <c:if test="${findTS3.rowCount>0}">
             <c:set var="pActId2" value="${findTS3.rows[0].parentActivityId}"/>
-            <%-- pActId2 = ${pActId2} since findTS3 is ${findTS3.rowCount} --%>
+            <c:set var="TS3actId" value="${findTS3.rows[0].id}"/>
+            TS3actId = ${TS3actId}
             <sql:query var="sensorTS3">
                 select hw.lsstId, act.end, act.id, pr.name from Activity act 
                 join Hardware hw on act.hardwareId=hw.id 
@@ -87,6 +89,16 @@
             <c:if test="${sensorTS3.rowCount>0}">
                 <c:set var="HaveTS3Data" value="true"/>
                 <c:set var="SREOT01end" value="${sensorTS3.rows[0].end}"/>  
+                
+                 <sql:query var="eotestTS3VerQ">
+                SELECT name, value FROM StringResultHarnessed 
+                WHERE activityId=? AND name="eotest_version"
+                <sql:param value="${TS3ActId}"/>
+            </sql:query>
+                <c:if test="${eotestTS3VerQ.rowCount>0}">
+                    <c:set var="eotestTS3Version" value="${eotestTS3VerQ.rows[0].value}"/>
+                    eotestTS3Version = ${eotestTS3Version}
+                </c:if>
                 <%--
                 pActId2 = ${pActId2}
                 ${HaveTS3Data}
@@ -154,13 +166,24 @@
                 <c:if test="${HaveVendData}">
                     Generated Vendor-Vendor <fmt:formatDate value="${SRRCV1end}" pattern="yyy-MM-dd HH:mm z"/>
                     <br/>
+                    <br/>
                 </c:if>
 
                 Generated Vendor-LSST <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/>
+                        <font color="purple">
+                        &nbsp;&nbsp;&nbsp;&nbsp
+                        <b>eotest Version: <c:out value="${param.eotestVer}"/></b>
+                    </font>
 
                 <c:if test="${HaveTS3Data}">
                     <br/>
                     Generated LSST-LSST <fmt:formatDate value="${SREOT01end}" pattern="yyy-MM-dd HH:mm z"/>
+                    
+                        <font color="purple">
+                        &nbsp;&nbsp;&nbsp;&nbsp
+                        <b>eotest Version: <c:out value="${param.ts3eotestVer}"/></b>
+                    </font>
+                    <br/>
                 </c:if>
 
                 <br/><br/> <ru:printButton/>
