@@ -14,7 +14,6 @@
   
   <decorator name="noDecorator" page="noDecorator.jsp">
        <pattern>*actResults.jsp*</pattern>
-       <pattern>*SensorAcceptanceReport.jsp*</pattern>
   </decorator>
   
     

@@ -48,10 +48,10 @@
                 <display:table name="${theMap.entrySet()}" id="theMap"/>  <%-- shows what's in the map --%> 
             </c:if>
 
-           <%-- <h1>Summary Report for ${lsstId}</h1> --%>
-           <h1>Electro-Optical Test Results for Sensor ${lsstId}</h1>
+            <ru:printButton/>
+            <%-- <h1>Summary Report for ${lsstId}</h1> --%>
+            <h1>Electro-Optical Test Results for Sensor ${lsstId}</h1>
             Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
-            <br/><br/><a href="#" onclick="window.print(); return false;">printable version</a>
             <sql:query var="sections" dataSource="jdbc/config-prod">
                 select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
                 <sql:param value="${reportId}"/>

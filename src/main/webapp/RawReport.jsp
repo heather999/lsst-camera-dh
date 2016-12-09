@@ -20,7 +20,7 @@
     </head>
     <body>
         <fmt:setTimeZone value="UTC"/>
-        <c:set var="debug" value="true"/>
+        <ru:printButton/>
         <sql:query var="sensor">
             select hw.lsstId, act.end, act.id, pr.name from Activity act 
             join Hardware hw on act.hardwareId=hw.id 
@@ -55,7 +55,7 @@
             join Process p on act.processid=p.id
             where act.parentActivityId=?
             <sql:param value="${param.parentActivityId}"/>
-        </sql:query> 
+        </sql:query>
         <display:table name="${data.rows}"   class="datatable" >
             <display:column property="name" title="Process"/>
             <display:column property="variable" title="Name"/>

@@ -17,8 +17,6 @@
         <style>
             img {page-break-before: avoid;}
             h2.break {page-break-before: always;}
-            body {visibility:hidden;}
-            .print {visibility:visible;}
         </style>
     </head>
     <body>
@@ -27,7 +25,6 @@
         <c:set var="HaveTS3Data" value="false"/>
         <c:set var="HaveVendData" value="false"/>
         <c:set var="HaveMetSpreadsheet" value="false"/>
-
 
         <sql:query var="sensor">
             select hw.lsstId, act.end, act.id, pr.name from Activity act 
@@ -160,9 +157,7 @@
                     Generated SR-EOT-01 <fmt:formatDate value="${SREOT01end}" pattern="yyy-MM-dd HH:mm z"/>
                 </c:if>
 
-                <br/><br/> <%-- <a href="#" onclick="window.print();
-                        return false;">printable version</a> --%>
-                <input type="submit" value="Print Report" onClick="window.print()"/> 
+                <br/><br/> <ru:printButton/>
 
                 <sql:query var="sections" dataSource="jdbc/config-prod">
                     select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
