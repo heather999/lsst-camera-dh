@@ -155,6 +155,12 @@
                         </c:url>
                         <a href="${report}">EO</a>
                     </c:if>
+                    <c:if test="${run.name=='SR-RSA-MET-07'}">
+                        <c:url var="report" value="SummaryReport.jsp">
+                            <c:param name="run" value="${run.runNumber}"/>
+                        </c:url>
+                        <a href="${report}">MET</a>
+                    </c:if>
                 </c:if>
             </display:column>
             <display:column title="Links" class="leftAligned">
