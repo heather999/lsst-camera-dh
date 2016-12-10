@@ -22,25 +22,14 @@
         <fmt:setTimeZone value="UTC"/>
         <ru:printButton/>
         <sql:query var="sensor">
-            select hw.lsstId, act.end, act.id, pr.name from Activity act 
+            select hw.lsstId from Activity act 
             join Hardware hw on act.hardwareId=hw.id 
-            join Process pr on act.processId=pr.id 
-            join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
-            where statusHist.activityStatusId=1 and act.id = ?
-            <sql:param value="${param.parentActivityId}"/>
+            join RunNumber r on r.rootActivityId=act.id
+            where r.runNumber=?
+            <sql:param value="${param.run}"/>
         </sql:query> 
         <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
-        <c:set var="actId" value="${sensor.rows[0].id}"/>  
-        <c:set var="end" value="${sensor.rows[0].end}"/>  
-        <c:set var="reportName" value="${sensor.rows[0].name}"/>
-        <c:set var="parentActivityId" value="${param.parentActivityId}"/>
-        <sql:query var="reports" dataSource="jdbc/config-prod">
-            select id from report where name=?
-            <sql:param value="${reportName}"/>
-        </sql:query>
-
-        <h1>Raw Report for ${lsstId}</h1>
-        Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
+        <h1>Raw Report for ${lsstId} run <a href="run.jsp?run=${param.run}">${param.run}</a></h1>
         <sql:query var="data">
             select p.name, x.variable,x.value,x.type from (
                 select res.activityId, res.name variable, res.value, "String" type from StringResultHarnessed res 
@@ -53,8 +42,9 @@
             ) x
             join Activity act on x.activityId=act.id 
             join Process p on act.processid=p.id
-            where act.parentActivityId=?
-            <sql:param value="${param.parentActivityId}"/>
+            join RunNumber r on r.rootActivityId=act.rootActivityId
+            where r.runNumber=?
+            <sql:param value="${param.run}"/>
         </sql:query>
         <display:table name="${data.rows}"   class="datatable" >
             <display:column property="name" title="Process"/>

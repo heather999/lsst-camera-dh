@@ -23,10 +23,7 @@
     </head>
     <body>
         <h1>eTraveler Runs</h1>
-        <fmt:setTimeZone value="UTC"/>
-        
-        <b>Note:</b> There are currently no run numbers in prod, switch to dev to see anything.
-        
+        <fmt:setTimeZone value="UTC"/>   
         <filter:filterTable>
             <filter:filterCheckbox title="Most Recent" var="mostRecent" defaultValue="true"/>
             <filter:filterSelection title="Status" var="status" defaultValue='-1'>
@@ -77,7 +74,10 @@
         <sql:query var="runs">
             select * from (
             select r.runInt,r.runNumber,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,
-            (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount
+            (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount,
+            (select count(*) from Activity aa join FloatResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as floatCount,
+            (select count(*) from Activity aa join IntResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as intCount,
+            (select count(*) from Activity aa join StringResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as StringCount
             from Activity a 
             join Process p on (a.processId=p.id)
             join Hardware h on (a.hardwareId=h.id)
@@ -130,7 +130,7 @@
         </sql:query>
 
         <display:table name="${runs.rows}" sort="list" defaultsort="1" defaultorder="descending" class="datatable" id="run" >
-            <display:column property="runNumber" sortProperty="runInt" title="Run" sortable="true"/>
+            <display:column property="runNumber" sortProperty="runInt" title="Run" sortable="true" href="run.jsp" paramId="run"/>
             <display:column property="name" title="Traveler" sortable="true"/>
             <display:column property="hardwareType" title="Device Type" sortable="true"/>
             <display:column property="lsstid" title="Device" sortable="true"/>
@@ -142,6 +142,20 @@
             </display:column>
             <display:column sortProperty="end" title="End (UTC)" sortable="true">
                 <fmt:formatDate value="${run.end}" pattern="yyyy-MM-dd HH:mm:ss"/>
+            </display:column>
+            <display:column title="Reports" class="leftAligned">
+                <c:if test="${run.fileCount+run.floatCount+run.intCount+run.StringCount>0}">
+                    <c:url var="report" value="RawReport.jsp">
+                        <c:param name="run" value="${run.runNumber}"/>
+                    </c:url>
+                    <a href="${report}">Raw</a> 
+                    <c:if test="${run.name=='SR-EOT-02'}">
+                        <c:url var="report" value="SummaryReport.jsp">
+                            <c:param name="run" value="${run.runNumber}"/>
+                        </c:url>
+                        <a href="${report}">EO</a>
+                    </c:if>
+                </c:if>
             </display:column>
             <display:column title="Links" class="leftAligned">
                 <c:if test="${run.fileCount>0}">
