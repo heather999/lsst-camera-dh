@@ -70,6 +70,7 @@
             <ul>
                 <li><a href="RawReport.jsp?run=${param.run}">Raw Report</a> (data dump)</li>
                 <c:if test="${run.name=='SR-EOT-02'}"><li><a href="SummaryReport.jsp?run=${param.run}">EOTest Report</a></li></c:if>
+                <c:if test="${run.name=='SR-RSA-MET-07'}"><li><a href="SummaryReport.jsp?run=${param.run}">Metrology Report</a></li></c:if>
             </ul>
         </c:if>
 
