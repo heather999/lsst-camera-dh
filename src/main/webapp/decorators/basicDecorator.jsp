@@ -11,7 +11,13 @@
         <title>
             <decorator:title default="Welcome!" />
         </title>
-            <dec:style/>
+        <dec:style/>
+        <!-- Hide header and print button when printing -->
+        <style media="print">
+            #PrintButton { display: none }
+            .fswmenu { display: none }
+            #headerElement { display : none }
+        </style>
         <decorator:head />
     </head>
 
