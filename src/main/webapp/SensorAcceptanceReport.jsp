@@ -127,7 +127,7 @@
 
         <%-- SR-MET-05 --%>
 
-        <sql:query var="reports" dataSource="jdbc/config-prod">
+        <sql:query var="reports" dataSource="${appVariables.reportDisplayDb}">
             select id from report where name=?
             <sql:param value="${reportName}"/>
         </sql:query>
@@ -164,7 +164,7 @@
                         return false;">printable version</a> --%>
                 <input type="submit" value="Print Report" onClick="window.print()"/> 
 
-                <sql:query var="sections" dataSource="jdbc/config-prod">
+                <sql:query var="sections" dataSource="${appVariables.reportDisplayDb}">
                     select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
                     <sql:param value="${reportId}"/>
                     <c:if test="${sectionNum == '1'}">
