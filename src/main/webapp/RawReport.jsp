@@ -34,7 +34,7 @@
         <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="reportName" value="${sensor.rows[0].name}"/>
         <c:set var="parentActivityId" value="${param.parentActivityId}"/>
-        <sql:query var="reports" dataSource="jdbc/config-prod">
+        <sql:query var="reports" dataSource="${appVariables.reportDisplayDb}">
             select id from report where name=?
             <sql:param value="${reportName}"/>
         </sql:query>
