@@ -133,7 +133,7 @@
             <display:column property="runNumber" sortProperty="runInt" title="Run" sortable="true" href="run.jsp" paramId="run"/>
             <display:column property="name" title="Traveler" sortable="true"/>
             <display:column property="hardwareType" title="Device Type" sortable="true"/>
-            <display:column property="lsstid" title="Device" sortable="true"/>
+            <display:column property="lsstid" title="Device" sortable="true" href="device.jsp" paramId="lsstId"/>
             <display:column property="status" title="Status" sortable="true"/>
             <display:column property="subsystem" title="Subsystem" sortable="true"/>
             <display:column property="site" title="Site" sortable="true"/>
