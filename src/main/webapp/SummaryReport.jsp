@@ -22,20 +22,19 @@
         <fmt:setTimeZone value="UTC"/>
         <c:set var="debug" value="false"/>
         <sql:query var="sensor">
-            select hw.lsstId, act.end, act.id, pr.name from Activity act 
-            join Hardware hw on act.hardwareId=hw.id 
-            join Process pr on act.processId=pr.id 
-            join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
-            where statusHist.activityStatusId=1 and act.id = ?
-            <sql:param value="${param.parentActivityId}"/>
+            select hw.lsstId,p.name,a.id from Activity a 
+            join Process p on (a.processId=p.id)
+            join Hardware hw on a.hardwareId=hw.id 
+            join RunNumber r on r.rootActivityId=a.id
+            where r.runNumber=?
+            <sql:param value="${param.run}"/>
         </sql:query> 
         <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
         <c:set var="actId" value="${sensor.rows[0].id}"/>  
         <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="reportName" value="${sensor.rows[0].name}"/>
-        <c:set var="parentActivityId" value="${param.parentActivityId}"/>
         <sql:query var="reports" dataSource="jdbc/config-prod">
-            select id from report where name=?
+            select id,name from report where travelername=?
             <sql:param value="${reportName}"/>
         </sql:query>
         <c:if test="${reports.rowCount==0}">
@@ -43,6 +42,14 @@
         </c:if>
         <c:if test="${reports.rowCount>0}">
             <c:set var="reportId" value="${reports.rows[0].id}"/>
+            <sql:query var="data">
+                select a.id from Activity a
+                join Process p on (a.processId=p.id)
+                where a.rootActivityId=? and p.name=?
+                <sql:param value="${actId}"/>
+                <sql:param value="${reports.rows[0].name}"/>        
+            </sql:query>
+            <c:set var="parentActivityId" value="${data.rows[0].id}"/>
             <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId,reportId)}"/>
             <c:if test="${debug}">
                 <display:table name="${theMap.entrySet()}" id="theMap"/>  <%-- shows what's in the map --%> 
