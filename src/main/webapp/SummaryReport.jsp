@@ -52,7 +52,7 @@
            <h1>${reports.rows[0].report_title} ${lsstId}</h1>
             Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
             <br/><br/><a href="#" onclick="window.print(); return false;">printable version</a>
-          <sql:query var="sections" dataSource="${appVariables.reportDisplayDb}"> 
+           <sql:query var="sections" dataSource="${appVariables.reportDisplayDb}"> 
                 select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
                 <sql:param value="${reportId}"/>
                 <c:if test="${sectionNum == '1'}">
