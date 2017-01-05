@@ -25,8 +25,7 @@ public class SummaryUtils {
 
         Map<String, Map<String, List<Object>>> result = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
 
-//        try (Connection c = ConnectionManager.getConnection("jdbc/config-prod")) {
-            try (Connection c = ConnectionManager.getConnection(ModeSwitcherFilter.getVariable(session, "reportDisplayDb"))) {
+            try (Connection c = ConnectionManager.getConnection(ModeSwitcherFilter.getVariable(session,"reportDisplayDb"))) {
             // FIXME: We should not hard-wire the DEV connection here.
             try (Connection oraconn = ConnectionManager.getConnection(session)) {
 

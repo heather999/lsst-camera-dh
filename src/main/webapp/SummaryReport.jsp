@@ -49,7 +49,7 @@
             </c:if>
 
            <%-- <h1>Summary Report for ${lsstId}</h1> --%>
-           <h1>${reports.rows[0].report_title} ${lsstId}</h1>
+           <h1>${reports.rows[0].report_title} ${lsstId}  Db ${appVariables.reportDisplayDb}</h1>
             Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
             <br/><br/><a href="#" onclick="window.print(); return false;">printable version</a>
             <sql:query var="sections" dataSource="${appVariables.reportDisplayDb}">
@@ -68,9 +68,9 @@
                         <c:set var="tdata" value="${sect.extra_table}"/>
                         <display:table name="${portal:jexlEvaluateData(theMap, tdata)}" class="datatable"/>
                     </c:catch>
-                    <c:if test="${!empty x}">No data returned <br/></c:if>
+                    <c:if test="${!empty x}">No data returned ${x} ${tdata}<br/></c:if>
                 </c:if>
-                <sql:query var="images"  dataSource="${appVariables.reportDisplayDb}">
+                <sql:query var="images"  dataSource="${appVariables.reportDisplayDb}"> 
                     select image_url, to_char(caption) caption from report_image_info where section=? and report=? order by display_order asc
                     <sql:param value="${sect.section}"/>
                     <sql:param value="${reportId}"/>

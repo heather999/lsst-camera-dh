@@ -36,6 +36,7 @@ import org.lsst.camera.portal.data.TestReportPathData;
 import org.lsst.camera.portal.data.ComponentData;
 import org.lsst.camera.portal.data.CatalogFileData;
 import org.srs.web.base.db.ConnectionManager;
+import org.srs.web.base.filters.modeswitcher.ModeSwitcherFilter;
 
 
 
@@ -99,9 +100,9 @@ public class QueryUtils {
 
     }
     
-    public static List<SummaryResult> getSummaryResults(HttpSession session, String schemaName, String parentActivityId, String ntype, String... names) throws SQLException, ServletException{
+    public static List<SummaryResult> getSummaryResults(HttpSession session, String schemaName, String parentActivityId, String ntype, String... names) throws SQLException, ServletException, Exception{
         List<SummaryResult> results = new ArrayList<>();
-        System.out.println("...Entering getSummaryResults with params schemaName=" + schemaName + " parentId=" + parentActivityId + " ntype " + ntype + " names " + names);  
+//        System.out.println("...Entering getSummaryResults with params schemaName=" + schemaName + " parentId=" + parentActivityId + " ntype " + ntype + " names " + names);  
         String sql="";
 ////        In MySQL group by and order by don't do what is expected so try query without these.        
 ////        String sql = 
@@ -124,20 +125,22 @@ public class QueryUtils {
 //        "select res.schemaInstance, min(res.value) min, max(res.value) max from FloatResultHarnessed res join Activity act on res.activityId=act.id "
 //        + "    where res.schemaName=? and res.name = ? and act.parentActivityId = ? "
 //        + "    group by res.schemaInstance order by res.value asc";
-        System.out.println(sql);
+//        System.out.println(sql);
          
 //        for (int i=0; i <= names.length-1; i++){
 //            System.out.println("Names[" + i + "] = " + names[i]);
 //        }
         
         try (Connection conn = ConnectionManager.getConnection(session)){
+//       try (Connection conn = ConnectionManager.getConnection(ModeSwitcherFilter.getVariable(session,"reportDisplayDb"))) {
+
             try ( PreparedStatement stmt = conn.prepareStatement(sql) ) {
                 for(String name : names){
                     stmt.setString(1, schemaName);
                     stmt.setString(2, name);
                     stmt.setString(3, parentActivityId);
                     ResultSet rs = stmt.executeQuery();
-                    System.out.println("ResultSet Rowcount: " + rs.toString().length() + " , " + name);
+//                    System.out.println("ResultSet Rowcount: " + rs.toString().length() + " , " + name);
                     if(!rs.next()){
                         continue;
                     }
@@ -146,8 +149,8 @@ public class QueryUtils {
                     String max = rs.getString("max");
                     results.add(new SummaryResult( schemaInstance, min, max));
                 }
-                System.out.println(results);
-                System.out.println("...Leaving getSummaryResults \n");  
+//                System.out.println(results);
+//                System.out.println("...Leaving getSummaryResults \n");  
 
                 return results;
             }
