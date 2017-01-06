@@ -64,4 +64,14 @@
         <function-class>org.lsst.camera.portal.utils.FileUtils</function-class>
         <function-signature>java.util.List relativize(java.lang.String, java.lang.String)</function-signature>
     </function>
+    <function>
+        <name>fileType</name>
+        <function-class>org.lsst.camera.portal.utils.FileUtils</function-class>
+        <function-signature>java.lang.String fileType(java.lang.String)</function-signature>
+    </function>    
+    <function>
+        <name>fileTypeIn</name>
+        <function-class>org.lsst.camera.portal.utils.FileUtils</function-class>
+        <function-signature>java.lang.Boolean fileTypeIn(java.lang.String, java.lang.String[])</function-signature>
+    </function>
 </taglib>
