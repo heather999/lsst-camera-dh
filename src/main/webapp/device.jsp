@@ -26,7 +26,7 @@
 
         <sql:query var="result">
             select * from (
-            select h.lsstId,h.manufacturer,h.model,h.manufactureDate,t.name type,ss.name subsystem,l.name location,i.name site from Hardware h
+            select h.id,h.lsstId,h.manufacturer,h.model,h.manufactureDate,t.name type,ss.name subsystem,l.name location,i.name site from Hardware h
             join HardwareType t on (h.hardwareTypeId = t.id)
             join Subsystem ss on (ss.id=t.subsystemId)
             join HardwareLocationHistory hlh on (hlh.id= (select max(id) from HardwareLocationHistory ll where ll.hardwareId=h.id))
@@ -49,6 +49,19 @@
             <utils:trEvenOdd><th>Current Location</th><td>${device.location}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Current Site</th><td>${device.site}</td></utils:trEvenOdd>
         </table>
+         <c:url var="hardware" value="/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+            <c:param name="hardwareId" value="${device.id}"/>
+        </c:url>
+        See also the <a href="${hardware}">full e-Traveler Component page</a>.
+        <h2>Reports for device</h2>
+        
+        <c:if test="${device.type=='ITL-CCD' || device.type=='E2V-CCD'}">
+            <c:url var="deviceReport" value="SensorAcceptanceReport.jsp">
+                <c:param name="lsstId" value="${device.lsstId}"/>
+            </c:url>
+            <a href="${deviceReport}">Sensor Acceptance Report</a>
+        </c:if>
 
         <h2>Runs for device</h2>
 
