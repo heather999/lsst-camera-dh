@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context path="/DataPortal">
   <ResourceLink global="jdbc/config-prod" name="jdbc/config-prod" type="javax.sql.DataSource"/>
+  <ResourceLink global="jdbc/config-dev" name="jdbc/config-dev" type="javax.sql.DataSource"/>
   <ResourceLink global="jdbc/config-srs" name="jdbc/config-srs" type="javax.sql.DataSource"/>
   <ResourceLink global="jdbc/rd-lsst-cam-ro" name="jdbc/rd-lsst-cam-ro" type="javax.sql.DataSource" />
   <ResourceLink global="jdbc/rd-lsst-cam-dev-ro" name="jdbc/rd-lsst-cam-dev-ro" type="javax.sql.DataSource" />
