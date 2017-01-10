@@ -68,7 +68,7 @@
             <utils:trEvenOdd><th>Current Status</th><td>${device.status}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Labels</th><td>${device.labels}</td></utils:trEvenOdd>
         </table>
-         <c:url var="hardware" value="/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+        <c:url var="hardware" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
             <c:param name="hardwareId" value="${device.id}"/>
         </c:url>
