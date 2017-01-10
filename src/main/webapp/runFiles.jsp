@@ -203,7 +203,7 @@
                                 <c:param name="experiment" value="LSST-CAMERA"/>
                             </c:url>
                         <li><a href="${datacatURL}">Datacat</a></li>
-                            <c:if test="${fn:endsWith(file.virtualPath, '.png')}">
+                            <c:if test="${file:fileTypeIn(file.virtualPath, fn:split('png|jpg|jpeg|gif','|'))}">
                             <li><a onclick="preview('${downloadURL}', '${file:relativize(root,file.virtualPath)}')" href="javascript:void(0);">Preview</a></li>
                             </c:if>
                             <c:if test="${fn:endsWith(file.virtualPath, '.fits')}">

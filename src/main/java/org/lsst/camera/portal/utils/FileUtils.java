@@ -70,4 +70,21 @@ public class FileUtils {
         }
         return result.substring(0, result.length()-1);
     }
+    
+    public static String fileType(String file) {
+        int pos = file.lastIndexOf('.');
+        if (pos<0) return "";
+        else {
+            String type = file.substring(pos+1);
+            return type.toLowerCase();
+        }
+    }
+    
+    public static boolean fileTypeIn(String file, String[] list) {
+        String type = fileType(file);
+        for (String l : list) {
+            if (type.equalsIgnoreCase(l)) return true;
+        }
+        return false;
+    }
 }

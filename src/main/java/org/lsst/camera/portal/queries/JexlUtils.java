@@ -1,11 +1,14 @@
 package org.lsst.camera.portal.queries;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.commons.jexl3.JexlEngine;
@@ -24,9 +27,12 @@ public class JexlUtils {
     private static final Pattern numberInBrackets = Pattern.compile("\\[([\\+\\-]?[.0-9]+)(e(\\S+))?\\]");
 
     private final Map<String, Map<String, List<Object>>> data;
+    private final SimpleDateFormat sdf;
 
     public JexlUtils(Map<String, Map<String, List<Object>>> data) { // constructor
         this.data = data;
+        sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
     public static Object jexlEvaluateData(Map<String, Map<String, List<Object>>> data, String measurement) {
@@ -106,6 +112,22 @@ public class JexlUtils {
         mergedList.addAll(a2);
         
         return mergedList;
+    }
+    
+      public List<Number> string2array(String stringOfnumbers){
+        String[] nums = stringOfnumbers.split(",");
+        List<Number> arrNums = new ArrayList<>();
+        for (String n : nums){
+          double newNum = Double.parseDouble(n);
+          arrNums.add(newNum);
+        }
+        return arrNums;
+    }
+      
+     public String formatUnixtime2UTC(double utime){
+        Date longdate = new Date((long)(utime*1000));
+        String newTime = sdf.format(longdate);
+        return newTime;
     }
 
     public List<Number> divide(List<Number> a1, List<Number> a2) {

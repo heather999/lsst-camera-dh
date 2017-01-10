@@ -12,8 +12,6 @@
 
 <%-- 
     One stop shop for run related info
-    Document   : runList.jsp
-    Created on : Sep 18, 2016, 5:32:51 PM
     Author     : tonyj
 --%>
 
