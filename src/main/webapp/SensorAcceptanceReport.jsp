@@ -168,10 +168,10 @@
                 <h2>Summary</h2>
                 <c:choose>
                     <c:when test="${HaveTS3Data}"> <%-- It is very likely this sensor has no TS3 data --%>
-                        <c:set var="theMap2" value="${portal:getReportValues(pageContext.session,vendActId,reportId)}"/>
+                        <c:set var="theMap2" value="${portal:getReportValues(pageContext.session,pActId2,reportId)}"/>
                         <c:choose>
                             <c:when test="${HaveVendData}"> 
-                                <c:set var="theMapVend" value="${portal:getReportValues(pageContext.session,pActId2,reportId)}"/>
+                                <c:set var="theMapVend" value="${portal:getReportValues(pageContext.session,vendActId,reportId)}"/>
                                 <dp:acceptance sectionNum="1" data="${theMap}" dataTS3="${theMap2}" dataVend="${theMapVend}" reportId="${reportId}"/>
                             </c:when>
                             <c:otherwise>
