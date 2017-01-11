@@ -27,20 +27,20 @@
         <c:set var="HaveMetSpreadsheet" value="false"/>
 
         <sql:query var="sensor">
-            select hw.id, hw.lsstId, act.end, pr.name from Activity act 
-            join Hardware hw on act.hardwareId=hw.id 
-            join Process pr on act.processId=pr.id 
-            join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
-            where statusHist.activityStatusId=1 and act.id = ?
-            <sql:param value="${param.parentActivityId}"/>
+            SELECT hw.lsstId, act.end, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name 
+            FROM Activity act 
+            JOIN Hardware hw ON act.hardwareId=hw.id 
+            JOIN Process pr ON act.processId=pr.id 
+            JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId 
+            WHERE hw.lsstId = ? AND statusHist.activityStatusId=1 AND pr.name='eotest_analysis' 
+            ORDER BY act.parentActivityId DESC   
+            <sql:param value="${param.lsstId}"/>
         </sql:query> 
         <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
         <c:set var="hdwId" value="${sensor.rows[0].id}"/>
         <%--<c:set var="actId" value="${sensor.rows[0].id}"/>  --%>
         <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="reportName" value="${sensor.rows[0].name}"/>
-        <c:set var="parentActivityId" value="${param.parentActivityId}"/>
-        <c:set var="eotestVersion" value="${sensor.rows[0].value}"/>
 
         <sql:query var="vendorData">
             SELECT hw.lsstId, hw.manufacturer, act.end, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name FROM Activity act JOIN Hardware hw ON act.hardwareId=hw.id 
@@ -138,7 +138,7 @@
 
         <%-- SR-MET-05 --%>
 
-        <sql:query var="reports" dataSource="jdbc/config-prod">
+        <sql:query var="reports" dataSource="${appVariables.reportDisplayDb}">
             select id from report where name=?
             <sql:param value="${reportName}"/>
         </sql:query>
@@ -148,7 +148,7 @@
 
         <c:if test="${reports.rowCount>0}">
             <c:set var="reportId" value="${reports.rows[0].id}"/>
-            <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId,reportId)}"/>
+            <c:set var="theMap" value="${portal:getReportValues(pageContext.session,actId,reportId)}"/>
 
 
             <c:if test="${debug}"> <%-- this doesn't seem to work any longer since the introduction of LinkedMap --%>
@@ -189,7 +189,7 @@
 
                 <br/><br/> <ru:printButton/>
 
-                <sql:query var="sections" dataSource="jdbc/config-prod">
+                <sql:query var="sections" dataSource="${appVariables.reportDisplayDb}">
                     select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
                     <sql:param value="${reportId}"/>
                     <c:if test="${sectionNum == '1'}">

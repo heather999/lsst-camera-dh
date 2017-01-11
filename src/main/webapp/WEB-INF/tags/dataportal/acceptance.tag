@@ -20,7 +20,7 @@
 
 
 
-<sql:query var="specs" dataSource="jdbc/config-prod">
+<sql:query var="specs" dataSource="${appVariables.reportDisplayDb}">
     select specid, description, spec_display, jexl_status, jexl_measurement, jexl_jobid from report_specs where report=?
     <sql:param value="${reportId}"/>
     <c:if test="${sectionNum != '1'}">

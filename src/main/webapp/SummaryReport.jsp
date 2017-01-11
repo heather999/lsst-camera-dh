@@ -22,20 +22,19 @@
         <fmt:setTimeZone value="UTC"/>
         <c:set var="debug" value="false"/>
         <sql:query var="sensor">
-            select hw.lsstId, act.end, act.id, pr.name from Activity act 
-            join Hardware hw on act.hardwareId=hw.id 
-            join Process pr on act.processId=pr.id 
-            join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
-            where statusHist.activityStatusId=1 and act.id = ?
-            <sql:param value="${param.parentActivityId}"/>
+            select hw.lsstId,p.name,a.id from Activity a 
+            join Process p on (a.processId=p.id)
+            join Hardware hw on a.hardwareId=hw.id 
+            join RunNumber r on r.rootActivityId=a.id
+            where r.runNumber=?
+            <sql:param value="${param.run}"/>
         </sql:query> 
         <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
         <c:set var="actId" value="${sensor.rows[0].id}"/>  
         <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="reportName" value="${sensor.rows[0].name}"/>
-        <c:set var="parentActivityId" value="${param.parentActivityId}"/>
-        <sql:query var="reports" dataSource="jdbc/config-prod">
-            select id from report where name=?
+        <sql:query var="reports" dataSource="${appVariables.reportDisplayDb}">
+            select id, name, report_title from report where travelername=?
             <sql:param value="${reportName}"/>
         </sql:query>
         <c:if test="${reports.rowCount==0}">
@@ -43,16 +42,23 @@
         </c:if>
         <c:if test="${reports.rowCount>0}">
             <c:set var="reportId" value="${reports.rows[0].id}"/>
+            <sql:query var="data">
+                select a.id from Activity a
+                join Process p on (a.processId=p.id)
+                where a.rootActivityId=? and p.name=?
+                <sql:param value="${actId}"/>
+                <sql:param value="${reports.rows[0].name}"/>        
+            </sql:query>
+            <c:set var="parentActivityId" value="${data.rows[0].id}"/>
             <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId,reportId)}"/>
             <c:if test="${debug}">
                 <display:table name="${theMap.entrySet()}" id="theMap"/>  <%-- shows what's in the map --%> 
             </c:if>
 
             <ru:printButton/>
-            <%-- <h1>Summary Report for ${lsstId}</h1> --%>
-            <h1>Electro-Optical Test Results for Sensor ${lsstId}</h1>
+            <h1>${reports.rows[0].report_title} ${lsstId} run ${param.run}</h1>
             Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
-            <sql:query var="sections" dataSource="jdbc/config-prod">
+            <sql:query var="sections" dataSource="${appVariables.reportDisplayDb}"> 
                 select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
                 <sql:param value="${reportId}"/>
                 <c:if test="${sectionNum == '1'}">
@@ -70,7 +76,7 @@
                     </c:catch>
                     <c:if test="${!empty x}">No data returned <br/></c:if>
                 </c:if>
-                <sql:query var="images"  dataSource="jdbc/config-prod">
+                <sql:query var="images"  dataSource="${appVariables.reportDisplayDb}"> 
                     select image_url, to_char(caption) caption from report_image_info where section=? and report=? order by display_order asc
                     <sql:param value="${sect.section}"/>
                     <sql:param value="${reportId}"/>
@@ -107,6 +113,18 @@
                     </sql:query>
                     <c:if test="${vers.rowCount > 0}">
                         <display:table name="${vers.rows}"   class="datatable" />
+                    </c:if>  
+                </c:if>
+                        
+                <c:if test="${sect.title == 'eTraveler Activity'}">
+                    <sql:query var="eTravIDs">
+                       select res.activityId, res.value from StringResultHarnessed res join Activity act on res.activityId=act.id 
+                       where res.name='job_name' and res.value in ('fe55_offline','read_noise_offline','bright_defects_offline','dark_defects_offline','traps_offline','dark_current_offline','cte_offline','prnu_offline','flat_pairs_offline','qe_offline')
+                       and act.parentActivityId = ?
+                       <sql:param value="${parentActivityId}"/>
+                    </sql:query>
+                    <c:if test="${eTravIDs.rowCount > 0}">
+                        <display:table name="${eTravIDs.rows}" class="datatable" />
                     </c:if>  
                 </c:if>
 
