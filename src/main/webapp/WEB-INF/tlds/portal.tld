@@ -199,6 +199,22 @@
         </function-signature>
     </function>
     
+     <function>
+        <name>getSensorReportValues</name>
+        <function-class>org.lsst.camera.portal.queries.SensorAcceptanceUtils</function-class>
+        <function-signature>
+           java.util.Map getSensorReportValues(javax.servlet.http.HttpSession, java.lang.Integer, java.lang.String)
+        </function-signature>
+    </function>
+        
+    <function>
+        <name>getMetReportValues</name>
+        <function-class>org.lsst.camera.portal.queries.SensorAcceptanceUtils</function-class>
+        <function-signature>
+           java.util.List getMetReportValues(javax.servlet.http.HttpSession, java.lang.Integer)
+        </function-signature>
+    </function>
+    
     <function>
         <name>getDatasets</name>
         <function-class>org.lsst.camera.portal.data.datacat.DatacatQuery</function-class>

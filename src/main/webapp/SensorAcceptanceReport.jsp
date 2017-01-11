@@ -43,7 +43,7 @@
         <c:set var="eotestVersion" value="${sensor.rows[0].value}"/>
 
         <sql:query var="vendorData">
-            SELECT hw.lsstId, act.end, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name FROM Activity act JOIN Hardware hw ON act.hardwareId=hw.id 
+            SELECT hw.lsstId, hw.manufacturer, act.end, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name FROM Activity act JOIN Hardware hw ON act.hardwareId=hw.id 
             JOIN Process pr ON act.processId=pr.id JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId 
             WHERE hw.lsstId = ? AND statusHist.activityStatusId=1 AND pr.name='vendorIngest' ORDER BY act.parentActivityId DESC   
             <sql:param value="${lsstId}"/>
@@ -55,6 +55,7 @@
             <c:set var="vendIngestActId" value="${vendorData.rows[0].id}"/>
             <c:set var="HaveVendData" value="true"/>
             <c:set var="SRRCV1end" value="${vendorData.rows[0].end}"/>  
+            <c:set var="manu" value="${vendorData.rows[0].manufacturer}"/>
             
             <%--
             vendActId = ${vendActId}
@@ -224,6 +225,24 @@
                     </c:otherwise>
                 </c:choose>
 
+                <%-- Add MET Table here for now  ITL only currently --%>
+                <c:if test="${HaveVendData && manu == 'ITL'}">
+                    <c:set var="tempMetData" value="${portal:getMetReportValues(pageContext.session,vendActId)}"/>
+
+                    <display:table name="${tempMetData}" export="true" class="datatable" id="met" >
+
+                        <display:column title="Spec Id." sortable="true" >${met.specId}</display:column>
+                        <display:column title="Description" sortable="true" >${met.description}</display:column>
+                        <display:column title="Specification" sortable="true" >${met.specification}</display:column>
+                        <display:column title="Vendor-Vendor" sortable="true" >${met.vendorVendor}</display:column>
+                        <display:column title="Status" sortable="true" >
+                              ${empty met.vendvendStat ? "..." : met.vendvendStat ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
+                        </display:column>
+
+                    </display:table>
+
+
+                </c:if>
                 <%--
                 <c:if test="${HaveMetSpreadsheet}">
                     <h2>Metrology</h2>
