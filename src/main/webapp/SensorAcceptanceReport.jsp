@@ -38,7 +38,7 @@
         </sql:query> 
         <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
         <c:set var="hdwId" value="${sensor.rows[0].id}"/>
-        <%--<c:set var="actId" value="${sensor.rows[0].id}"/>  --%>
+        <c:set var="actId" value="${sensor.rows[0].id}"/>  
         <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="reportName" value="${sensor.rows[0].name}"/>
 
@@ -66,9 +66,13 @@
         </c:if>
 
         <sql:query var="findTS3">
-            SELECT hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id 
-            JOIN Process pr ON act.processId=pr.id JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId 
-            WHERE hw.lsstId = ? AND statusHist.activityStatusId=1 AND pr.name='test_report' ORDER BY act.parentActivityId DESC  
+            SELECT hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name 
+            FROM Activity act 
+            JOIN Hardware hw on act.hardwareId=hw.id 
+            JOIN Process pr ON act.processId=pr.id 
+            JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId 
+            WHERE hw.lsstId = ? AND statusHist.activityStatusId=1 AND pr.name='test_report' 
+            ORDER BY act.parentActivityId DESC  
             <sql:param value="${lsstId}"/>
         </sql:query>
 
