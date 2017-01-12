@@ -268,8 +268,8 @@
                               ${empty met.vendlsstStat ? "..." : met.vendlsstStat ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
                         </display:column>
                         <display:column title="LSST-LSST" sortable="true" >${met.lsstLsst}</display:column>
-                        <display:column title="Status" sortable="true" >
-                              ${empty met.lsstlsstStat ? "..." : met.lsstlsstStat ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
+                        <display:column title="Status" sortable="true" >...
+                              <%--${empty met.lsstlsstStat ? "..." : met.lsstlsstStat ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}--%>
                         </display:column>
                     </display:table>
 

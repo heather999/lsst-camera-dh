@@ -36,10 +36,10 @@ public class MetData {
         
         vendorVendor = "NA";
         vendorLsst = "NA";
-        lsstLsst = "NA";
+        lsstLsst = "";
         
         vendvendStat = false;
-        vendlsstStat = false;
+        vendlsstStat = null;
         lsstlsstStat = false;
     }
     

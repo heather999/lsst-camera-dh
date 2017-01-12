@@ -79,11 +79,11 @@ public class SensorAcceptanceUtils {
          String ccd030cDesc = "Sensor height";
          String ccd031Desc = "Sensor Surface Flatness";
          
-         String ccd030Spec = "|znom-13|<25 &micro;m && |zmedian-13|<25 &micro;m && Z95halfband < 9 &micro;m";
-         String ccd030aSpec = "...";
-         String ccd030bSpec = "...";
-         String ccd030cSpec = "...";
-         String ccd031Spec = "< 5 &micro;m";
+         String ccd030Spec = "|znom-13|<25 &micro && |zmedian-13|<25 &micro && Z95halfband < 9 &micro";
+         String ccd030aSpec = "|znom-13|<25 &micro";
+         String ccd030bSpec = "|zmedian-13|<25 &micro";
+         String ccd030cSpec = "Z95halfband < 9 &micro";
+         String ccd031Spec = "flatnesshalfband_95 < 5 &micro";
          
          MetData ccd030Data = new MetData(ccd030, ccd030Desc, ccd030Spec);
          MetData ccd030aData = new MetData(ccd030a, ccd030aDesc, ccd030aSpec);
@@ -142,11 +142,11 @@ public class SensorAcceptanceUtils {
          
          
             if (haveMet05) {  // Continue with Vendor-LSST 
-                String vlccd030Spec = "|z_median_m_13|<25 &micro;m && |z_quantile_0975 - z_quantile_0025|<18 &micro;m";
+                String vlccd030Spec = "|z_median_m_13|<25 &micro && |z_quantile_0975 - z_quantile_0025|<18 &micro";
                 String vlccd030aSpec = "...";
-                String vlccd030bSpec = "|z_median_m_13|<25 &micro;m";
-                String vlccd030cSpec = "|z_quantile_0975 - z_quantile_0025|<18 &micro;m";
-                String vlccd031Spec = "peak_valley_95 < 10 &micro;m";
+                String vlccd030bSpec = "|z_median_m_13|<25 &micro";
+                String vlccd030cSpec = "|z_quantile_0975 - z_quantile_0025|<18 &micro";
+                String vlccd031Spec = "peak_valley_95 < 10 &micro";
 
                 PreparedStatement vlccd030bStatement = c.prepareStatement("SELECT res.activityId, res.value AS zmedian"
                         + " FROM FloatResultHarnessed res join Activity act ON res.activityId=act.id "
