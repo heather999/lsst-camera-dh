@@ -25,6 +25,7 @@
         <c:set var="HaveTS3Data" value="false"/>
         <c:set var="HaveVendData" value="false"/>
         <c:set var="HaveMetSpreadsheet" value="false"/>
+        <c:set var="HaveMet05Data" value="false"/>
 
         <sql:query var="sensor">
             SELECT hw.lsstId, act.end, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name 
@@ -141,6 +142,25 @@
         </c:if>
 
         <%-- SR-MET-05 --%>
+        
+        
+        <sql:query var="findMet05">  <%-- Vendor-LSST --%>
+            SELECT hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name 
+            FROM Activity act 
+            JOIN Hardware hw on act.hardwareId=hw.id 
+            JOIN Process pr ON act.processId=pr.id 
+            JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId 
+            WHERE hw.lsstId = ? AND statusHist.activityStatusId=1 AND pr.name='absolute_height_offline' 
+            ORDER BY act.parentActivityId DESC  
+            <sql:param value="${lsstId}"/>
+        </sql:query>
+            
+        <c:if test="${findMet05.rowCount>0}">
+            <c:set var="met05ParentActId" value="${findMet05.rows[0].parentActivityId}"/>
+            <c:set var="met05ActId" value="${findMet05.rows[0].id}"/>
+            <c:set var="HaveMet05Data" value="true"/>
+        </c:if>
+            
 
         <sql:query var="reports" dataSource="${appVariables.reportDisplayDb}">
             select id from report where name=?
@@ -231,18 +251,26 @@
 
                 <%-- Add MET Table here for now  ITL only currently --%>
                 <c:if test="${HaveVendData && manu == 'ITL'}">
-                    <c:set var="tempMetData" value="${portal:getMetReportValues(pageContext.session,vendActId)}"/>
+                    <c:set var="tempMetData" value="${portal:getMetReportValues(pageContext.session,vendActId,HaveMet05Data,met05ParentActId)}"/>
 
                     <display:table name="${tempMetData}" export="true" class="datatable" id="met" >
 
                         <display:column title="Spec Id." sortable="true" >${met.specId}</display:column>
-                        <display:column title="Description" sortable="true" >${met.description}</display:column>
-                        <display:column title="Specification" sortable="true" >${met.specification}</display:column>
+                        <display:column title="Description" sortable="true" >${met.vendvendDescription}</display:column>
+                        <display:column title="Specification" sortable="true" >${met.vendvendSpecification}</display:column>
                         <display:column title="Vendor-Vendor" sortable="true" >${met.vendorVendor}</display:column>
                         <display:column title="Status" sortable="true" >
                               ${empty met.vendvendStat ? "..." : met.vendvendStat ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
                         </display:column>
-
+                        <display:column title="Spec" sortable="true" >${met.vendlsstSpecification}</display:column>
+                        <display:column title="Vendor-LSST" sortable="true" >${met.vendorLsst}</display:column>
+                        <display:column title="Status" sortable="true" >
+                              ${empty met.vendlsstStat ? "..." : met.vendlsstStat ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
+                        </display:column>
+                        <display:column title="LSST-LSST" sortable="true" >${met.lsstLsst}</display:column>
+                        <display:column title="Status" sortable="true" >
+                              ${empty met.lsstlsstStat ? "..." : met.lsstlsstStat ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
+                        </display:column>
                     </display:table>
 
 

@@ -35,8 +35,8 @@
 
             <c:set var="sensorsWithAcceptance" value="${portal:getSensorAcceptanceTable(pageContext.session)}"/>
 
-            <display:table name="${sensorsWithAcceptance}" export="true" class="datatable" id="sen" >
-                <display:column title="Sensor" sortable="true" class="sortable" >
+            <display:table name="${sensorsWithAcceptance}" export="true" class="datatable" id="sen" defaultsort="1" >
+                <display:column title="Sensor" sortProperty="lsstId" sortable="true" class="sortable" >
                     <c:url var="acceptanceLink" value="SensorAcceptanceReport.jsp">
                         <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
                         <c:param name="parentActivityId" value="${sen.parentActId}"/>

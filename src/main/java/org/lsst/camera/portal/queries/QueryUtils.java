@@ -829,6 +829,7 @@ public class QueryUtils {
     //public static List getSensorAcceptanceTable(HttpSession session, Integer hardwareTypeId, String lsstNumPattern, String manu, String myGroup, Boolean byGroup, Integer labelId) throws SQLException {
     public static List getSensorAcceptanceTable(HttpSession session) throws SQLException  {
         List<SensorAcceptanceData> result = new ArrayList<>();
+        HashMap<Integer, Boolean> sensorsFound = new HashMap<>();
 
         //  Sensor Acceptance Table will include these columns LSSTTD-811
 //    Grade (we'll get this from the label on the sensor)
@@ -865,8 +866,11 @@ public class QueryUtils {
 
             ResultSet vendorR = vendorS.executeQuery();
             while (vendorR.next()) { // loop over all sensors which have had a vendor ingest (SR-RCV-01)
+                // The same sensor may appear multiple times in this list
                 Integer hdwId = vendorR.getInt("hdwId");
                 String lsstId = vendorR.getString("lsstId"); // LSSTNUM
+                if (sensorsFound.put(hdwId, true)!=null)
+                    continue;
                 PreparedStatement eot02S = c.prepareStatement("select hw.lsstId, act.id, "
                         + "act.parentActivityId AS parentActId, "
                         + "statusHist.activityStatusId, pr.name, SRH.name, SRH.value from Activity act "

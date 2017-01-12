@@ -11,9 +11,11 @@ package org.lsst.camera.portal.data;
 public class MetData {
 
     private String specId;
-    private String description;
-    private String specification;
-    
+    private String vendvendDescription;
+    private String vendlsstDescription;
+    private String vendvendSpecification;
+    private String vendlsstSpecification;
+
     private String vendorVendor;
     private Boolean vendvendStat;
     
@@ -27,8 +29,10 @@ public class MetData {
     public MetData(String sId, String d, String spec) {
         
         this.specId = sId == null || "".equals(sId) ? "NA" : sId;        
-        this.description = d == null || "".equals(d) ? "NA" : d;
-        this.specification = spec == null || "".equals(spec) ? "NA" : spec;
+        this.vendvendDescription = d == null || "".equals(d) ? "NA" : d;
+        this.vendvendSpecification = spec == null || "".equals(spec) ? "NA" : spec;
+        
+        vendlsstSpecification = "";
         
         vendorVendor = "NA";
         vendorLsst = "NA";
@@ -37,6 +41,14 @@ public class MetData {
         vendvendStat = false;
         vendlsstStat = false;
         lsstlsstStat = false;
+    }
+    
+    public void setVendlsstDescription(String d) {
+         this.vendlsstDescription = d == null || "".equals(d) ? "NA" : d;
+    }
+ 
+    public void setVendlsstSpecification(String spec) {
+         this.vendlsstSpecification = spec == null || "".equals(spec) ? "NA" : spec;
     }
 
     public void setVendorLsst(String vl, Boolean vlStat) {
@@ -57,11 +69,18 @@ public class MetData {
     public String getSpecId() {
          return specId;
     }
-    public String getDescription() {
-        return description;
+    public String getVendvendDescription() {
+        return vendvendDescription;
     }
-    public String getSpecification() {
-        return specification;
+    public String getVendvendSpecification() {
+        return vendvendSpecification;
+    }
+    
+    public String getVendlsstDescription() {
+        return vendlsstDescription;
+    }
+    public String getVendlsstSpecification() {
+        return vendlsstSpecification;
     }
     
     public String getVendorVendor () {
