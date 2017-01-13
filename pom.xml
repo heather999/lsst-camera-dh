@@ -136,5 +136,11 @@
         <netbeans.hint.deploy.server>Apache Tomcat 7.0.59</netbeans.hint.deploy.server>
         <org.lsst.camera.project.finalName>DataPortal</org.lsst.camera.project.finalName>
     </properties>
+    
+    <scm>
+        <url>https://github.com/lsst-camera-dh/portal-web</url>
+        <connection>scm:git:git://github.com/lsst-camera-dh/portal-web.git</connection>
+        <developerConnection>scm:git:ssh://git@github.com/lsst-camera-dh/portal-web.git</developerConnection>
+    </scm>
 
 </project>
