@@ -17,9 +17,15 @@
 <%@attribute name="reportId" type="java.lang.Integer" required="true"%>
 <%@attribute name="dataTS3" type="java.util.Map" required="false"%>
 <%@attribute name="dataVend" type="java.util.Map" required="false"%>
+<%@attribute name="vendReportId" type="java.lang.Integer" required="false"%>
 
-
-
+<c:if test="${!empty vendReportId}">
+<sql:query var="vendSpecs" dataSource="${appVariables.reportDisplayDb}">
+    select specid, description, spec_display, jexl_status, jexl_measurement, jexl_jobid from report_specs where report=?
+    <sql:param value="${vendReportId}"/>
+</sql:query>
+</c:if>
+    
 <sql:query var="specs" dataSource="${appVariables.reportDisplayDb}">
     select specid, description, spec_display, jexl_status, jexl_measurement, jexl_jobid from report_specs where report=?
     <sql:param value="${reportId}"/>

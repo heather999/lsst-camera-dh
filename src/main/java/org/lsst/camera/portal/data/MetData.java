@@ -38,9 +38,9 @@ public class MetData {
         vendorLsst = "NA";
         lsstLsst = "";
         
-        vendvendStat = false;
+        vendvendStat = null;
         vendlsstStat = null;
-        lsstlsstStat = false;
+        lsstlsstStat = null;
     }
     
     public void setVendlsstDescription(String d) {

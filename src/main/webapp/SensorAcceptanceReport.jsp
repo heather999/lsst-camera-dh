@@ -28,7 +28,7 @@
         <c:set var="HaveMet05Data" value="false"/>
 
         <sql:query var="sensor">
-            SELECT hw.lsstId, act.end, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name 
+            SELECT act.hardwareId, hw.lsstId, act.end, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name 
             FROM Activity act 
             JOIN Hardware hw ON act.hardwareId=hw.id 
             JOIN Process pr ON act.processId=pr.id 
@@ -38,7 +38,7 @@
             <sql:param value="${param.lsstId}"/>
         </sql:query> 
         <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
-        <c:set var="hdwId" value="${sensor.rows[0].id}"/>
+        <c:set var="hdwId" value="${sensor.rows[0].hardwareId}"/>
         <c:set var="actId" value="${sensor.rows[0].id}"/>  
         <c:set var="end" value="${sensor.rows[0].end}"/>  
         <c:set var="reportName" value="${sensor.rows[0].name}"/>
@@ -57,7 +57,21 @@
             <c:set var="HaveVendData" value="true"/>
             <c:set var="SRRCV1end" value="${vendorData.rows[0].end}"/>  
             <c:set var="manu" value="${vendorData.rows[0].manufacturer}"/>
-            
+            <c:set var="vendReportName" value="${vendorData.rows[0].name}"/>
+
+            <%-- Retrieve the vendor Report info for the config DB --%>
+
+            <sql:query var="vendReports" dataSource="${appVariables.reportDisplayDb}">
+                select id from report where name=?
+                <sql:param value="${vendReportName}"/>
+            </sql:query>
+            <c:if test="${vendReports.rowCount==0}">
+                Unknown report name ${vendReportName}
+            </c:if>
+            <c:if test="${vendReports.rowCount>0}">
+                <c:set var="vendReportId" value="${vendReports.rows[0].id}"/>
+            </c:if>
+
             <%--
             vendActId = ${vendActId}
             ${HaveVendData}
@@ -169,6 +183,8 @@
         <c:if test="${reports.rowCount==0}">
             Unknown report name ${reportName}
         </c:if>
+            
+  
 
         <c:if test="${reports.rowCount>0}">
             <c:set var="reportId" value="${reports.rows[0].id}"/>
@@ -229,7 +245,7 @@
                         <c:choose>
                             <c:when test="${HaveVendData}"> 
                                 <c:set var="theMapVend" value="${portal:getReportValues(pageContext.session,vendActId,reportId)}"/>
-                                <dp:acceptance sectionNum="1" data="${theMap}" dataTS3="${theMap2}" dataVend="${theMapVend}" reportId="${reportId}"/>
+                                <dp:acceptance sectionNum="1" data="${theMap}" dataTS3="${theMap2}" dataVend="${theMapVend}" reportId="${reportId}" vendReportId="${vendReportId}"/>
                             </c:when>
                             <c:otherwise>
                                 <dp:acceptance sectionNum="1" data="${theMap}" dataTS3="${theMap2}" reportId="${reportId}"/>
@@ -240,7 +256,7 @@
                         <c:choose>
                             <c:when test="${HaveVendData}"> 
                                 <c:set var="theMapVend" value="${portal:getReportValues(pageContext.session,vendActId,reportId)}"/>
-                                <dp:acceptance sectionNum="1" data="${theMap}" dataVend="${theMapVend}" reportId="${reportId}"/>
+                                <dp:acceptance sectionNum="1" data="${theMap}" dataVend="${theMapVend}" reportId="${reportId}" vendReportId="${vendReportId}"/>
                             </c:when>
                             <c:otherwise>
                                 <dp:acceptance sectionNum="1" data="${theMap}" reportId="${reportId}"/>
@@ -250,8 +266,9 @@
                 </c:choose>
 
                 <%-- Add MET Table here for now  ITL only currently --%>
-                <c:if test="${HaveVendData && manu == 'ITL'}">
-                    <c:set var="tempMetData" value="${portal:getMetReportValues(pageContext.session,vendActId,HaveMet05Data,met05ParentActId)}"/>
+                <c:if test="${HaveVendData}">
+                              <%-- && manu == 'ITL'}"> --%>
+                    <c:set var="tempMetData" value="${portal:getMetReportValues(pageContext.session,manu,vendActId,HaveMet05Data,met05ParentActId)}"/>
 
                     <display:table name="${tempMetData}" export="true" class="datatable" id="met" >
 

@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.lang.Math;
+import java.util.Objects;
 import javax.servlet.jsp.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
@@ -61,12 +62,15 @@ public class SensorAcceptanceUtils {
         return result;
     }
     
-    public static List getMetReportValues(HttpSession session, Integer actParentId, Boolean haveMet05, Integer met05ParentId) throws SQLException {
+    public static List getMetReportValues(HttpSession session, String manu, Integer actParentId, Boolean haveMet05, Integer met05ParentId) throws SQLException {
         List<MetData> result = new ArrayList<>();
         
         Connection c = null;
         try {
          c = ConnectionManager.getConnection(session);
+         
+        Double BadValue = -999.0, Tolerance = 0.001;
+         
          String ccd030 = "CCD-030";
          String ccd030a = "CCD-030a";
          String ccd030b = "CCD-030b";
@@ -79,9 +83,9 @@ public class SensorAcceptanceUtils {
          String ccd030cDesc = "Sensor height";
          String ccd031Desc = "Sensor Surface Flatness";
          
-         String ccd030Spec = "|znom-13|<25 &micro && |zmedian-13|<25 &micro && Z95halfband < 9 &micro";
-         String ccd030aSpec = "|znom-13|<25 &micro";
-         String ccd030bSpec = "|zmedian-13|<25 &micro";
+         String ccd030Spec = "|znom-13 mm|<25 &micro && |zmedian-13 mm|<25 &micro && Z95halfband < 9 &micro";
+         String ccd030aSpec = "|znom-13 mm|<25 &micro";
+         String ccd030bSpec = "|zmedian-13 mm|<25 &micro";
          String ccd030cSpec = "Z95halfband < 9 &micro";
          String ccd031Spec = "flatnesshalfband_95 < 5 &micro";
          
@@ -118,10 +122,29 @@ public class SensorAcceptanceUtils {
              Double znom = ccd030aResult.getDouble("znom");
              Double zmedian = ccd030bResult.getDouble("zmedian");
              Double z95halfband = ccd030cResult.getDouble("z95halfband");
-             ccd030aData.setVendorVendor(String.format("%.3f", Math.abs(znom-13.)) , Math.abs(znom-13.)<25 );
-             ccd030bData.setVendorVendor(String.format("%.3f", Math.abs(zmedian-13.)), (Math.abs(zmedian-13.)<25));
-             ccd030cData.setVendorVendor(String.format("%.3f", z95halfband), (z95halfband<0.009));
-             Boolean ccd030Status = (Math.abs(znom - 13.) < 25) && (Math.abs(zmedian-13.)<25) && (z95halfband<0.009);
+             Boolean znomGood = false;
+             Boolean zmedianGood = false;
+             Boolean z95halfbandGood = false;
+             if (Math.abs(znom - BadValue) < Tolerance) {
+                 ccd030aData.setVendorVendor("NA", false);
+             } else {
+                 znomGood = (Math.abs(znom - 13.) < 25);
+                 ccd030aData.setVendorVendor(String.format("%.3f", Math.abs(znom - 13.)), znomGood);
+             }
+             if (Math.abs(zmedian - BadValue) < Tolerance) {
+                 ccd030bData.setVendorVendor("NA", false);
+             } else {
+                 zmedianGood = (Math.abs(zmedian - 13.) < 25);
+                 ccd030bData.setVendorVendor(String.format("%.3f", Math.abs(zmedian - 13.)), zmedianGood);
+             }
+             if (Math.abs(z95halfband - BadValue) < Tolerance) {
+                 ccd030cData.setVendorVendor("NA", false);
+             } else {
+                 z95halfbandGood = (z95halfband < 0.009);
+                 ccd030cData.setVendorVendor(String.format("%.3f", z95halfband), z95halfbandGood);
+             }
+
+             Boolean ccd030Status = (znomGood && zmedianGood && z95halfbandGood);
              ccd030Data.setVendorVendor("...", ccd030Status);
              
              // Always leaving LSST-LSST Met Data set to NA for now
@@ -135,11 +158,15 @@ public class SensorAcceptanceUtils {
          ccd031Statement.setInt(1, actParentId);
          ResultSet ccd031Result = ccd031Statement.executeQuery();
 
-         if (ccd031Result.first()) {
-             double flatness = ccd031Result.getDouble("flatness");
-             ccd031Data.setVendorVendor(String.format("%.4f", flatness), (flatness < 5.));
-         }
-         
+            if (ccd031Result.first()) {
+                double flatness = ccd031Result.getDouble("flatness");
+                if (Math.abs(flatness - BadValue) < Tolerance) {
+                    ccd031Data.setVendorVendor("NA", false);
+                } else {
+                    ccd031Data.setVendorVendor(String.format("%.4f", flatness), (flatness < 5.));
+                }
+            }
+
          
             if (haveMet05) {  // Continue with Vendor-LSST 
                 String vlccd030Spec = "|z_median_m_13|<25 &micro && |z_quantile_0975 - z_quantile_0025|<18 &micro";
@@ -200,13 +227,14 @@ public class SensorAcceptanceUtils {
             }
             
          
-         
-         result.add(ccd030Data);
-         result.add(ccd030aData);
-         result.add(ccd030bData);
-         result.add(ccd030cData);
-         result.add(ccd031Data);
-         
+            if (Objects.equals(manu.toUpperCase(), "ITL")) {
+                result.add(ccd030Data);
+                result.add(ccd030aData);
+                result.add(ccd030bData);
+                result.add(ccd030cData);
+            }
+            result.add(ccd031Data);  // We only have Vendor-LSST CCD-031 for e2v 
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
