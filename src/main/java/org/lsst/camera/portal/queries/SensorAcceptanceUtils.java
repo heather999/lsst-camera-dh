@@ -128,20 +128,20 @@ public class SensorAcceptanceUtils {
              if (Math.abs(znom - BadValue) < Tolerance) {
                  ccd030aData.setVendorVendor("NA", false);
              } else {
-                 znomGood = (Math.abs(znom - 13.) < 25);
-                 ccd030aData.setVendorVendor(String.format("%.3f", Math.abs(znom - 13.)), znomGood);
+                 znomGood = (Math.abs(znom - 13.)*1000 < 25); // converting the length in mm to microns *1000
+                 ccd030aData.setVendorVendor(String.format("%.3f", Math.abs(znom - 13.)*1000), znomGood);
              }
              if (Math.abs(zmedian - BadValue) < Tolerance) {
                  ccd030bData.setVendorVendor("NA", false);
              } else {
-                 zmedianGood = (Math.abs(zmedian - 13.) < 25);
-                 ccd030bData.setVendorVendor(String.format("%.3f", Math.abs(zmedian - 13.)), zmedianGood);
+                 zmedianGood = (Math.abs(zmedian - 13.)*1000 < 25); // converting length in mm to mircons *1000
+                 ccd030bData.setVendorVendor(String.format("%.3f", Math.abs(zmedian - 13.)*1000), zmedianGood);
              }
              if (Math.abs(z95halfband - BadValue) < Tolerance) {
                  ccd030cData.setVendorVendor("NA", false);
              } else {
-                 z95halfbandGood = (z95halfband < 0.009);
-                 ccd030cData.setVendorVendor(String.format("%.3f", z95halfband), z95halfbandGood);
+                 z95halfbandGood = (z95halfband < 0.009); // assuming z95halfband is in mm
+                 ccd030cData.setVendorVendor(String.format("%.3f", z95halfband*1000), z95halfbandGood); // reporting value in microns
              }
 
              Boolean ccd030Status = (znomGood && zmedianGood && z95halfbandGood);
@@ -220,7 +220,7 @@ public class SensorAcceptanceUtils {
             
                 if (vlccd031Result.first()) {
                     Double peak_valley_95 = vlccd031Result.getDouble("peak_valley_95");
-                    ccd031Data.setVendorLsst(String.format("%.3f",peak_valley_95), peak_valley_95 < 10.);
+                    ccd031Data.setVendorLsst(String.format("%.3f",peak_valley_95), peak_valley_95 < 10.); // See LSSTTD-812
                     
                     ccd031Data.setVendlsstSpecification(vlccd031Spec);
                 }

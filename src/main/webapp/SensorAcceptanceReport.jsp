@@ -65,9 +65,11 @@
                 select id from report where name=?
                 <sql:param value="${vendReportName}"/>
             </sql:query>
+                <%--
             <c:if test="${vendReports.rowCount==0}">
                 Unknown report name ${vendReportName}
             </c:if>
+                --%>
             <c:if test="${vendReports.rowCount>0}">
                 <c:set var="vendReportId" value="${vendReports.rows[0].id}"/>
             </c:if>
