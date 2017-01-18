@@ -46,7 +46,8 @@
                     </c:url>
                     <a href="${acceptanceLink}" target="_blank"><c:out value="${sen.lsstId}"/></a>
                 </display:column>
-                <display:column title="Vendor-LSST<br/>eotest Ver" sortable="true" >${sen.vendorEoTestVer}</display:column>
+                <display:column title="Ingest" sortable="true" >${sen.vendorIngestDate}</display:column>
+                <display:column title="Vendor-LSST<br/>eotest Ver" sortable="true" >${sen.sreot2Date}<br>${sen.vendorEoTestVer}</display:column>
                 <display:column title="LSST-LSST<br/>eotest Ver" sortable="true" >${sen.ts3EoTestVer}</display:column>
             </display:table>
 

@@ -15,7 +15,9 @@ public class SensorAcceptanceData {
     private String lsstId;
     private String vendorEoTestVer;
     private String ts3EoTestVer;
-    public Integer parentActId;
+    private Integer parentActId;
+    private java.util.Date vendorIngestDate;
+    private java.util.Date sreot2Date;
 //    private String status;
 //    private String location;
 //    private String site;
@@ -46,6 +48,14 @@ public class SensorAcceptanceData {
         ts3EoTestVer = ver == null || "".equals(ver) ? "NA" : ver; 
     }
     
+    public void setVendorIngestDate(java.util.Date d) {
+        vendorIngestDate = d;
+    }
+    
+    public void setSreot2Date(java.util.Date d) {
+        sreot2Date = d;
+    }
+    
     public void setValues(String id, String ver, Integer i) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
         vendorEoTestVer = ver == null || "".equals(ver) ? "NA" : ver; 
@@ -68,6 +78,14 @@ public class SensorAcceptanceData {
     
     public String getTs3EoTestVer() {
         return ts3EoTestVer;
+    }
+    
+    public java.util.Date getVendorIngestDate() {
+        return vendorIngestDate;
+    }
+    
+    public java.util.Date getSreot2Date() {
+        return sreot2Date;
     }
     
 }

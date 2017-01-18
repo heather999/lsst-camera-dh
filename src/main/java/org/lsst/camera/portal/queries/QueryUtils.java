@@ -832,9 +832,9 @@ public class QueryUtils {
         HashMap<Integer, Boolean> sensorsFound = new HashMap<>();
 
         //  Sensor Acceptance Table will include these columns LSSTTD-811
-//    Grade (we'll get this from the label on the sensor)
-//    Vendor EO test date
-//    Vendor MET test date
+//    Grade (we'll get this from the label on the sensor)  NOT AVAILABLE YET
+//    Vendor EO test date  NOT AVAILABLE YET
+//    Vendor MET test date  NOT AVAILABLE YET
 //    Ingest (when we ran SR-RCV-01)
 //    Vendor-LSST EO test date (when we ran SR-EOT-02)
 //    Vendor LSST MET date (when we ran SR-MET-05)
@@ -856,7 +856,7 @@ public class QueryUtils {
             //       hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
             //   }
             PreparedStatement vendorS = c.prepareStatement("select hw.lsstId AS lsstId, hw.id AS hdwId, "
-                    + "act.id, act.parentActivityId, "
+                    + "act.id, act.parentActivityId, act.end, "
                     + "statusHist.activityStatusId from Activity act "
                     + "join Hardware hw on act.hardwareId=hw.id "
                     + "join Process pr on act.processId=pr.id "
@@ -871,8 +871,9 @@ public class QueryUtils {
                 String lsstId = vendorR.getString("lsstId"); // LSSTNUM
                 if (sensorsFound.put(hdwId, true)!=null)
                     continue;
+                java.util.Date vendorIngestDate = vendorR.getTimestamp("end");
                 PreparedStatement eot02S = c.prepareStatement("select hw.lsstId, act.id, "
-                        + "act.parentActivityId AS parentActId, "
+                        + "act.parentActivityId AS parentActId, act.end, "
                         + "statusHist.activityStatusId, pr.name, SRH.name, SRH.value from Activity act "
                         + "join Hardware hw on act.hardwareId=hw.id "
                         + "join Process pr on act.processId=pr.id "
@@ -887,8 +888,11 @@ public class QueryUtils {
                     continue; // skip the sensors with no SR-EOT-02 data for now
                 }
                 String eoVer = sreo02Result.getString("value");  // eoTest version
+                java.util.Date eoDate = sreo02Result.getTimestamp("end");
+                
                 SensorAcceptanceData sensorData = new SensorAcceptanceData();
                 sensorData.setValues(lsstId, eoVer, sreo02Result.getInt("parentActId"));
+                
                 PreparedStatement ts3S = c.prepareStatement("SELECT hw.lsstId, act.id, act.parentActivityId, "
                         + "statusHist.activityStatusId, pr.name, SRH.name, SRH.value FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id "
                         + "JOIN Process pr ON act.processId=pr.id "
@@ -902,6 +906,13 @@ public class QueryUtils {
                 if (ts3R.first() == true) {
                 sensorData.setTs3EoTestVer(ts3R.getString("value"));
                 }
+                
+                // Find SR-MET-05 Date
+                
+                
+                sensorData.setVendorIngestDate(vendorIngestDate);
+                sensorData.setSreot2Date(eoDate);
+                
                 result.add(sensorData);
             }
 
