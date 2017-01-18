@@ -28,6 +28,9 @@ public class SensorAcceptanceData {
     private Boolean preshipApproved;
     private String preshipApprovedStatus;
     private java.util.Date preshipApprovedDate;
+    private Boolean sensorAccepted;
+    private String sensorAcceptedStatus;
+    private java.util.Date sensorAcceptedDate;
 //    private String status;
 //    private String location;
 //    private String site;
@@ -110,6 +113,24 @@ public class SensorAcceptanceData {
         setPreshipApprovedStatus(s);
     }
     
+     public void setSensorAccepted(Boolean b) {
+        sensorAccepted = b;
+    }
+    
+    public void setSensorAcceptedStatus(String s) {
+        sensorAcceptedStatus = s == null || "".equals(s) ? "NA" : s; 
+    }
+    
+    public void setSensorAcceptedDate(java.util.Date d) {
+        sensorAcceptedDate = d;
+    }
+    
+    public void setSensorAcceptedValues(Boolean b, String s, java.util.Date d) {
+        setSensorAccepted(b);
+        setSensorAcceptedDate(d);
+        setSensorAcceptedStatus(s);
+    }
+    
     public void setValues(String id, String ver, Integer i) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
         vendorEoTestVer = ver == null || "".equals(ver) ? "NA" : ver; 
@@ -121,6 +142,9 @@ public class SensorAcceptanceData {
         preshipApproved = null;
         preshipApprovedStatus = null;
         preshipApprovedDate = null;
+        sensorAccepted = null;
+        sensorAcceptedStatus = null;
+        sensorAcceptedDate = null;
     }
     
   
@@ -183,6 +207,16 @@ public class SensorAcceptanceData {
     }
     public java.util.Date getPreshipApprovedDate() {
         return preshipApprovedDate;
+    }
+    
+    public Boolean getSensorAccepted() {
+        return sensorAccepted;
+    }
+    public String getSensorAcceptedStatus() {
+        return sensorAcceptedStatus;
+    }
+    public java.util.Date getSensorAcceptedDate() {
+        return sensorAcceptedDate;
     }
     
 }

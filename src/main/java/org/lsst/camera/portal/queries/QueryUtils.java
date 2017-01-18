@@ -983,6 +983,28 @@ public class QueryUtils {
                     }
                 }
                 
+                // Check on preship Approval in SR-CCD-RCV-05
+                PreparedStatement sensorAccepted = c.prepareStatement("SELECT hw.lsstId, act.id, "
+                        + "statusHist.activityStatusId, IRM.value, IRM.creationTS, AFS.name " 
+                        + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id " 
+                        + "JOIN Process pr ON act.processId=pr.id " +
+                        "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " +
+                        "JOIN ActivityFinalStatus AFS ON AFS.id = statusHist.activityStatusId " +
+                        "JOIN IntResultManual IRM ON act.id=IRM.activityId " +
+                        "JOIN InputPattern IP ON IP.id = IRM.inputPatternId " +
+                        "WHERE hw.id = ?  AND pr.name='SR-CCD-RCV-05_step5' " +
+                        "AND IP.label LIKE '%sensorAccepted%' " +
+                        "ORDER BY statusHist.id DESC");
+                sensorAccepted.setInt(1, hdwId);
+                ResultSet sensorAcceptedR = sensorAccepted.executeQuery();
+                if (sensorAcceptedR.first() == true) {
+                    if (sensorAcceptedR.getInt("activityStatusId") == 1) { // if we have completed the step
+                    sensorData.setSensorAcceptedValues(sensorAcceptedR.getInt("value")>0,null,sensorAcceptedR.getTimestamp("creationTs"));
+                    } else {
+                        sensorData.setSensorAcceptedStatus(sensorAcceptedR.getString("name"));
+                    }
+                }
+                
                 sensorData.setVendorIngestDate(vendorIngestDate);
                 sensorData.setSreot2Date(eoDate);
                 
