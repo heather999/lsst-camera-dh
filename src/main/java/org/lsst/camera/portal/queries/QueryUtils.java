@@ -856,7 +856,7 @@ public class QueryUtils {
             //       hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
             //   }
             PreparedStatement vendorS = c.prepareStatement("select hw.lsstId AS lsstId, hw.id AS hdwId, "
-                    + "act.id, act.parentActivityId, act.end, "
+                    + "hw.manufacturer, act.id, act.parentActivityId, act.end, "
                     + "statusHist.activityStatusId from Activity act "
                     + "join Hardware hw on act.hardwareId=hw.id "
                     + "join Process pr on act.processId=pr.id "
@@ -869,6 +869,7 @@ public class QueryUtils {
                 // The same sensor may appear multiple times in this list
                 Integer hdwId = vendorR.getInt("hdwId");
                 String lsstId = vendorR.getString("lsstId"); // LSSTNUM
+                String manu = vendorR.getString("manufacturer");
                 if (sensorsFound.put(hdwId, true)!=null)
                     continue;
                 java.util.Date vendorIngestDate = vendorR.getTimestamp("end");
@@ -893,6 +894,7 @@ public class QueryUtils {
                 SensorAcceptanceData sensorData = new SensorAcceptanceData();
                 sensorData.setValues(lsstId, eoVer, sreo02Result.getInt("parentActId"));
                 
+                // SR-EOT-1
                 PreparedStatement ts3S = c.prepareStatement("SELECT hw.lsstId, act.id, act.parentActivityId, "
                         + "statusHist.activityStatusId, pr.name, SRH.name, SRH.value FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id "
                         + "JOIN Process pr ON act.processId=pr.id "
@@ -901,13 +903,63 @@ public class QueryUtils {
                         + "WHERE hw.id = ? AND statusHist.activityStatusId=1 AND pr.name='test_report' "
                         + "AND SRH.name='eotest_version' "
                         + "ORDER BY act.parentActivityId DESC");
-                ts3S.setInt(1,hdwId);
+                ts3S.setInt(1, hdwId);
                 ResultSet ts3R = ts3S.executeQuery();
                 if (ts3R.first() == true) {
-                sensorData.setTs3EoTestVer(ts3R.getString("value"));
+                    sensorData.setTs3EoTestVer(ts3R.getString("value"));
+                    sensorData.setBnlEo(true);
+                } else {  // check to see if TS3 has at least been started
+                    PreparedStatement anyTs3 = c.prepareStatement("SELECT hw.lsstId, "
+                            + "act.id, statusHist.activityStatusId, pr.name, AFS.name "
+                            + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id " 
+                            + "JOIN Process pr ON act.processId=pr.id "
+                            + "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " 
+                            + "JOIN ActivityFinalStatus AFS ON AFS.id=statusHist.activityStatusId " 
+                            + "WHERE hw.id = ? AND pr.name='SR-EOT-1' "
+                            + "ORDER BY statusHist.id DESC");
+                    anyTs3.setInt(1, hdwId);
+                    ResultSet anyTs3R = anyTs3.executeQuery();
+                    if (anyTs3R.first()==true) {
+                        sensorData.setBnlEo(true);
+                        sensorData.setBnlEoStatus(anyTs3R.getString("name"));
+                    }
                 }
                 
                 // Find SR-MET-05 Date
+                PreparedStatement met05 = c.prepareStatement("SELECT hw.lsstId, act.id, "
+                        + "statusHist.activityStatusId, act.end " 
+                        + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id " 
+                        + "JOIN Process pr ON act.processId=pr.id " 
+                        + "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " 
+                        + "JOIN ActivityFinalStatus AFS ON AFS.id=statusHist.activityStatusId " 
+                        + "WHERE hw.id = ? AND statusHist.activityStatusId=1 AND pr.name='SR-MET-05'" 
+                        + "ORDER BY statusHist.id DESC");
+                met05.setInt(1, hdwId);
+                ResultSet met05R = met05.executeQuery();
+                if (met05R.first()==true) {
+                    sensorData.setMet05Date(met05R.getTimestamp("end"));
+                }
+                
+                
+                // Find Date of SR-GEN-RCV-02
+                PreparedStatement bnlReceipt = c.prepareStatement("SELECT hw.lsstId, act.id, "
+                        + "statusHist.activityStatusId, AFS.name, act.end, act.begin " 
+                        + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id "
+                        + "JOIN Process pr ON act.processId=pr.id " 
+                        + "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " 
+                        + "JOIN ActivityFinalStatus AFS ON AFS.id=statusHist.activityStatusId " 
+                        + "WHERE hw.id = ? AND pr.name='SR-GEN-RCV-02' " 
+                        + "ORDER BY statusHist.id DESC");
+                bnlReceipt.setInt(1, hdwId);
+                ResultSet bnlReceiptR = bnlReceipt.executeQuery();
+                if (bnlReceiptR.first() == true) {
+                   if (bnlReceiptR.getInt("activityStatusId") == 1) 
+                       sensorData.setBnlSensorReceipt(bnlReceiptR.getTimestamp("end"));
+                   else {
+                       sensorData.setBnlSensorReceipt(bnlReceiptR.getTimestamp("begin"));
+                       sensorData.setBnlSensorReceiptStatus("NCL");
+                   }
+                }
                 
                 
                 sensorData.setVendorIngestDate(vendorIngestDate);

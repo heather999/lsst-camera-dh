@@ -49,7 +49,14 @@
                 <display:column title="Ingest" sortable="true" >${sen.vendorIngestDate}</display:column>
                 <display:column title="Vendor-LSST<br/>eotest Ver" sortable="true" >${sen.sreot2Date}<br>${sen.vendorEoTestVer}</display:column>
                 <display:column title="LSST-LSST<br/>eotest Ver" sortable="true" >${sen.ts3EoTestVer}</display:column>
+                <display:column title="Vendor-LSST MET" sortable="true" >${sen.met05Date}</display:column>
+                <display:column title="Received at BNL" sortable="true" > ${sen.bnlSensorReceipt}
+                    <c:if test="${!empty sen.bnlSensorReceiptStatus}">
+                        <br>${sen.bnlSensorReceiptStatus}
+                    </c:if>
+                </display:column>
             </display:table>
+                
 
     </body>
 </html>
