@@ -16,23 +16,6 @@
     <body>
         <h1>Sensor Acceptance Reports Available</h1>
 
-        <%-- get a list of all the parentActivityIds --%> 
-        <%-- For eotesting on Vendor Data --%>
-        <%--
-        <sql:query var="vendorData">
-            select hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name from Activity act join Hardware hw on act.hardwareId=hw.id 
-            join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
-            where statusHist.activityStatusId=1 and pr.name='vendorIngest' order by act.parentActivityId desc   
-        </sql:query> 
-            
-        <sql:query var="sensor02">
-            select hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name from Activity act join Hardware hw on act.hardwareId=hw.id 
-            join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
-            where statusHist.activityStatusId=1 and pr.name='test_report_offline' order by act.parentActivityId desc   
-        </sql:query> 
-        --%>
-
-
         <c:set var="sensorsWithAcceptance" value="${portal:getSensorAcceptanceTable(pageContext.session)}"/>
 
         <display:table name="${sensorsWithAcceptance}" export="true" class="datatable" id="sen" defaultsort="1" >
@@ -118,6 +101,25 @@
                     </c:otherwise>
                 </c:choose>
             </display:column>
+            <display:column title="Any NCRs?" >
+                <c:choose>
+                    <c:when test="${sen.anyNcrs == true}">
+                        <c:url var="ncrLink" value="ncrStatus.jsp">
+                            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+                            <c:param name="lsstId" value="${sen.lsstId}"/>
+                        </c:url>                
+                        <a href="${ncrLink}" target="_blank"><c:out value="NCR table"/></a>
+                    </c:when>
+                    <c:otherwise>
+                        <font color="green">
+                        <b>No</b>
+                        </font>
+                    </c:otherwise>
+                </c:choose>
+            </display:column>
+            <display:setProperty name="export.excel.filename" value="sensorAcceptance.xls"/> 
+            <display:setProperty name="export.csv.filename" value="sensorAcceptance.csv"/> 
+            <display:setProperty name="export.xml.filename" value="sensorAcceptance.xml"/> 
         </display:table>
 
         <%--

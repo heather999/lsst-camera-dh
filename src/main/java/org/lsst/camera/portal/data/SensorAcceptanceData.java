@@ -5,7 +5,8 @@
  */
 package org.lsst.camera.portal.data;
 import java.util.Date;
-//import java.util.HashMap;
+import org.lsst.camera.portal.data.NcrData;
+import java.util.List;
 /**
  *
  * @author heather
@@ -31,6 +32,8 @@ public class SensorAcceptanceData {
     private Boolean sensorAccepted;
     private String sensorAcceptedStatus;
     private java.util.Date sensorAcceptedDate;
+    private List<NcrData> allNcrs;
+    private Boolean anyNcrs;
 //    private String status;
 //    private String location;
 //    private String site;
@@ -131,6 +134,14 @@ public class SensorAcceptanceData {
         setSensorAcceptedStatus(s);
     }
     
+    public void setAllNcrs(List<NcrData> ncrs) {
+        if (!ncrs.isEmpty()) allNcrs.addAll(ncrs);
+    }
+    
+    public void setAnyNcrs(Boolean b) {
+        anyNcrs = b;
+    }
+    
     public void setValues(String id, String ver, Integer i) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
         vendorEoTestVer = ver == null || "".equals(ver) ? "NA" : ver; 
@@ -145,6 +156,8 @@ public class SensorAcceptanceData {
         sensorAccepted = null;
         sensorAcceptedStatus = null;
         sensorAcceptedDate = null;
+        allNcrs=null;
+        anyNcrs = false;
     }
     
   
@@ -218,5 +231,25 @@ public class SensorAcceptanceData {
     public java.util.Date getSensorAcceptedDate() {
         return sensorAcceptedDate;
     }
+    
+    public List<NcrData> getAllNcrs() {
+        return allNcrs;
+    }
+    
+    public Boolean getAnyNcrs() {
+        return anyNcrs;
+    }
+    
+    //
+    //public String getNcrRunNumber(Integer i) {
+    //    if (i < allNcrs.size() && i > 0) {
+    //        return allNcrs[i].getRunNum();
+    //    }
+   // }
+   // public Boolean getNcrFinalStatus(Integer i) {
+   //     if (i < allNcrs.size() && i > 0) {
+   //         return allNcrs[i].getFinalStatus();
+   //     }
+    //}
     
 }

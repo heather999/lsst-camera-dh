@@ -1005,6 +1005,10 @@ public class QueryUtils {
                     }
                 }
                 
+                // Check for NCRs
+                //sensorData.setAllNcrs(getNcrTable(session,lsstId,0));
+                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0).size() > 0);
+                
                 sensorData.setVendorIngestDate(vendorIngestDate);
                 sensorData.setSreot2Date(eoDate);
                 
