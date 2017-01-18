@@ -50,13 +50,48 @@
                 <display:column title="Vendor-LSST<br/>eotest Ver" sortable="true" >${sen.sreot2Date}<br>${sen.vendorEoTestVer}</display:column>
                 <display:column title="LSST-LSST<br/>eotest Ver" sortable="true" >${sen.ts3EoTestVer}</display:column>
                 <display:column title="Vendor-LSST MET" sortable="true" >${sen.met05Date}</display:column>
+                <display:column title="Authorized" sortable="true" >
+                    <c:choose>
+                        <c:when test="${empty sen.preshipApproved}">  <%-- if preshipApproval flag is unavailable --%>
+                            <c:choose>
+                                <c:when test="${empty sen.preshipApprovedStatus}">
+                                    NA
+                                </c:when>
+                                    <c:otherwise>
+                                        ${sen.preshipApprovedStatus}
+                                    </c:otherwise>
+                            </c:choose>
+                        </c:when>
+                        <c:otherwise> <%-- check preship Approval --%>
+                            <c:choose>
+                                <c:when test="${sen.preshipApproved == true}">
+                                <font color="green">
+                                    ${sen.preshipApprovedDate}
+                                </font>
+                                </c:when>
+                                <c:otherwise>
+                                <font color="red">
+                                    REJECTED
+                                    <br>
+                                    ${sen.preshipApprovedDate}
+                                </font>
+                                </c:otherwise>
+                            </c:choose>
+                        </c:otherwise>
+                    </c:choose>
+                    <%--${empty sen.preshipApproved ? ( empty sen.preshipApprovedStatus ? 'NA' : sen.preshipApprovedStatus) : sen.preshipApproved ? sen.preshipApprovedDate : '<font color="red">&#x2718;<span>'}--%>
+
+                </display:column>
                 <display:column title="Received at BNL" sortable="true" > ${sen.bnlSensorReceipt}
                     <c:if test="${!empty sen.bnlSensorReceiptStatus}">
                         <br>${sen.bnlSensorReceiptStatus}
                     </c:if>
                 </display:column>
             </display:table>
-                
-
+    
+                        <%--
+                    ${empty sen.preshipApproved ? ( empty sen.preshipApprovedStatus ? 'NA' : sen.preshipApprovedStatus) : sen.preshipApproved ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
+--%>
     </body>
-</html>
+</html
+

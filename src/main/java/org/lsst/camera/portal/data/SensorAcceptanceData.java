@@ -25,6 +25,9 @@ public class SensorAcceptanceData {
     private Boolean bnlMet;
     private String bnlMetStatus;
     private String bnlSensorReceiptStatus;
+    private Boolean preshipApproved;
+    private String preshipApprovedStatus;
+    private java.util.Date preshipApprovedDate;
 //    private String status;
 //    private String location;
 //    private String site;
@@ -89,6 +92,24 @@ public class SensorAcceptanceData {
         bnlSensorReceiptStatus = s == null || "".equals(s) ? "NA" : s; 
     }
     
+    public void setPreshipApproved(Boolean b) {
+        preshipApproved = b;
+    }
+    
+    public void setPreshipApprovedStatus(String s) {
+        preshipApprovedStatus = s == null || "".equals(s) ? "NA" : s; 
+    }
+    
+    public void setPreshipApprovedDate(java.util.Date d) {
+        preshipApprovedDate = d;
+    }
+    
+    public void setPreshipApprovedValues(Boolean b, String s, java.util.Date d) {
+        setPreshipApproved(b);
+        setPreshipApprovedDate(d);
+        setPreshipApprovedStatus(s);
+    }
+    
     public void setValues(String id, String ver, Integer i) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
         vendorEoTestVer = ver == null || "".equals(ver) ? "NA" : ver; 
@@ -97,6 +118,9 @@ public class SensorAcceptanceData {
         bnlEo = false;
         bnlMet = false;
         bnlSensorReceiptStatus = null;
+        preshipApproved = null;
+        preshipApprovedStatus = null;
+        preshipApprovedDate = null;
     }
     
   
@@ -150,4 +174,15 @@ public class SensorAcceptanceData {
     public String getBnlMetStatus() {
         return bnlMetStatus;
     }
+    
+    public Boolean getPreshipApproved() {
+        return preshipApproved;
+    }
+    public String getPreshipApprovedStatus() {
+        return preshipApprovedStatus;
+    }
+    public java.util.Date getPreshipApprovedDate() {
+        return preshipApprovedDate;
+    }
+    
 }
