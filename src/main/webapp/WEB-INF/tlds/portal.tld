@@ -86,6 +86,11 @@
         <function-signature>java.lang.String getTravelerStatus(org.lsst.camera.portal.data.TravelerStatus,java.lang.String)</function-signature>
     </function>
     <function>
+        <name>getSensorAcceptanceTable</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.util.List getSensorAcceptanceTable(javax.servlet.http.HttpSession)</function-signature>
+    </function>
+    <function>
         <name>getHardwareStatusTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
         <function-signature>java.util.List getHardwareStatusTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.String)</function-signature>
@@ -191,6 +196,22 @@
         <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
         <function-signature>
            java.util.Map getReportValues(javax.servlet.http.HttpSession, java.lang.Integer, java.lang.Integer)
+        </function-signature>
+    </function>
+    
+     <function>
+        <name>getSensorReportValues</name>
+        <function-class>org.lsst.camera.portal.queries.SensorAcceptanceUtils</function-class>
+        <function-signature>
+           java.util.Map getSensorReportValues(javax.servlet.http.HttpSession, java.lang.Integer, java.lang.String)
+        </function-signature>
+    </function>
+        
+    <function>
+        <name>getMetReportValues</name>
+        <function-class>org.lsst.camera.portal.queries.SensorAcceptanceUtils</function-class>
+        <function-signature>
+           java.util.List getMetReportValues(javax.servlet.http.HttpSession, java.lang.String, java.lang.Integer, java.lang.Boolean, java.lang.Integer)
         </function-signature>
     </function>
     

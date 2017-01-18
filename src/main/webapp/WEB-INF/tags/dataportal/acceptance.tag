@@ -17,9 +17,15 @@
 <%@attribute name="reportId" type="java.lang.Integer" required="true"%>
 <%@attribute name="dataTS3" type="java.util.Map" required="false"%>
 <%@attribute name="dataVend" type="java.util.Map" required="false"%>
+<%@attribute name="vendReportId" type="java.lang.Integer" required="false"%>
 
-
-
+<c:if test="${!empty vendReportId}">
+<sql:query var="vendSpecs" dataSource="${appVariables.reportDisplayDb}">
+    select specid, description, spec_display, jexl_status, jexl_measurement, jexl_jobid from report_specs where report=?
+    <sql:param value="${vendReportId}"/>
+</sql:query>
+</c:if>
+    
 <sql:query var="specs" dataSource="${appVariables.reportDisplayDb}">
     select specid, description, spec_display, jexl_status, jexl_measurement, jexl_jobid from report_specs where report=?
     <sql:param value="${reportId}"/>
@@ -38,7 +44,7 @@
             <display:column property="SpecId" title="Spec. ID"/>
             <display:column property="Description"/>
             <display:column property="Spec_Display" title="Specification"/>
-            <display:column title="SR-RCV-01">
+            <display:column title="Vendor-Vendor">
                 <c:choose>
                     <c:when test="${empty dataVend}">
                         NA
@@ -80,7 +86,7 @@
                 </c:choose>
             </display:column>
                         --%>
-            <display:column title="SR-EOT-02">
+            <display:column title="Vendor-LSST">
                 <c:catch var="x">
                     ${portal:jexlEvaluateData(data, row.jexl_measurement)} 
                 </c:catch>
@@ -101,7 +107,7 @@
                 <c:if test="${!empty x}">???</c:if>
             </display:column>
                 --%>
-            <display:column title="SR-EOT-1">
+            <display:column title="LSST-LSST">
                 <c:choose>
                     <c:when test="${empty dataTS3}">
                         NA
@@ -145,4 +151,6 @@
                         --%>
         </display:table>
     </c:if>
+                                                
+                        
 </div>

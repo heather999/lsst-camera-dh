@@ -18,6 +18,7 @@
 
         <%-- get a list of all the parentActivityIds --%> 
         <%-- For eotesting on Vendor Data --%>
+        <%--
         <sql:query var="vendorData">
             select hw.lsstId, act.id, act.parentActivityId, statusHist.activityStatusId, pr.name from Activity act join Hardware hw on act.hardwareId=hw.id 
             join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
@@ -29,21 +30,26 @@
             join Process pr on act.processId=pr.id join ActivityStatusHistory statusHist on act.id=statusHist.activityId 
             where statusHist.activityStatusId=1 and pr.name='test_report_offline' order by act.parentActivityId desc   
         </sql:query> 
-            
+            --%>
         
 
-        <display:table name = "${sensor02.rows}" id="row" class="datatable" defaultsort="2">
-            <display:column title="Activity" sortable="true" class="sortable" >
-                <c:url var="acceptanceLink" value="SensorAcceptanceReport.jsp">
-                    <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
-                    <c:param name="parentActivityId" value="${row.parentActivityId}"/>
-                    <c:param name="lsstId" value="${row.lsstId}"/>
-                </c:url>
-                <a href="${acceptanceLink}" target="_blank"><c:out value="${row.parentActivityId}"/></a>
-            </display:column>
-            <%-- <display:column property="parentActivityId" title="Activity" href="SensorAcceptanceReport.jsp" paramId="parentActivityId" sortable="true" class="sortable"/> --%>
-            <display:column property="lsstId" title="Sensor" sortable="true" class="sortable"/>
-        </display:table>
+            <c:set var="sensorsWithAcceptance" value="${portal:getSensorAcceptanceTable(pageContext.session)}"/>
+
+            <display:table name="${sensorsWithAcceptance}" export="true" class="datatable" id="sen" defaultsort="1" >
+                <display:column title="Sensor" sortProperty="lsstId" sortable="true" class="sortable" >
+                    <c:url var="acceptanceLink" value="SensorAcceptanceReport.jsp">
+                        <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+                        <c:param name="parentActivityId" value="${sen.parentActId}"/>
+                        <c:param name="lsstId" value="${sen.lsstId}"/>
+                        <c:param name="eotestVer" value="${sen.vendorEoTestVer}"/>
+                        <c:param name="ts3eotestVer" value="${sen.ts3EoTestVer}"/>
+                    </c:url>
+                    <a href="${acceptanceLink}" target="_blank"><c:out value="${sen.lsstId}"/></a>
+                </display:column>
+                <display:column title="Ingest" sortable="true" >${sen.vendorIngestDate}</display:column>
+                <display:column title="Vendor-LSST<br/>eotest Ver" sortable="true" >${sen.sreot2Date}<br>${sen.vendorEoTestVer}</display:column>
+                <display:column title="LSST-LSST<br/>eotest Ver" sortable="true" >${sen.ts3EoTestVer}</display:column>
+            </display:table>
 
     </body>
 </html>
