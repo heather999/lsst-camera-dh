@@ -26,17 +26,24 @@ public class SensorAcceptanceUtils {
 
   
    
-    public static Map<String, Map<String, List<Object>>> getSensorReportValues(HttpSession session, Integer actParentId, String reportIdList) throws SQLException, ServletException, JspException {
+    public static Map<String, Map<String, List<Object>>> getSensorReportValues(HttpSession session, Integer actParentId, String reportName) throws SQLException, ServletException, JspException {
 
         Map<String, Map<String, List<Object>>> result = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
 
         //try (Connection c = ConnectionManager.getConnection("jdbc/config-prod")) {
-        try (Connection c = ConnectionManager.getConnection("jdbc/configdev")) {
+        try (Connection c = ConnectionManager.getConnection("jdbc/config-dev")) {
             // FIXME: We should not hard-wire the DEV connection here.
             try (Connection oraconn = ConnectionManager.getConnection(session)) {
 
-                PreparedStatement stmt = c.prepareStatement("select rkey, id, query from report_queries where report IN " + reportIdList);
-                //stmt.setInt(1, reportId);
+                int reportId = 1; // setting a default for now
+                PreparedStatement reportIdStmt = c.prepareStatement("select id from report where name=?");
+                reportIdStmt.setString(1, reportName);
+                ResultSet reportIdResult = reportIdStmt.executeQuery();
+                if (reportIdResult.next())  // for now just get the first instance, there are two rows with "vendorIngest" as the name
+                    reportId = reportIdResult.getInt("id");
+              
+                PreparedStatement stmt = c.prepareStatement("select rkey, id, query from report_queries where report=?");
+                stmt.setInt(1, reportId);
                 ResultSet r = stmt.executeQuery();
                 while (r.next()) {
                     String key = r.getString("rkey");

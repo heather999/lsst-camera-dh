@@ -37,6 +37,9 @@
     </c:if>
 </sql:query>
 
+        <c:set var="i" value="0" scope="page" />
+
+        
 <div id="SensorAcceptance" class="print">
     <c:if test="${specs.rowCount != 0}">
         <display:table name="${specs.rows}" id="row" defaultsort="1" class="datatable">
@@ -51,7 +54,13 @@
                     </c:when>
                     <c:otherwise>
                         <c:catch var="x">
-                            ${portal:jexlEvaluateData(dataVend, row.jexl_measurement)}     
+                            <c:forEach items="${vendSpecs.rows}" var="vendrow"> 
+                                <c:if test="${vendrow.specid == row.specid}">
+                                    ${portal:jexlEvaluateData(dataVend, vendrow.jexl_measurement)}     
+                                </c:if>
+
+                            </c:forEach> 
+                
                         </c:catch>
                         <c:if test="${!empty x}">???</c:if>
                     </c:otherwise>
@@ -64,12 +73,18 @@
                     </c:when>
                     <c:otherwise>
                         <c:catch var="x">
-                            <c:set var="status" value="${portal:jexlEvaluateData(dataVend, row.jexl_status)}"/>
-                            ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
+                            <c:forEach items="${vendSpecs.rows}" var="vendrow"> 
+                                <c:if test="${vendrow.specid == row.specid}">
+                                    <c:set var="status" value="${portal:jexlEvaluateData(dataVend, vendrow.jexl_status)}"/>
+                                    ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}                                </c:if>
+
+                            </c:forEach> 
+
                         </c:catch>
                         <c:if test="${!empty x}">???</c:if>
                     </c:otherwise>
                 </c:choose>
+                <c:set var="i" value="${i + 1}" scope="page"/>
             </display:column>
                         <%--
             <display:column title="Job Id">
