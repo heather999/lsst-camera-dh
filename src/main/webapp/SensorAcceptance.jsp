@@ -69,7 +69,10 @@
 
             <display:column title="Received at BNL" sortable="true" > ${sen.bnlSensorReceipt}
                 <c:if test="${!empty sen.bnlSensorReceiptStatus}">
-                    <br>${sen.bnlSensorReceiptStatus}
+                    <c:if test="${!empty sen.bnlSensorReceipt}">
+                        <br>
+                    </c:if>
+                    ${sen.bnlSensorReceiptStatus}
                 </c:if>
             </display:column>
             <display:column title="Accepted" sortable="true" >
@@ -109,7 +112,7 @@
                             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
                             <c:param name="lsstId" value="${sen.lsstId}"/>
                         </c:url>                
-                        <a href="${ncrLink}" target="_blank"><c:out value="NCR table"/></a>
+                        <a href="${ncrLink}" target="_blank"><c:out value="NCRs"/></a>
                     </c:when>
                     <c:otherwise>
                         <font color="green">

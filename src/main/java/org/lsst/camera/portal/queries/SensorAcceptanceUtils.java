@@ -136,19 +136,19 @@ public class SensorAcceptanceUtils {
                  ccd030aData.setVendorVendor("NA", false);
              } else {
                  znomGood = (Math.abs(znom - 13.)*1000 < 25); // converting the length in mm to microns *1000
-                 ccd030aData.setVendorVendor(String.format("%.3f", Math.abs(znom - 13.)*1000), znomGood);
+                 ccd030aData.setVendorVendor(String.format("%.3f \u00B5", Math.abs(znom - 13.)*1000), znomGood);
              }
              if (Math.abs(zmedian - BadValue) < Tolerance) {
                  ccd030bData.setVendorVendor("NA", false);
              } else {
                  zmedianGood = (Math.abs(zmedian - 13.)*1000 < 25); // converting length in mm to mircons *1000
-                 ccd030bData.setVendorVendor(String.format("%.3f", Math.abs(zmedian - 13.)*1000), zmedianGood);
+                 ccd030bData.setVendorVendor(String.format("%.3f \u00B5", Math.abs(zmedian - 13.)*1000), zmedianGood);
              }
              if (Math.abs(z95halfband - BadValue) < Tolerance) {
                  ccd030cData.setVendorVendor("NA", false);
              } else {
                  z95halfbandGood = (z95halfband < 0.009); // assuming z95halfband is in mm
-                 ccd030cData.setVendorVendor(String.format("%.3f", z95halfband*1000), z95halfbandGood); // reporting value in microns
+                 ccd030cData.setVendorVendor(String.format("%.3f \u00B5", z95halfband*1000), z95halfbandGood); // reporting value in microns
              }
 
              Boolean ccd030Status = (znomGood && zmedianGood && z95halfbandGood);
@@ -170,7 +170,7 @@ public class SensorAcceptanceUtils {
                 if (Math.abs(flatness - BadValue) < Tolerance) {
                     ccd031Data.setVendorVendor("NA", false);
                 } else {
-                    ccd031Data.setVendorVendor(String.format("%.4f", flatness), (flatness < 5.));
+                    ccd031Data.setVendorVendor(String.format("%.4f \u00B5", flatness), (flatness < 5.));
                 }
             }
 
@@ -214,8 +214,8 @@ public class SensorAcceptanceUtils {
                     Double z_median_m_13 = vlccd030bResult.getDouble("zmedian");
                     Double z_quantile_0025 = vlccd030cResult1.getDouble("z_quantile_0025");
                     Double z_quantile_0975 = vlccd030cResult2.getDouble("z_quantile_0975");
-                    ccd030bData.setVendorLsst(String.format("%.3f", Math.abs(z_median_m_13)), (Math.abs(z_median_m_13) < 25));
-                    ccd030cData.setVendorLsst(String.format("%.3f", Math.abs(z_quantile_0975 - z_quantile_0025)), (Math.abs(z_quantile_0975 - z_quantile_0025) < 18.));
+                    ccd030bData.setVendorLsst(String.format("%.3f \u00B5", Math.abs(z_median_m_13)), (Math.abs(z_median_m_13) < 25));
+                    ccd030cData.setVendorLsst(String.format("%.3f \u00B5", Math.abs(z_quantile_0975 - z_quantile_0025)), (Math.abs(z_quantile_0975 - z_quantile_0025) < 18.));
                     Boolean vlccd030Status = (Math.abs(z_median_m_13) < 25) && (Math.abs(z_quantile_0975 - z_quantile_0025) < 18.);
                     ccd030Data.setVendorLsst("...", vlccd030Status);
                     

@@ -953,11 +953,15 @@ public class QueryUtils {
                 bnlReceipt.setInt(1, hdwId);
                 ResultSet bnlReceiptR = bnlReceipt.executeQuery();
                 if (bnlReceiptR.first() == true) {
-                   if (bnlReceiptR.getInt("activityStatusId") == 1) 
-                       sensorData.setBnlSensorReceipt(bnlReceiptR.getTimestamp("end"));
-                   else {
-                       sensorData.setBnlSensorReceipt(bnlReceiptR.getTimestamp("begin"));
-                       sensorData.setBnlSensorReceiptStatus("NCL");
+                    if (bnlReceiptR.getInt("activityStatusId") == 1)
+                        sensorData.setBnlSensorReceipt(bnlReceiptR.getTimestamp("end"));
+                    else {
+                        sensorData.setBnlSensorReceipt(bnlReceiptR.getTimestamp("begin"));
+                        if (bnlReceiptR.getTimestamp("begin") == null) {
+                            sensorData.setBnlSensorReceiptStatus("Timestamp NA<br>NCL");
+                        } else {
+                            sensorData.setBnlSensorReceiptStatus("NCL");
+                        }
                    }
                 }
                 
