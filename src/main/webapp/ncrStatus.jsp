@@ -30,13 +30,18 @@
     <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
     <filter:filterSelection title="Subsystem" var="subsystem" defaultValue="0">
         <filter:filterOption value="0">Any</filter:filterOption>
-            <c:forEach var="sub" items="${subsystemQ.rows}">
+        <c:forEach var="sub" items="${subsystemQ.rows}">
             <filter:filterOption value="${sub.id}"><c:out value="${sub.name}"/></filter:filterOption>
-            </c:forEach>
+        </c:forEach>
     </filter:filterSelection>
 </filter:filterTable>
 
-<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, lsst_num, subsystem)}"/>
+<c:set var="selectedLsstId" value="${lsst_num}" scope="page"/>
+<c:if test="${! empty param.lsstId}">
+    <c:set var="selectedLsstId" value="${param.lsstId}" scope="page"/>
+</c:if>
+
+<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem)}"/>
 
 
 <%-- defaultsort index starts from 1 --%>

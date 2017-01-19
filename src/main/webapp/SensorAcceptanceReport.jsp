@@ -246,7 +246,7 @@
                         <c:set var="theMap2" value="${portal:getReportValues(pageContext.session,pActId2,reportId)}"/>
                         <c:choose>
                             <c:when test="${HaveVendData}"> 
-                                <c:set var="theMapVend" value="${portal:getReportValues(pageContext.session,vendActId,reportId)}"/>
+                                <c:set var="theMapVend" value="${portal:getSensorReportValues(pageContext.session,vendActId,vendReportName)}"/>
                                 <dp:acceptance sectionNum="1" data="${theMap}" dataTS3="${theMap2}" dataVend="${theMapVend}" reportId="${reportId}" vendReportId="${vendReportId}"/>
                             </c:when>
                             <c:otherwise>
@@ -257,7 +257,7 @@
                     <c:otherwise>
                         <c:choose>
                             <c:when test="${HaveVendData}"> 
-                                <c:set var="theMapVend" value="${portal:getReportValues(pageContext.session,vendActId,reportId)}"/>
+                                <c:set var="theMapVend" value="${portal:getSensorReportValues(pageContext.session,vendActId,vendReportName)}"/>
                                 <dp:acceptance sectionNum="1" data="${theMap}" dataVend="${theMapVend}" reportId="${reportId}" vendReportId="${vendReportId}"/>
                             </c:when>
                             <c:otherwise>

@@ -856,7 +856,7 @@ public class QueryUtils {
             //       hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
             //   }
             PreparedStatement vendorS = c.prepareStatement("select hw.lsstId AS lsstId, hw.id AS hdwId, "
-                    + "act.id, act.parentActivityId, act.end, "
+                    + "hw.manufacturer, act.id, act.parentActivityId, act.end, "
                     + "statusHist.activityStatusId from Activity act "
                     + "join Hardware hw on act.hardwareId=hw.id "
                     + "join Process pr on act.processId=pr.id "
@@ -869,6 +869,7 @@ public class QueryUtils {
                 // The same sensor may appear multiple times in this list
                 Integer hdwId = vendorR.getInt("hdwId");
                 String lsstId = vendorR.getString("lsstId"); // LSSTNUM
+                String manu = vendorR.getString("manufacturer");
                 if (sensorsFound.put(hdwId, true)!=null)
                     continue;
                 java.util.Date vendorIngestDate = vendorR.getTimestamp("end");
@@ -893,6 +894,7 @@ public class QueryUtils {
                 SensorAcceptanceData sensorData = new SensorAcceptanceData();
                 sensorData.setValues(lsstId, eoVer, sreo02Result.getInt("parentActId"));
                 
+                // SR-EOT-1
                 PreparedStatement ts3S = c.prepareStatement("SELECT hw.lsstId, act.id, act.parentActivityId, "
                         + "statusHist.activityStatusId, pr.name, SRH.name, SRH.value FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id "
                         + "JOIN Process pr ON act.processId=pr.id "
@@ -901,14 +903,115 @@ public class QueryUtils {
                         + "WHERE hw.id = ? AND statusHist.activityStatusId=1 AND pr.name='test_report' "
                         + "AND SRH.name='eotest_version' "
                         + "ORDER BY act.parentActivityId DESC");
-                ts3S.setInt(1,hdwId);
+                ts3S.setInt(1, hdwId);
                 ResultSet ts3R = ts3S.executeQuery();
                 if (ts3R.first() == true) {
-                sensorData.setTs3EoTestVer(ts3R.getString("value"));
+                    sensorData.setTs3EoTestVer(ts3R.getString("value"));
+                    sensorData.setBnlEo(true);
+                } else {  // check to see if TS3 has at least been started
+                    PreparedStatement anyTs3 = c.prepareStatement("SELECT hw.lsstId, "
+                            + "act.id, statusHist.activityStatusId, pr.name, AFS.name "
+                            + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id " 
+                            + "JOIN Process pr ON act.processId=pr.id "
+                            + "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " 
+                            + "JOIN ActivityFinalStatus AFS ON AFS.id=statusHist.activityStatusId " 
+                            + "WHERE hw.id = ? AND pr.name='SR-EOT-1' "
+                            + "ORDER BY statusHist.id DESC");
+                    anyTs3.setInt(1, hdwId);
+                    ResultSet anyTs3R = anyTs3.executeQuery();
+                    if (anyTs3R.first()==true) {
+                        sensorData.setBnlEo(true);
+                        sensorData.setBnlEoStatus(anyTs3R.getString("name"));
+                    }
                 }
                 
                 // Find SR-MET-05 Date
+                PreparedStatement met05 = c.prepareStatement("SELECT hw.lsstId, act.id, "
+                        + "statusHist.activityStatusId, act.end " 
+                        + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id " 
+                        + "JOIN Process pr ON act.processId=pr.id " 
+                        + "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " 
+                        + "JOIN ActivityFinalStatus AFS ON AFS.id=statusHist.activityStatusId " 
+                        + "WHERE hw.id = ? AND statusHist.activityStatusId=1 AND pr.name='SR-MET-05'" 
+                        + "ORDER BY statusHist.id DESC");
+                met05.setInt(1, hdwId);
+                ResultSet met05R = met05.executeQuery();
+                if (met05R.first()==true) {
+                    sensorData.setMet05Date(met05R.getTimestamp("end"));
+                }
                 
+                
+                // Find Date of SR-GEN-RCV-02
+                PreparedStatement bnlReceipt = c.prepareStatement("SELECT hw.lsstId, act.id, "
+                        + "statusHist.activityStatusId, AFS.name, act.end, act.begin " 
+                        + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id "
+                        + "JOIN Process pr ON act.processId=pr.id " 
+                        + "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " 
+                        + "JOIN ActivityFinalStatus AFS ON AFS.id=statusHist.activityStatusId " 
+                        + "WHERE hw.id = ? AND pr.name='SR-GEN-RCV-02' " 
+                        + "ORDER BY statusHist.id DESC");
+                bnlReceipt.setInt(1, hdwId);
+                ResultSet bnlReceiptR = bnlReceipt.executeQuery();
+                if (bnlReceiptR.first() == true) {
+                    if (bnlReceiptR.getInt("activityStatusId") == 1)
+                        sensorData.setBnlSensorReceipt(bnlReceiptR.getTimestamp("end"));
+                    else {
+                        sensorData.setBnlSensorReceipt(bnlReceiptR.getTimestamp("begin"));
+                        if (bnlReceiptR.getTimestamp("begin") == null) {
+                            sensorData.setBnlSensorReceiptStatus("Timestamp NA<br>NCL");
+                        } else {
+                            sensorData.setBnlSensorReceiptStatus("NCL");
+                        }
+                   }
+                }
+                
+                // Check on preship Approval in SR-CCD-RCV-04
+                PreparedStatement preshipApprove = c.prepareStatement("SELECT hw.lsstId, act.id, "
+                        + "statusHist.activityStatusId, IRM.value, IRM.creationTS, AFS.name " 
+                        + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id " 
+                        + "JOIN Process pr ON act.processId=pr.id " +
+                        "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " +
+                        "JOIN ActivityFinalStatus AFS ON AFS.id = statusHist.activityStatusId " +
+                        "JOIN IntResultManual IRM ON act.id=IRM.activityId " +
+                        "JOIN InputPattern IP ON IP.id = IRM.inputPatternId " +
+                        "WHERE hw.id = ?  AND pr.name='SR-CCD-RCV-04_step3' " +
+                        "AND IP.label LIKE '%sensorPreShipApproved%' " +
+                        "ORDER BY statusHist.id DESC");
+                preshipApprove.setInt(1, hdwId);
+                ResultSet preshipApproveR = preshipApprove.executeQuery();
+                if (preshipApproveR.first() == true) {
+                    if (preshipApproveR.getInt("activityStatusId") == 1) { // if we have completed the step
+                    sensorData.setPreshipApprovedValues(preshipApproveR.getInt("value")>0,null,preshipApproveR.getTimestamp("creationTs"));
+                    } else {
+                        sensorData.setPreshipApprovedStatus(preshipApproveR.getString("name"));
+                    }
+                }
+                
+                // Check on preship Approval in SR-CCD-RCV-05
+                PreparedStatement sensorAccepted = c.prepareStatement("SELECT hw.lsstId, act.id, "
+                        + "statusHist.activityStatusId, IRM.value, IRM.creationTS, AFS.name " 
+                        + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id " 
+                        + "JOIN Process pr ON act.processId=pr.id " +
+                        "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " +
+                        "JOIN ActivityFinalStatus AFS ON AFS.id = statusHist.activityStatusId " +
+                        "JOIN IntResultManual IRM ON act.id=IRM.activityId " +
+                        "JOIN InputPattern IP ON IP.id = IRM.inputPatternId " +
+                        "WHERE hw.id = ?  AND pr.name='SR-CCD-RCV-05_step5' " +
+                        "AND IP.label LIKE '%sensorAccepted%' " +
+                        "ORDER BY statusHist.id DESC");
+                sensorAccepted.setInt(1, hdwId);
+                ResultSet sensorAcceptedR = sensorAccepted.executeQuery();
+                if (sensorAcceptedR.first() == true) {
+                    if (sensorAcceptedR.getInt("activityStatusId") == 1) { // if we have completed the step
+                    sensorData.setSensorAcceptedValues(sensorAcceptedR.getInt("value")>0,null,sensorAcceptedR.getTimestamp("creationTs"));
+                    } else {
+                        sensorData.setSensorAcceptedStatus(sensorAcceptedR.getString("name"));
+                    }
+                }
+                
+                // Check for NCRs
+                //sensorData.setAllNcrs(getNcrTable(session,lsstId,0));
+                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0).size() > 0);
                 
                 sensorData.setVendorIngestDate(vendorIngestDate);
                 sensorData.setSreot2Date(eoDate);
