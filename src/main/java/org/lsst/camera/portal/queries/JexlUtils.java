@@ -34,13 +34,20 @@ public class JexlUtils {
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
-
+    
+    //  jexlEvaluateData with the stack trace information.
     public static Object jexlEvaluateData(Map<String, Map<String, List<Object>>> data, String measurement) {
-        JexlUtils jexlUtils = new JexlUtils(data);
-        MapContext mc = new MapContext();
-        mc.set("u", jexlUtils);
-        JexlScript func = jexl.createScript(measurement);
-        return func.execute(mc);
+        try {
+            JexlUtils jexlUtils = new JexlUtils(data);
+            MapContext mc = new MapContext();
+            mc.set("u", jexlUtils);
+            JexlScript func = jexl.createScript(measurement);
+            return func.execute(mc);
+        } catch (Exception x) {
+            System.out.println("**Error while evaluating measurement: "+measurement + "\n");
+            x.printStackTrace();
+            throw x;
+        }
     }
 
     public List fetch(String specId) {
@@ -59,6 +66,22 @@ public class JexlUtils {
         return result;
     }
 
+    
+     public List<Number> bands (List<Number> qe, List<String> bands, String bandName){
+        // set value to 100 if null only for testing.
+        List<Number> resultList = new ArrayList<>();
+        for (int i=0; i < qe.size(); i++){
+            if (bands.get(i).equals( bandName)){
+                Number qe_value = qe.get(i);
+                if (qe_value == null){ qe_value = 100; }
+                resultList.add(qe_value);
+            }
+        }
+        return resultList;
+    }
+    
+    
+    
     public Number min(List<Number> args) {
         Number min = Double.NaN;
         for (Number a : args) {
