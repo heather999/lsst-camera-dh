@@ -50,7 +50,14 @@
                 <sql:param value="${reports.rows[0].name}"/>        
             </sql:query>
             <c:set var="parentActivityId" value="${data.rows[0].id}"/>
-            <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId,reportId)}"/>
+            <c:choose>
+                <c:when test="${empty param.component}">
+                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId,reportId)}"/>
+                </c:when>
+                <c:otherwise>
+                  <c:set var="theMap" value="${portal:getReportValues2(pageContext.session,parentActivityId,107,component)}"/>
+                </c:otherwise>
+            </c:choose>
             <c:if test="${debug}">
                 <display:table name="${theMap.entrySet()}" id="theMap"/>  <%-- shows what's in the map --%> 
             </c:if>
