@@ -20,7 +20,7 @@
     </head>
     <body>
         <fmt:setTimeZone value="UTC"/>
-        <c:set var="debug" value="false"/>
+        <c:set var="debug" value="${param.debug}"/>
         <sql:query var="sensor">
             select hw.lsstId,p.name,a.id from Activity a 
             join Process p on (a.processId=p.id)
@@ -60,7 +60,13 @@
                 </c:otherwise>
             </c:choose>
             <c:if test="${debug}">
-                <display:table name="${theMap.entrySet()}" id="theMap"/>  <%-- shows what's in the map --%> 
+                <br>ReportId = ${reportId}
+                <br>actId = ${actId}
+                <br>reportName = ${reportName}
+                <br>parentActivityId = ${parentActivityId}
+                <c:forEach var="map" items="${theMap}">
+                    <br>${map}
+                </c:forEach>
             </c:if>
 
             <ru:printButton/>
