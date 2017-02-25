@@ -55,7 +55,8 @@
                     <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId,reportId)}"/>
                 </c:when>
                 <c:otherwise>
-                  <c:set var="theMap" value="${portal:getReportValues2(pageContext.session,parentActivityId,107,component)}"/>
+                  <c:set var="reportId" value="9"/>
+                  <c:set var="theMap" value="${portal:getReportValues2(pageContext.session,parentActivityId,reportId, param.component)}"/>
                 </c:otherwise>
             </c:choose>
             <c:if test="${debug}">
@@ -63,7 +64,7 @@
             </c:if>
 
             <ru:printButton/>
-            <h1>${reports.rows[0].report_title} ${lsstId} run ${param.run}</h1>
+            <h1>${reports.rows[0].report_title} ${lsstId} ${empty param.component ? '' : param.component} run ${param.run}</h1>
             Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
             <sql:query var="sections" dataSource="${appVariables.reportDisplayDb}"> 
                 select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
@@ -95,7 +96,7 @@
                         join Activity act on res.activityId=act.id where act.parentActivityId=?
                         and virtualPath like ?
                         <sql:param value="${parentActivityId}"/>
-                        <sql:param value="%${image.image_url}"/>
+                        <sql:param value="%${empty param.component ? lsstId : param.component}${image.image_url}"/>
                     </sql:query>
                     <c:if test="${filepath.rowCount==0}">
                         Missing image: ${image.image_url}
