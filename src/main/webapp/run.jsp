@@ -9,6 +9,7 @@
 <%@taglib prefix="file" uri="http://portal.lsst.org/fileutils" %>
 <%@taglib uri="http://srs.slac.stanford.edu/filter" prefix="filter"%>
 <%@taglib uri="http://srs.slac.stanford.edu/utils" prefix="utils"%>
+<%@taglib prefix="dp" tagdir="/WEB-INF/tags/dataportal"%>
 
 <%-- 
     One stop shop for run related info
@@ -53,7 +54,8 @@
         <h2>Summary</h2>
         <table class="datatable">
             <utils:trEvenOdd reset="true"><th>Run Number</th><td>${run.runNumber}</td></utils:trEvenOdd>
-            <utils:trEvenOdd><th>Traveler</th><td><a href="/eTraveler/displayActivity.jsp?activityId=${run.id}">${run.name}</a></td></utils:trEvenOdd>
+            <dp:url var="travelerURL" value="/eTraveler/displayActivity.jsp?activityId=${run.id}"/>
+            <utils:trEvenOdd><th>Traveler</th><td><a href="${travelerURL}">${run.name}</a></td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Device Type</th><td>${run.hardwareType}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Device</th><td>${run.lsstid}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Status</th><td>${run.status}</td></utils:trEvenOdd>
