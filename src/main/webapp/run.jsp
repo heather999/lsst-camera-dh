@@ -39,7 +39,7 @@
             join Subsystem ss on (ss.id=tt.subsystemId)
             join ActivityStatusHistory s on (s.id = (select max(id) from ActivityStatusHistory ss where ss.activityId=a.id))
             join ActivityFinalStatus f on (f.id=s.activityStatusId)
-            join HardwareLocationHistory hlh on (hlh.id= (select max(id) from HardwareLocationHistory ll where ll.id=h.id and (a.end is null or ll.creationTS < a.end)))
+            join HardwareLocationHistory hlh on (hlh.id= (select max(id) from HardwareLocationHistory ll where ll.hardwareId=h.id and (a.end is null or ll.creationTS < a.end)))
             join Location l on (l.id=hlh.locationId)
             join Site i on (i.id=l.siteId)
             join RunNumber r on (r.rootActivityId=a.id)
