@@ -52,15 +52,15 @@
             <c:set var="parentActivityId" value="${data.rows[0].id}"/>
             <c:choose>
                 <c:when test="${empty param.component}">
-                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId,reportId)}"/>
+                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,reportId==8?actId:parentActivityId,reportId)}"/>
                     <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
                     <c:if test="${!empty subcomponents}">
-                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,parentActivityId,9,subcomponents)}"/>
+                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,reportId==8?actId:parentActivityId,reportId==8?10:9,subcomponents)}"/>
                     </c:if>
                 </c:when>
                 <c:otherwise>
+                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,reportId==8?actId:parentActivityId,reportId==8?10:9, param.component)}"/>
                     <c:set var="reportId" value="9"/>
-                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,parentActivityId,reportId, param.component)}"/>
                 </c:otherwise>
             </c:choose>
             <c:if test="${debug}">
@@ -111,9 +111,9 @@
                 <c:forEach var="image" items="${images.rows}">
                     <sql:query var="filepath">
                         select catalogKey from FilepathResultHarnessed res 
-                        join Activity act on res.activityId=act.id where act.parentActivityId=?
+                        join Activity act on res.activityId=act.id where act.${reportId==8||reportId==9?'rootActivityId':'parentActivityId'}=?
                         and virtualPath like ?
-                        <sql:param value="${parentActivityId}"/>
+                        <sql:param value="${reportId==8||reportId==9?actId:parentActivityId}"/>
                         <sql:param value="%${empty param.component ? lsstId : param.component}${image.image_url}"/>
                     </sql:query>
                     <c:if test="${filepath.rowCount==0}">
