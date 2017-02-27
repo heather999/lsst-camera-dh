@@ -53,10 +53,14 @@
             <c:choose>
                 <c:when test="${empty param.component}">
                     <c:set var="theMap" value="${portal:getReportValues(pageContext.session,parentActivityId,reportId)}"/>
+                    <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
+                    <c:if test="${!empty subcomponents}">
+                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,parentActivityId,9,subcomponents)}"/>
+                    </c:if>
                 </c:when>
                 <c:otherwise>
-                  <c:set var="reportId" value="9"/>
-                  <c:set var="theMap" value="${portal:getReportValues2(pageContext.session,parentActivityId,reportId, param.component)}"/>
+                    <c:set var="reportId" value="9"/>
+                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,parentActivityId,reportId, param.component)}"/>
                 </c:otherwise>
             </c:choose>
             <c:if test="${debug}">
@@ -67,26 +71,34 @@
                 <c:forEach var="map" items="${theMap}">
                     <br>${map}
                 </c:forEach>
+                <br>subComponents: ${subcomponents}
+                <c:forEach var="map" items="${subComponentMap}">
+                    <br>${map}
+                </c:forEach>
             </c:if>
 
             <ru:printButton/>
-            <h1>${reports.rows[0].report_title} ${lsstId} ${empty param.component ? '' : param.component} run ${param.run}</h1>
+            <h1>
+                ${reports.rows[0].report_title} ${lsstId} 
+                <c:if test="${!empty param.component}">component ${param.component}</c:if> 
+                run <a href="run.jsp?run=${param.run}">${param.run}</a>
+            </h1>
             Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
             <sql:query var="sections" dataSource="${appVariables.reportDisplayDb}"> 
                 select section,title,displaytitle,extra_table,page_break from report_display_info where report=? 
                 <sql:param value="${reportId}"/>
                 <c:if test="${sectionNum == '1'}">
-                   and displaytitle = 'Y' 
+                    and displaytitle = 'Y' 
                 </c:if>
                 order by display_order asc 
             </sql:query>
             <c:forEach var="sect" items="${sections.rows}">  
                 <h2 class='${sect.page_break==1 ? 'break' : 'nobreak'}'>${sect.displaytitle == 'Y' ? sect.section : ''}  ${sect.displaytitle =='Y' ? sect.title : ''}</h2>
-                <ru:summaryTable sectionNum="${sect.section}" data="${theMap}" reportId="${reportId}"/>
+                <ru:summaryTable sectionNum="${sect.section}" data="${theMap}" reportId="${reportId}" run="${param.run}" subData="${subComponentMap}"/>
                 <c:if test="${!empty sect.extra_table}">
                     <c:catch var="x">
                         <c:set var="tdata" value="${sect.extra_table}"/>
-                        <display:table name="${portal:jexlEvaluateData(theMap, tdata)}" class="datatable"/>
+                        <display:table name="${portal:jexlEvaluateSubcomponentData(param.run, theMap, null, null, tdata)}" class="datatable"/>
                     </c:catch>
                     <c:if test="${!empty x}">No data returned <br/></c:if>
                 </c:if>
@@ -111,38 +123,38 @@
                     <c:if test="${!empty image.caption}">
                     <center> <c:out value="${image.caption}"/></center>
                     </c:if>  
-                        <%--
-                    <c:forEach var="dataset" items="${filepath.rows}">  
-                    <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${dataset.catalogKey}" alt="${lsstId}${image.image_url}"/>
-                    <c:if test="${!empty image.caption}">
-                    <center> <c:out value="${image.caption}"/></center>
-                    </c:if>
-                     </c:forEach> --%>
+                    <%--
+                <c:forEach var="dataset" items="${filepath.rows}">  
+                <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${dataset.catalogKey}" alt="${lsstId}${image.image_url}"/>
+                <c:if test="${!empty image.caption}">
+                <center> <c:out value="${image.caption}"/></center>
+                </c:if>
+                 </c:forEach> --%>
                 </c:forEach>
 
-                <c:if test="${sect.title == 'Software Versions'}">
-                    <sql:query var="vers">
-                        select distinct res.name, res.value from StringResultHarnessed res join Activity act on res.activityId=act.id  where  name in ( 'harnessedJobs_version','eotest_version', 'LSST_stack_version','lcatr_harness_version' , 'lcatr_schema_version') and parentActivityId=?
-                        <sql:param value="${parentActivityId}"/>
-                    </sql:query>
-                    <c:if test="${vers.rowCount > 0}">
-                        <display:table name="${vers.rows}"   class="datatable" />
-                    </c:if>  
-                </c:if>
-                        
-                <c:if test="${sect.title == 'eTraveler Activity'}">
-                    <sql:query var="eTravIDs">
-                       select res.activityId, res.value from StringResultHarnessed res join Activity act on res.activityId=act.id 
-                       where res.name='job_name' and res.value in ('fe55_offline','read_noise_offline','bright_defects_offline','dark_defects_offline','traps_offline','dark_current_offline','cte_offline','prnu_offline','flat_pairs_offline','qe_offline')
-                       and act.parentActivityId = ?
-                       <sql:param value="${parentActivityId}"/>
-                    </sql:query>
-                    <c:if test="${eTravIDs.rowCount > 0}">
-                        <display:table name="${eTravIDs.rows}" class="datatable" />
-                    </c:if>  
-                </c:if>
+            <c:if test="${sect.title == 'Software Versions'}">
+                <sql:query var="vers">
+                    select distinct res.name, res.value from StringResultHarnessed res join Activity act on res.activityId=act.id  where  name in ( 'harnessedJobs_version','eotest_version', 'LSST_stack_version','lcatr_harness_version' , 'lcatr_schema_version') and parentActivityId=?
+                    <sql:param value="${parentActivityId}"/>
+                </sql:query>
+                <c:if test="${vers.rowCount > 0}">
+                    <display:table name="${vers.rows}"   class="datatable" />
+                </c:if>  
+            </c:if>
 
-            </c:forEach>
-        </c:if>
-    </body>
+            <c:if test="${sect.title == 'eTraveler Activity'}">
+                <sql:query var="eTravIDs">
+                    select res.activityId, res.value from StringResultHarnessed res join Activity act on res.activityId=act.id 
+                    where res.name='job_name' and res.value in ('fe55_offline','read_noise_offline','bright_defects_offline','dark_defects_offline','traps_offline','dark_current_offline','cte_offline','prnu_offline','flat_pairs_offline','qe_offline')
+                    and act.parentActivityId = ?
+                    <sql:param value="${parentActivityId}"/>
+                </sql:query>
+                <c:if test="${eTravIDs.rowCount > 0}">
+                    <display:table name="${eTravIDs.rows}" class="datatable" />
+                </c:if>  
+            </c:if>
+
+        </c:forEach>
+    </c:if>
+</body>
 </html>

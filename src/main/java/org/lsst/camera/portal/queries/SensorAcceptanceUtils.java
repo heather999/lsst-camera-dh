@@ -9,7 +9,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.lang.Math;
 import java.util.Objects;
 import javax.servlet.jsp.*;
 import javax.servlet.ServletException;
@@ -24,8 +23,6 @@ import org.lsst.camera.portal.data.MetData;
  */
 public class SensorAcceptanceUtils {
 
-  
-   
     public static Map<String, Map<String, List<Object>>> getSensorReportValues(HttpSession session, Integer actParentId, String reportName) throws SQLException, ServletException, JspException {
 
         Map<String, Map<String, List<Object>>> result = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
