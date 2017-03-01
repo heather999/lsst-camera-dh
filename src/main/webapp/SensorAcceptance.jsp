@@ -26,7 +26,6 @@
                     <c:param name="lsstId" value="${sen.lsstId}"/>
                     <c:param name="eotestVer" value="${sen.vendorEoTestVer}"/>
                     <c:param name="ts3eotestVer" value="${sen.ts3EoTestVer}"/>
-                    <c:param name="reportMode" value="Dev"/>  <%-- hardcoding this for now --%>
                 </c:url>
                 <a href="${acceptanceLink}" target="_blank"><c:out value="${sen.lsstId}"/></a>
             </display:column>
