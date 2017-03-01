@@ -9,13 +9,13 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.lang.Math;
 import java.util.Objects;
 import javax.servlet.jsp.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import org.srs.web.base.db.ConnectionManager;
 import org.lsst.camera.portal.data.MetData;
+import org.srs.web.base.filters.modeswitcher.ModeSwitcherFilter;
 
 
 /**
@@ -30,9 +30,7 @@ public class SensorAcceptanceUtils {
 
         Map<String, Map<String, List<Object>>> result = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
 
-        //try (Connection c = ConnectionManager.getConnection("jdbc/config-prod")) {
-        try (Connection c = ConnectionManager.getConnection("jdbc/config-dev")) {
-            // FIXME: We should not hard-wire the DEV connection here.
+        try (Connection c = ConnectionManager.getConnection(ModeSwitcherFilter.getVariable(session, "reportDisplayDb"))) {
             try (Connection oraconn = ConnectionManager.getConnection(session)) {
 
                 int reportId = 1; // setting a default for now
