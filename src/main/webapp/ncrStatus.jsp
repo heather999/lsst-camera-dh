@@ -25,6 +25,7 @@
 
 
 <h1>NCR Current Status</h1>
+<input type=button onClick="parent.open('https://confluence.slac.stanford.edu/display/LSSTCAM/NCR+Traveler')" value='Confluence Doc'>
 
 <filter:filterTable>
     <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>

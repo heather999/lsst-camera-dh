@@ -958,9 +958,9 @@ public class QueryUtils {
                     else {
                         sensorData.setBnlSensorReceipt(bnlReceiptR.getTimestamp("begin"));
                         if (bnlReceiptR.getTimestamp("begin") == null) {
-                            sensorData.setBnlSensorReceiptStatus("Timestamp NA<br>NCL");
+                            sensorData.setBnlSensorReceiptStatus("Timestamp NA<br>Not Closed");
                         } else {
-                            sensorData.setBnlSensorReceiptStatus("NCL");
+                            sensorData.setBnlSensorReceiptStatus("Not Closed");
                         }
                    }
                 }
