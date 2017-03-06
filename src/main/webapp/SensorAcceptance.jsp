@@ -22,7 +22,7 @@
             <display:column title="Sensor" sortProperty="lsstId" sortable="true" class="sortable" >
                 <c:url var="acceptanceLink" value="SensorAcceptanceReport.jsp">
                     <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
-                    <c:param name="parentActivityId" value="${sen.parentActId}"/>
+                    <%-- <c:param name="parentActivityId" value="${sen.parentActId}"/> --%>
                     <c:param name="lsstId" value="${sen.lsstId}"/>
                     <c:param name="eotestVer" value="${sen.vendorEoTestVer}"/>
                     <c:param name="ts3eotestVer" value="${sen.ts3EoTestVer}"/>

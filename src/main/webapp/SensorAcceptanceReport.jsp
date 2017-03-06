@@ -98,7 +98,7 @@
         <c:if test="${findTS3.rowCount>0}">
             <c:set var="pActId2" value="${findTS3.rows[0].parentActivityId}"/>
             <c:set var="TS3actId" value="${findTS3.rows[0].id}"/>
-            TS3actId = ${TS3actId}
+           <%-- TS3actId = ${TS3actId} --%>
             <sql:query var="sensorTS3">
                 select hw.lsstId, act.end, act.id, pr.name from Activity act 
                 join Hardware hw on act.hardwareId=hw.id 
