@@ -887,7 +887,7 @@ public class QueryUtils {
                 
                 PreparedStatement eot02S = c.prepareStatement("select hw.lsstId, act.id, "
                         + "act.parentActivityId AS parentActId, act.end, "
-                        + "statusHist.activityStatusId, pr.name, SRH.schemaVersion, SRH.name, SRH.value, "
+                        + "statusHist.activityStatusId, pr.name, SRH.schemaVersion, SRH.name AS srhName, SRH.value, "
                         + "SRH.schemaInstance from Activity act "
                         + "JOIN Hardware hw on act.hardwareId=hw.id "
                         + "JOIN Process pr on act.processId=pr.id "
@@ -910,10 +910,24 @@ public class QueryUtils {
                         eoVer = sreo02Result.getString("value");  // eoTest version
                     else {
                         // Search the ResultSet for the corresponding schemaInstance value for the eotest version
+                        Integer eoInstance=-999;
                         do {
-                            if (sreo02Result.getString("value").equals("eotest") && sreo02Result.next()) 
-                              eoVer = sreo02Result.getString("value");
+                            if (sreo02Result.getString("value").equals("eotest")) {
+                              eoInstance = sreo02Result.getInt("schemaInstance");
+                              break;
+                            }
                         } while (sreo02Result.next());
+                        if (eoInstance != -999 && sreo02Result.first()) {
+                            do {
+                                if ((sreo02Result.getInt("schemaInstance") == eoInstance) &&
+                                        (sreo02Result.getString("srhName").equals("version"))) {
+                                    eoVer = sreo02Result.getString("value");
+                                    break;
+                                }
+                            } while (sreo02Result.next());
+                        } 
+                          
+                            
                         
                     }
                     
