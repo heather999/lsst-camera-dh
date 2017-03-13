@@ -873,26 +873,71 @@ public class QueryUtils {
                 if (sensorsFound.put(hdwId, true)!=null)
                     continue;
                 java.util.Date vendorIngestDate = vendorR.getTimestamp("end");
+                //PreparedStatement eot02S = c.prepareStatement("select hw.lsstId, act.id, "
+                //        + "act.parentActivityId AS parentActId, act.end, "
+                //        + "statusHist.activityStatusId, pr.name, SRH.schemaVersion, SRH.schemaInstance from Activity act "
+                //        + "join Hardware hw on act.hardwareId=hw.id "
+                //        + "join Process pr on act.processId=pr.id "
+                //        + "join ActivityStatusHistory statusHist on act.id=statusHist.activityId "
+                //        + "JOIN StringResultHarnessed SRH ON act.id=SRH.activityId "
+                //        + "where hw.id=? AND statusHist.activityStatusId=1 and pr.name='test_report_offline' "
+                 //       + "AND SRH.schemaName = 'package_versions' "
+                //        + "AND IF (SRH.schemaVersion > 0, SRH.value='eotest,SRH.name='eotest_version') "
+                //        + "order by act.parentActivityId desc");
+                
                 PreparedStatement eot02S = c.prepareStatement("select hw.lsstId, act.id, "
                         + "act.parentActivityId AS parentActId, act.end, "
-                        + "statusHist.activityStatusId, pr.name, SRH.name, SRH.value from Activity act "
-                        + "join Hardware hw on act.hardwareId=hw.id "
-                        + "join Process pr on act.processId=pr.id "
-                        + "join ActivityStatusHistory statusHist on act.id=statusHist.activityId "
+                        + "statusHist.activityStatusId, pr.name, SRH.schemaVersion, SRH.name AS srhName, SRH.value, "
+                        + "SRH.schemaInstance from Activity act "
+                        + "JOIN Hardware hw on act.hardwareId=hw.id "
+                        + "JOIN Process pr on act.processId=pr.id "
+                        + "JOIN ActivityStatusHistory statusHist on act.id=statusHist.activityId "
                         + "JOIN StringResultHarnessed SRH ON act.id=SRH.activityId "
-                        + "where hw.id=? AND statusHist.activityStatusId=1 and pr.name='test_report_offline' "
-                        + "AND SRH.name='eotest_version' "
-                        + "order by act.parentActivityId desc");
+                        + "WHERE hw.id=? AND statusHist.activityStatusId=1 and pr.name='test_report_offline' "
+                        + "AND SRH.schemaName = 'package_versions' AND "
+                        + "IF (SRH.schemaVersion > 0, (SRH.value='eotest' OR SRH.name='version'), SRH.name='eotest_version') "
+                        + "ORDER BY act.parentActivityId, SRH.schemaInstance desc");              
                 eot02S.setInt(1, hdwId);
                 ResultSet sreo02Result = eot02S.executeQuery();
-                if (sreo02Result.first() == false)  {
-                    continue; // skip the sensors with no SR-EOT-02 data for now
-                }
-                String eoVer = sreo02Result.getString("value");  // eoTest version
-                java.util.Date eoDate = sreo02Result.getTimestamp("end");
+                String eoVer = null;
+                java.util.Date eoDate = null;
+                Integer eo2ParentActId = -999;
+                if (sreo02Result.first() == true)  {
+                    //continue; // skip the sensors with no SR-EOT-02 data for now
+                    eoDate = sreo02Result.getTimestamp("end");
+                    eo2ParentActId = sreo02Result.getInt("parentActId");
+                    if (sreo02Result.getInt("schemaVersion") == 0)
+                        eoVer = sreo02Result.getString("value");  // eoTest version
+                    else {
+                        // Search the ResultSet for the corresponding schemaInstance value for the eotest version
+                        Integer eoInstance=-999;
+                        do {
+                            if (sreo02Result.getString("value").equals("eotest")) {
+                              eoInstance = sreo02Result.getInt("schemaInstance");
+                              break;
+                            }
+                        } while (sreo02Result.next());
+                        if (eoInstance != -999 && sreo02Result.first()) {
+                            do {
+                                if ((sreo02Result.getInt("schemaInstance") == eoInstance) &&
+                                        (sreo02Result.getString("srhName").equals("version"))) {
+                                    eoVer = sreo02Result.getString("value");
+                                    break;
+                                }
+                            } while (sreo02Result.next());
+                        } 
+                          
+                            
+                        
+                    }
+                    
+                    
+                } 
+               // String eoVer = sreo02Result.getString("value");  // eoTest version
+               // java.util.Date eoDate = sreo02Result.getTimestamp("end");
                 
                 SensorAcceptanceData sensorData = new SensorAcceptanceData();
-                sensorData.setValues(lsstId, eoVer, sreo02Result.getInt("parentActId"));
+                sensorData.setValues(lsstId, eoVer, eo2ParentActId);
                 
                 // SR-EOT-1
                 PreparedStatement ts3S = c.prepareStatement("SELECT hw.lsstId, act.id, act.parentActivityId, "
@@ -1014,7 +1059,7 @@ public class QueryUtils {
                 sensorData.setAnyNcrs(getNcrTable(session,lsstId,0).size() > 0);
                 
                 sensorData.setVendorIngestDate(vendorIngestDate);
-                sensorData.setSreot2Date(eoDate);
+                if(eoDate != null) sensorData.setSreot2Date(eoDate);
                 
                 result.add(sensorData);
             }
