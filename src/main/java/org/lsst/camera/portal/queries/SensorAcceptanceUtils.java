@@ -172,7 +172,16 @@ public class SensorAcceptanceUtils {
                             deviation_from_znom_Good = (deviation_from_znom < 0.009); // assuming deviation_from_znom is in mm
                             ccd030Data.setVendorVendor(String.format("%s \u00B5", df.format(Math.round(deviation_from_znom*1000))), deviation_from_znom_Good);
                         }
-
+                    }
+                    // LSSTTD-951
+                    PreparedStatement ccd030zmeanStatement = c.prepareStatement("SELECT res.activityId, res.value AS zmean "
+                            + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
+                            + " WHERE lower(res.schemaName) = 'metrology_vendoringest' AND res.name='zmean' "
+                            + " AND act.parentActivityId=?");
+                    ccd030zmeanStatement.setInt(1, actParentId);
+                    ResultSet ccd030zmeanResult = ccd030zmeanStatement.executeQuery();
+                    if (ccd030zmeanResult.first()) {
+                        
                     }
                 } // end e2v
             } // end ccd030 calc
