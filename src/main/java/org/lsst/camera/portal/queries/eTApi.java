@@ -175,11 +175,11 @@ public class eTApi {
     //boolean prodServer=false;
     //System.out.println("\n\nRunning testGetResultsJH_schema");
     //System.out.println("prodServer is " + prodServer);
-    boolean localServer=false;
+    //boolean localServer=false;
     //System.out.println("localServer is " + localServer);
 
     EtClientServices myService =
-      new EtClientServices(db, null, prodServer, localServer);
+      new EtClientServices(db, null, prodServer);
     //String travelerName="SR-EOT-1";
     //String hardwareType="ITL-CCD";
     //String stepName="read_noise";

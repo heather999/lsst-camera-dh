@@ -255,6 +255,46 @@ public class QueryUtils {
         return labelMap;
     }
 
+    public static List getHardwareTypesListFromGroup(HttpSession session, String group) throws SQLException {
+        List<String> typeNameList = new ArrayList<>();
+        List<Integer> typeIdList = new ArrayList<>();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            PreparedStatement findGroupStatement = c.prepareStatement("SELECT id, name FROM "
+                    + "HardwareGroup WHERE name = ?");
+            findGroupStatement.setString(1, group);
+            ResultSet r = findGroupStatement.executeQuery();
+            while (r.next()) {
+                Integer groupId = r.getInt("id");
+                PreparedStatement findHdwTypeStatement = c.prepareStatement("SELECT hardwareTypeId FROM "
+                        + "HardwareTypeGroupMapping WHERE hardwareGroupId = ?");
+                findHdwTypeStatement.setInt(1, groupId);
+                ResultSet r2 = findHdwTypeStatement.executeQuery();
+                while (r2.next())
+                    typeIdList.add(r2.getInt("hardwareTypeId"));
+                if (typeIdList.isEmpty()) return null;
+                String subStr = stringFromList(typeIdList);
+                PreparedStatement hdwTypeNameStatement = c.prepareStatement("SELECT name FROM "
+                        + "HardwareType WHERE id IN " + subStr);
+                ResultSet r3 = hdwTypeNameStatement.executeQuery();
+                while (r3.next())
+                    typeNameList.add(r3.getString("name"));
+            }
+           
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return typeNameList;
+    }
+    
     public static String getHardwareTypesFromGroup(HttpSession session, String group) throws SQLException {
         List<Integer> typeList = new ArrayList<>();
         String result = "";
@@ -960,7 +1000,7 @@ public class QueryUtils {
                             + "JOIN Process pr ON act.processId=pr.id "
                             + "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " 
                             + "JOIN ActivityFinalStatus AFS ON AFS.id=statusHist.activityStatusId " 
-                            + "WHERE hw.id = ? AND pr.name='SR-EOT-1' "
+                            + "WHERE hw.id = ? AND (pr.name='SR-EOT-1'OR pr.name='SR-CCD-EOT-01') "
                             + "ORDER BY statusHist.id DESC");
                     anyTs3.setInt(1, hdwId);
                     ResultSet anyTs3R = anyTs3.executeQuery();
