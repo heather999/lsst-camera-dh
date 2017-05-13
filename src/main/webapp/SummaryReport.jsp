@@ -56,6 +56,9 @@
                     <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
                     <c:if test="${!empty subcomponents}">
                         <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,reportId==8?actId:parentActivityId,reportId==8?10:9,subcomponents)}"/>
+                        <c:if test="${!empty subComponentMap}">
+                            <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,9)}"/>
+                        </c:if>
                     </c:if>
                 </c:when>
                 <c:otherwise>
@@ -98,7 +101,7 @@
                 <c:if test="${!empty sect.extra_table}">
                     <c:catch var="x">
                         <c:set var="tdata" value="${sect.extra_table}"/>
-                        <display:table name="${portal:jexlEvaluateSubcomponentData(param.run, theMap, null, null, tdata)}" class="datatable"/>
+                        <display:table name="${portal:jexlEvaluateSubcomponentData(param.run, theMap, subComponentMap, subSpecs, tdata)}" class="datatable"/>
                     </c:catch>
                     <c:if test="${!empty x}">No data returned <br/></c:if>
                 </c:if>

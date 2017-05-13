@@ -37,6 +37,20 @@ public class JexlSubcomponentFunctions {
         }
         return true;
     }
+    
+    public boolean[] isGood(String specId) {
+        String statusExpression = specs.getStatusExpression(specId);
+        boolean[] result = new boolean[subComponentData.size()];
+        int n = 0;
+        for (Map.Entry<String, Map<String, Map<String, List<Object>>>> data : subComponentData.entrySet()) {
+            result[n++] = (boolean) JexlUtils.jexlEvaluateData(data.getValue(), statusExpression);
+        }
+        return result;        
+    }
+    
+    public String tickCross(boolean flag) {
+        return flag ? "<font color=\"green\">&#x2714;</span>" : "<font color=\"red\">&#x2718;<span>";
+    }
 
     public Number minValue(String specId) {
         Number result = null;
