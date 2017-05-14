@@ -128,13 +128,13 @@
                 <c:url var="report" value="SummaryReport.jsp">
                     <c:param name="run" value="${run.runNumber}"/>
                 </c:url>
-                <a href="${report}">EO-RTM</a>
+                <a href="${report}">EO-RAFT</a>
             </c:if>
             <c:if test="${run.name=='SR-RTM-EOT-03'}">
                 <c:url var="report" value="SummaryReport.jsp">
                     <c:param name="run" value="${run.runNumber}"/>
                 </c:url>
-                <a href="${report}">SR-RTM-EOT-03</a>
+                <a href="${report}">EO-RAFT</a>
             </c:if>        
         </c:if>
     </display:column>
