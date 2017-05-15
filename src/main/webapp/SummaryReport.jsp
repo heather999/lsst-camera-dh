@@ -82,8 +82,8 @@
 
             <ru:printButton/>
             <h1>
-                ${reports.rows[0].report_title} ${lsstId} 
-                <c:if test="${!empty param.component}">component ${param.component}</c:if> 
+                ${reports.rows[0].report_title} <a href="device.jsp?lsstId=${lsstId}">${lsstId}</a> 
+                <c:if test="${!empty param.component}">component <a href="device.jsp?lsstId=${param.component}">${param.component}</a></c:if> 
                 run <a href="run.jsp?run=${param.run}">${param.run}</a>
             </h1>
             Generated <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/> by Job Id <ru:jobLink id="${actId}"/>
