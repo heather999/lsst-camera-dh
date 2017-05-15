@@ -71,4 +71,14 @@ public class JexlSubcomponentFunctions {
         }
         return result;
     }
+    
+    public Number sum(String specId) {
+        double result = 0;
+        String valueExpression = specs.getValueExpression(specId);
+        for (Map.Entry<String, Map<String, Map<String, List<Object>>>> data : subComponentData.entrySet()) {
+            Number value = (Number) JexlUtils.jexlEvaluateData(data.getValue(), valueExpression);
+            result += value.doubleValue();
+        }
+        return result;       
+    }
 }
