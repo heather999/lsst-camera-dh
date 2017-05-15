@@ -453,7 +453,72 @@ public class QueryUtils {
         return activityMap;
     }
     
-    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId) throws SQLException {
+    public static Boolean processNcr(HttpSession session, Integer ncrActId, Integer labelId) throws SQLException {
+        Boolean result = false; // Does not satisfy Label constraints
+        if (labelId == 0) return true; // Any should always return true
+        Integer actualLabel = labelId;
+       
+        // Handle all other labels
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            if (labelId == -1) { // Excluding Mistakes Only
+                // Find Label Id for Mistake
+                PreparedStatement mistakeStatement = c.prepareStatement("select L.name as labelName, L.id as theLabelId "
+                        + "from LabelHistory LH "
+                        + "inner join Label L on L.id=LH.labelId "
+                        + "inner join LabelGroup LG on LG.id=L.labelGroupId "
+                        + "WHERE LH.id in (select max(id) from LabelHistory " 
+                        + "WHERE labelableId in "
+                        + "(select Labelable.id from Labelable WHERE LOWER(Labelable.name)=\"ncr\") group by labelId) " 
+                        + "and LH.adding=1 and LG.labelableId IN "
+                        + "(select Labelable.id from Labelable WHERE LOWER(Labelable.name)=\"ncr\") " 
+                        + "AND LOWER(L.name)=\"mistake\"");
+        
+                ResultSet mistake = mistakeStatement.executeQuery();
+                if (mistake.first()) {
+                    actualLabel = mistake.getInt("theLabelId");
+                } else {
+                    return true; // If there is no mistake label, just return true to carry on
+                }
+
+            }
+            
+            
+            PreparedStatement labelStatement = c.prepareStatement("SELECT LabelHistory.* FROM LabelHistory "
+                    + "WHERE LabelHistory.id IN (SELECT max(id) from LabelHistory "
+                    + "WHERE LabelHistory.objectId IN (SELECT Exception.id from Exception WHERE NCRActivityId = ?) "
+                    + "AND LabelHistory.labelId = ? AND LabelHistory.adding = 1)");
+            labelStatement.setInt(1,ncrActId);
+            labelStatement.setInt(2,actualLabel);
+            ResultSet r = labelStatement.executeQuery();
+            if (r.first()) { // found a match
+                if (labelId != -1) { // Not looking to ExcludeMistakes
+                    result = true;
+                } else {
+                    result = false; // ExcludingMistakes, we find one, we should ignore this NCR
+                }
+            } else { // found no matches
+                if (labelId == -1) {
+                    result = true;
+                } else {
+                    result = false;
+                }
+            }
+          
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return result;
+    }
+    
+    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority) throws SQLException {
         List<NcrData> result = new ArrayList<>();
         String lower_lsstNum = lsstNum.toLowerCase();
         Connection c = null;
@@ -507,6 +572,16 @@ public class QueryUtils {
                     if ((!firstTime) && (curRootActId == lastRootActId)) {
                         continue;
                     }
+                    // Check for desired labels and whether they are set for this NCR where the rootActId is the ncrActId
+                    // in the Exception table
+                    // if label is ANY (0), then skip this check and carry on
+                    if ((labelId != 0) && (processNcr(session, curRootActId, labelId) == false))
+                            continue;
+                    
+                    // If ANY(0) then skip this check and carry on
+                    if (priority!=0 && (processNcr(session,curRootActId,priority) == false))
+                        continue;
+                    
                     PreparedStatement ncrStartStatement = c.prepareStatement("SELECT creationTS FROM Activity "
                             + "WHERE Activity.rootActivityId=?");
                     ncrStartStatement.setInt(1, a.getInt("rootActivityId"));
@@ -1096,7 +1171,8 @@ public class QueryUtils {
                 
                 // Check for NCRs
                 //sensorData.setAllNcrs(getNcrTable(session,lsstId,0));
-                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0).size() > 0);
+                // no constraint on subsystem or labels
+                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0).size() > 0);
                 
                 sensorData.setVendorIngestDate(vendorIngestDate);
                 if(eoDate != null) sensorData.setSreot2Date(eoDate);

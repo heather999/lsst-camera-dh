@@ -52,9 +52,15 @@
         </function-signature>
     </function>
     <function>
+        <name>processNcr</name>
+        <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
+        <function-signature>java.lang.Boolean processNcr(javax.servlet.http.HttpSession,java.lang.Integer,java.lang.Integer)
+        </function-signature>
+    </function>
+    <function>
         <name>getNcrTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.List getNcrTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.Integer)
+        <function-signature>java.util.List getNcrTable(javax.servlet.http.HttpSession,java.lang.String,java.lang.Integer,java.lang.Integer,java.lang.Integer)
         </function-signature>
     </function>
     <function>

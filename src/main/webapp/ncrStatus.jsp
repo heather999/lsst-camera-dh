@@ -23,6 +23,34 @@
     SELECT id, name FROM Subsystem;
 </sql:query>
 
+    <%-- find all the NCR labels --%>
+<%-- <sql:query var="labelQ">
+    select L.name as labelName, L.id as theLabelId from LabelHistory LH
+    inner join Label L on L.id=LH.labelId
+    inner join LabelGroup LG on LG.id=L.labelGroupId
+    WHERE LH.id in (select max(id) from LabelHistory 
+    WHERE labelableId in (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") group by labelId)
+    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr")
+</sql:query>
+--%>
+    
+<sql:query var="labelQ">
+    select L.name as labelName, L.id as theLabelId from LabelHistory LH
+    inner join Label L on L.id=LH.labelId
+    inner join LabelGroup LG on LG.id=L.labelGroupId
+    WHERE LH.id in (select max(id) from LabelHistory 
+    WHERE labelableId in (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") group by labelId)
+    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") and LOWER(LG.name)!="priority"
+</sql:query>
+
+<sql:query var="priorityLabelQ">
+    select L.name as labelName, L.id as theLabelId from LabelHistory LH
+    inner join Label L on L.id=LH.labelId
+    inner join LabelGroup LG on LG.id=L.labelGroupId
+    WHERE LH.id in (select max(id) from LabelHistory 
+    WHERE labelableId in (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") group by labelId)
+    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") and LOWER(LG.name)="priority"
+</sql:query>
 
 <h1>NCR Current Status</h1>
 <input type=button onClick="parent.open('https://confluence.slac.stanford.edu/display/LSSTCAM/NCR+Traveler')" value='Confluence Doc'>
@@ -35,6 +63,19 @@
             <filter:filterOption value="${sub.id}"><c:out value="${sub.name}"/></filter:filterOption>
         </c:forEach>
     </filter:filterSelection>
+    <filter:filterSelection title="Label" var="label" defaultValue="-1">
+        <filter:filterOption value="0">Any</filter:filterOption>
+        <c:forEach var="lab" items="${labelQ.rows}">
+            <filter:filterOption value="${lab.theLabelId}"><c:out value="${lab.labelName}"/></filter:filterOption>
+        </c:forEach>
+        <filter:filterOption value="-1">ExcludeMistakes</filter:filterOption>
+    </filter:filterSelection>
+    <filter:filterSelection title="Priority" var="priorityLab" defaultValue="0">
+        <filter:filterOption value="0">Any</filter:filterOption>
+        <c:forEach var="p" items="${priorityLabelQ.rows}">
+            <filter:filterOption value="${p.theLabelId}"><c:out value="${p.labelName}"/></filter:filterOption>
+        </c:forEach>
+    </filter:filterSelection>
 </filter:filterTable>
 
 <c:set var="selectedLsstId" value="${lsst_num}" scope="page"/>
@@ -42,7 +83,7 @@
     <c:set var="selectedLsstId" value="${param.lsstId}" scope="page"/>
 </c:if>
 
-<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem)}"/>
+<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem, label, priorityLab)}"/>
 
 
 <%-- defaultsort index starts from 1 --%>
