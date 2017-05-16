@@ -1,5 +1,6 @@
 package org.lsst.camera.portal.queries;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -15,7 +16,11 @@ import org.apache.commons.jexl3.JexlScript;
  */
 public class JexlUtils {
 
-    private static final JexlEngine jexl = new JexlBuilder().create();
+    private static final Map<String, Object> funcs = new HashMap<String, Object>();
+    static {
+        funcs.put("math", new JexlMath());
+    }
+    private static final JexlEngine jexl = new JexlBuilder().namespaces(funcs).create();
     private static final Logger logger = Logger.getLogger(JexlUtils.class.getName());
     
     public static Object jexlEvaluateData(Map<String, Map<String, List<Object>>> data, String measurement) {

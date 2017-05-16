@@ -33,7 +33,7 @@ public class JexlFunctions {
     JexlFunctions(JexlEngine jexl, MapContext mc, Map<String, Map<String, List<Object>>> data) { // constructor
         this.jexl = jexl;
         this.mc = mc;
-        
+
         this.data = data;
         sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss z");
         sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
@@ -130,6 +130,46 @@ public class JexlFunctions {
         List<Number> result = new ArrayList<>();
         for (int i = 0; i < Math.min(a1.size(), a2.size()); i++) {
             result.add(a1.get(i).doubleValue() / a2.get(i).doubleValue());
+        }
+        return result;
+    }
+
+    public List<Number> multiply(List<Number> a1, List<Number> a2) {
+        List<Number> result = new ArrayList<>();
+        for (int i = 0; i < Math.min(a1.size(), a2.size()); i++) {
+            result.add(a1.get(i).doubleValue() * a2.get(i).doubleValue());
+        }
+        return result;
+    }
+
+    public List<Number> multiply(double scalar, List<Number> a2) {
+        List<Number> result = new ArrayList<>();
+        for (int i = 0; i < a2.size(); i++) {
+            result.add(scalar * a2.get(i).doubleValue());
+        }
+        return result;
+    }
+
+    public List<Number> pow(List<Number> a2, double power) {
+        List<Number> result = new ArrayList<>();
+        for (int i = 0; i < a2.size(); i++) {
+            result.add(Math.pow(a2.get(i).doubleValue(), power));
+        }
+        return result;
+    }
+
+    public List<Number> add(List<Number> a1, List<Number> a2) {
+        List<Number> result = new ArrayList<>();
+        for (int i = 0; i < Math.min(a1.size(), a2.size()); i++) {
+            result.add(a1.get(i).doubleValue() + a2.get(i).doubleValue());
+        }
+        return result;
+    }
+
+    public List<Number> subtract(List<Number> a1, List<Number> a2) {
+        List<Number> result = new ArrayList<>();
+        for (int i = 0; i < Math.min(a1.size(), a2.size()); i++) {
+            result.add(a1.get(i).doubleValue() - a2.get(i).doubleValue());
         }
         return result;
     }
