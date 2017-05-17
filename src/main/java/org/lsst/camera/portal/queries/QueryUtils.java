@@ -453,6 +453,70 @@ public class QueryUtils {
         return activityMap;
     }
     
+    public static String getPriorityLabel(HttpSession session, Integer objId) throws SQLException {
+        // Find Priority labels set on an object  These are meant to be mutually exclusive, but that is not enforced programmatically yet
+        String result = ""; 
+        HashMap<Integer, String> labelList = new HashMap<>();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            PreparedStatement labelStatement = c.prepareStatement("select L.id as labelId, L.name as labelName, LH.id as lhid, LH.adding as adding "
+                    + "FROM LabelHistory LH " 
+                    + "INNER JOIN Label L on L.id=LH.labelId " 
+                    + "INNER JOIN LabelGroup LG ON LG.id=L.labelGroupId " 
+                    + "WHERE LOWER(LG.name) = \"priority\" and LH.objectId = ? ORDER BY lhid ASC");
+            labelStatement.setInt(1, objId);
+            ResultSet labelResult = labelStatement.executeQuery();
+            while (labelResult.next()) {
+                if (labelResult.getInt("adding")==1)
+                    labelList.put(labelResult.getInt("labelId"),labelResult.getString("labelName"));
+                else 
+                    labelList.remove(labelResult.getInt("labelId"));
+            }
+            for (String label : labelList.values()) {    
+                result += label + " ";
+            }
+           
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return result;
+    }
+    
+    
+    /*
+    public static String getLabelSet(HttpSession session, Integer objId) throws SQLException {
+        // Find all labels set on an object
+        
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            PreparedStatement labelStatement = c.prepareStatement("SELECT LabelHistory.* FROM LabelHistory "
+                    + "WHERE LabelHistory.id IN (SELECT max(id) from LabelHistory "
+                    + "WHERE LabelHistory.objectId = ? "
+                    + "LabelHistory.adding = 1)");
+            labelStatement.setInt(1, objId);
+            ResultSet labelResult = labelStatement.executeQuery();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        //return result;
+    }
+    */
     public static Boolean processNcr(HttpSession session, Integer ncrActId, Integer labelId) throws SQLException {
         Boolean result = false; // Does not satisfy Label constraints
         if (labelId == 0) return true; // Any should always return true
@@ -466,14 +530,10 @@ public class QueryUtils {
             if (labelId == -1) { // Excluding Mistakes Only
                 // Find Label Id for Mistake
                 PreparedStatement mistakeStatement = c.prepareStatement("select L.name as labelName, L.id as theLabelId "
-                        + "from LabelHistory LH "
-                        + "inner join Label L on L.id=LH.labelId "
+                        + "from Label L "
                         + "inner join LabelGroup LG on LG.id=L.labelGroupId "
-                        + "WHERE LH.id in (select max(id) from LabelHistory " 
-                        + "WHERE labelableId in "
-                        + "(select Labelable.id from Labelable WHERE LOWER(Labelable.name)=\"ncr\") group by labelId) " 
-                        + "and LH.adding=1 and LG.labelableId IN "
-                        + "(select Labelable.id from Labelable WHERE LOWER(Labelable.name)=\"ncr\") " 
+                        + "INNER JOIN Labelable LL on LL.id=LG.labelableId "
+                        + "WHERE LOWER(LL.name)=\"ncr\" " 
                         + "AND LOWER(L.name)=\"mistake\"");
         
                 ResultSet mistake = mistakeStatement.executeQuery();
@@ -485,19 +545,27 @@ public class QueryUtils {
 
             }
             
-            
-            PreparedStatement labelStatement = c.prepareStatement("SELECT LabelHistory.* FROM LabelHistory "
-                    + "WHERE LabelHistory.id IN (SELECT max(id) from LabelHistory "
-                    + "WHERE LabelHistory.objectId IN (SELECT Exception.id from Exception WHERE NCRActivityId = ?) "
-                    + "AND LabelHistory.labelId = ? AND LabelHistory.adding = 1)");
+            // Check if this particular label Id is set on this NCR Exception object
+            PreparedStatement labelStatement = c.prepareStatement("SELECT LH.adding FROM LabelHistory LH " 
+                    + "WHERE LH.objectId IN (SELECT Exception.id from Exception WHERE NCRActivityId = ?) " 
+                    + "AND LH.labelId = ? ORDER BY LH.id DESC");
             labelStatement.setInt(1,ncrActId);
             labelStatement.setInt(2,actualLabel);
             ResultSet r = labelStatement.executeQuery();
             if (r.first()) { // found a match
+                Integer adding = r.getInt("adding");
                 if (labelId != -1) { // Not looking to ExcludeMistakes
-                    result = true;
-                } else {
-                    result = false; // ExcludingMistakes, we find one, we should ignore this NCR
+                    if (adding == 1) {
+                        result = true;
+                    } else {
+                        result = false;
+                    }
+                } else { // ExcludingMistakes, we find one, we should ignore this NCR
+                    if (adding == 1) {
+                        result = false; 
+                    } else {
+                        result = true;
+                    }
                 }
             } else { // found no matches
                 if (labelId == -1) {
@@ -585,7 +653,7 @@ public class QueryUtils {
                     PreparedStatement ncrStartStatement = c.prepareStatement("SELECT creationTS FROM Activity "
                             + "WHERE Activity.rootActivityId=?");
                     ncrStartStatement.setInt(1, a.getInt("rootActivityId"));
-                    ResultSet startResult = ncrStartStatement.executeQuery();
+                    ResultSet startResult = ncrStartStatement.executeQuery(); 
                     startResult.first();
                     // Find the status on the root activity
                     PreparedStatement detailStatement = c.prepareStatement("SELECT ASH.id, ASH.activityStatusId, AFS.name, "
@@ -600,6 +668,12 @@ public class QueryUtils {
                             d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
                             startResult.getTimestamp("creationTS"));
                     ncr.setHdwId(r.getInt("hdwId"));
+                    PreparedStatement ncrObjIdStatement = c.prepareStatement("SELECT id from Exception "
+                            + "WHERE NCRActivityId = ?");
+                    ncrObjIdStatement.setInt(1,curRootActId);
+                    ResultSet ncrObjIdResult = ncrObjIdStatement.executeQuery();
+                    if (ncrObjIdResult.first())
+                        ncr.setPriority(getPriorityLabel(session, ncrObjIdResult.getInt("id")));
                     result.add(ncr);
                     lastRootActId = a.getInt("rootActivityId");
                     firstTime = false;

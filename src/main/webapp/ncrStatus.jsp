@@ -24,35 +24,50 @@
 </sql:query>
 
     <%-- find all the NCR labels --%>
-<%-- <sql:query var="labelQ">
+    <%--
+<sql:query var="ncrLabelQ">
     select L.name as labelName, L.id as theLabelId from LabelHistory LH
     inner join Label L on L.id=LH.labelId
     inner join LabelGroup LG on LG.id=L.labelGroupId
     WHERE LH.id in (select max(id) from LabelHistory 
-    WHERE labelableId in (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") group by labelId)
-    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr")
+    WHERE LH.labelableId in (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") group by labelId)
+    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") and LOWER(LG.name)!="priority";
 </sql:query>
---%>
+    --%>
     
-<sql:query var="labelQ">
-    select L.name as labelName, L.id as theLabelId from LabelHistory LH
-    inner join Label L on L.id=LH.labelId
-    inner join LabelGroup LG on LG.id=L.labelGroupId
-    WHERE LH.id in (select max(id) from LabelHistory 
-    WHERE labelableId in (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") group by labelId)
-    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") and LOWER(LG.name)!="priority"
+<sql:query var="ncrLabelQ">
+    select DISTINCT L.name, L.id FROM Label L
+    INNER JOIN LabelHistory LH on L.id=LH.labelId
+    INNER JOIN LabelGroup LG on LG.id=L.labelGroupId
+    INNER JOIN Labelable LL on LL.id=LG.labelableId
+    WHERE LOWER(LL.name)='ncr' AND LOWER(LG.name)!='priority';
 </sql:query>
-
+    
+    
+<sql:query var="priorityLabelQ">
+  select DISTINCT L.name, L.id FROM Label L
+  INNER JOIN LabelHistory LH on L.id=LH.labelId
+  INNER JOIN LabelGroup LG on LG.id=L.labelGroupId
+  INNER JOIN Labelable LL on LL.id=LG.labelableId
+  WHERE LOWER(LL.name)='ncr' AND LOWER(LG.name)='priority';
+</sql:query>
+    
+<%--
 <sql:query var="priorityLabelQ">
     select L.name as labelName, L.id as theLabelId from LabelHistory LH
     inner join Label L on L.id=LH.labelId
     inner join LabelGroup LG on LG.id=L.labelGroupId
     WHERE LH.id in (select max(id) from LabelHistory 
     WHERE labelableId in (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") group by labelId)
-    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") and LOWER(LG.name)="priority"
+    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") and LOWER(LG.name)="priority";
 </sql:query>
+    --%>
 
 <h1>NCR Current Status</h1>
+<c:forEach var="ncrCheck" items="${ncrLabelQ.rows}">
+    <c:out value="${ncrCheck.name}" />
+</c:forEach>
+
 <input type=button onClick="parent.open('https://confluence.slac.stanford.edu/display/LSSTCAM/NCR+Traveler')" value='Confluence Doc'>
 
 <filter:filterTable>
@@ -65,19 +80,30 @@
     </filter:filterSelection>
     <filter:filterSelection title="Label" var="label" defaultValue="-1">
         <filter:filterOption value="0">Any</filter:filterOption>
-        <c:forEach var="lab" items="${labelQ.rows}">
-            <filter:filterOption value="${lab.theLabelId}"><c:out value="${lab.labelName}"/></filter:filterOption>
+        <c:forEach var="lab" items="${ncrLabelQ.rows}">
+            <filter:filterOption value="${lab.id}"><c:out value="${lab.name}"/></filter:filterOption>
         </c:forEach>
         <filter:filterOption value="-1">ExcludeMistakes</filter:filterOption>
     </filter:filterSelection>
     <filter:filterSelection title="Priority" var="priorityLab" defaultValue="0">
         <filter:filterOption value="0">Any</filter:filterOption>
         <c:forEach var="p" items="${priorityLabelQ.rows}">
-            <filter:filterOption value="${p.theLabelId}"><c:out value="${p.labelName}"/></filter:filterOption>
+            <filter:filterOption value="${p.id}"><c:out value="${p.name}"/></filter:filterOption>
         </c:forEach>
     </filter:filterSelection>
 </filter:filterTable>
 
+        
+        <%--
+          <filter:filterSelection title="Priority" var="priorityLab" defaultValue="0">
+        <filter:filterOption value="0">Any</filter:filterOption>
+        <c:forEach var="p" items="${priorityLabelQ.rows}">
+            <filter:filterOption value="${p.theLabelId}"><c:out value="${p.labelName}"/></filter:filterOption>
+        </c:forEach>
+    </filter:filterSelection>
+        --%>
+        
+        
 <c:set var="selectedLsstId" value="${lsst_num}" scope="page"/>
 <c:if test="${! empty param.lsstId}">
     <c:set var="selectedLsstId" value="${param.lsstId}" scope="page"/>
@@ -88,7 +114,7 @@
 
 <%-- defaultsort index starts from 1 --%>
 <display:table name="${ncrTable}" export="true" defaultsort="4" defaultorder="descending" class="datatable" id="hdl" >
-    <display:column title="NCR Number" sortable="true">
+    <display:column title="NCR Number" sortable="true" sortProperty="rootActivityId" >
         <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
             <c:param name="activityId" value="${hdl.rootActivityId}"/>
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
@@ -106,6 +132,7 @@
     <display:column title="Run Number" sortable="true" >${hdl.runNum}</display:column>
     <display:column title="Hardware Type" sortable="true" >${hdl.hdwType}</display:column>
     <display:column title="NCR Start Time" sortable="true" >${hdl.ncrCreationTime}</display:column>
+    <display:column title="Priority" sortable="true" >${hdl.priority}</display:column>
     <display:column title="Current NCR Status" sortable="true" >${hdl.statusName}</display:column>
     <display:column title="Closed?" sortable="true" >
         <c:choose>
