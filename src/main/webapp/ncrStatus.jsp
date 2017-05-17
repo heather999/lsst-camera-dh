@@ -24,16 +24,6 @@
 </sql:query>
 
     <%-- find all the NCR labels --%>
-    <%--
-<sql:query var="ncrLabelQ">
-    select L.name as labelName, L.id as theLabelId from LabelHistory LH
-    inner join Label L on L.id=LH.labelId
-    inner join LabelGroup LG on LG.id=L.labelGroupId
-    WHERE LH.id in (select max(id) from LabelHistory 
-    WHERE LH.labelableId in (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") group by labelId)
-    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") and LOWER(LG.name)!="priority";
-</sql:query>
-    --%>
     
 <sql:query var="ncrLabelQ">
     select DISTINCT L.name, L.id FROM Label L
@@ -46,22 +36,11 @@
     
 <sql:query var="priorityLabelQ">
   select DISTINCT L.name, L.id FROM Label L
-  INNER JOIN LabelHistory LH on L.id=LH.labelId
   INNER JOIN LabelGroup LG on LG.id=L.labelGroupId
   INNER JOIN Labelable LL on LL.id=LG.labelableId
   WHERE LOWER(LL.name)='ncr' AND LOWER(LG.name)='priority';
 </sql:query>
     
-<%--
-<sql:query var="priorityLabelQ">
-    select L.name as labelName, L.id as theLabelId from LabelHistory LH
-    inner join Label L on L.id=LH.labelId
-    inner join LabelGroup LG on LG.id=L.labelGroupId
-    WHERE LH.id in (select max(id) from LabelHistory 
-    WHERE labelableId in (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") group by labelId)
-    and LH.adding=1 and LG.labelableId IN (select Labelable.id from Labelable WHERE LOWER(Labelable.name)="ncr") and LOWER(LG.name)="priority";
-</sql:query>
-    --%>
 
 <h1>NCR Current Status</h1>
 <c:forEach var="ncrCheck" items="${ncrLabelQ.rows}">
@@ -93,15 +72,7 @@
     </filter:filterSelection>
 </filter:filterTable>
 
-        
-        <%--
-          <filter:filterSelection title="Priority" var="priorityLab" defaultValue="0">
-        <filter:filterOption value="0">Any</filter:filterOption>
-        <c:forEach var="p" items="${priorityLabelQ.rows}">
-            <filter:filterOption value="${p.theLabelId}"><c:out value="${p.labelName}"/></filter:filterOption>
-        </c:forEach>
-    </filter:filterSelection>
-        --%>
+       
         
         
 <c:set var="selectedLsstId" value="${lsst_num}" scope="page"/>

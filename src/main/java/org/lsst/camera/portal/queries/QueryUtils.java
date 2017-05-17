@@ -489,34 +489,8 @@ public class QueryUtils {
         }
         return result;
     }
-    
-    
-    /*
-    public static String getLabelSet(HttpSession session, Integer objId) throws SQLException {
-        // Find all labels set on an object
-        
-
-        Connection c = null;
-        try {
-            c = ConnectionManager.getConnection(session);
-
-            PreparedStatement labelStatement = c.prepareStatement("SELECT LabelHistory.* FROM LabelHistory "
-                    + "WHERE LabelHistory.id IN (SELECT max(id) from LabelHistory "
-                    + "WHERE LabelHistory.objectId = ? "
-                    + "LabelHistory.adding = 1)");
-            labelStatement.setInt(1, objId);
-            ResultSet labelResult = labelStatement.executeQuery();
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (c != null) {
-                //Close the connection
-                c.close();
-            }
-        }
-        //return result;
-    }
-    */
+     
+   
     public static Boolean processNcr(HttpSession session, Integer ncrActId, Integer labelId) throws SQLException {
         Boolean result = false; // Does not satisfy Label constraints
         if (labelId == 0) return true; // Any should always return true
