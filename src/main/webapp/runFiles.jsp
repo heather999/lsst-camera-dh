@@ -7,6 +7,7 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@taglib prefix="file" uri="http://portal.lsst.org/fileutils" %>
+<%@taglib uri="http://srs.slac.stanford.edu/filter" prefix="filter"%>
 
 <%-- 
     Document   : runFiles
@@ -163,12 +164,33 @@
             <div id="caption"></div>
         </div>
 
+
+        <filter:filterTable>
+            <filter:filterInput title="Path filter" var="filter" size="40"/>
+            <filter:filterSelection title="Filter Type" var="filterType">
+                <filter:filterOption value="contains">Contains</filter:filterOption>
+                <filter:filterOption value="regexp">Regular Expression</filter:filterOption>
+            </filter:filterSelection>
+            <input type="hidden" name="run" value="${param.run}"/>
+        </filter:filterTable>
         <sql:query var="files">
             select f.id,f.virtualPath,f.size,f.catalogKey,f.activityId,f.creationTS from Activity a 
             join FilepathResultHarnessed f on (a.id=f.activityId)
             join RunNumber r on (r.rootActivityId=a.rootActivityId)
             WHERE r.RunNumber=?
             <sql:param value="${param.run}"/>
+            <c:if test="${!empty filter}">
+                <c:choose>
+                    <c:when test="${filterType=='regexp'}">
+                        and f.virtualPath regexp ?
+                        <sql:param value="${filter}"/>
+                    </c:when>
+                    <c:otherwise>
+                        and f.virtualPath like ?
+                        <sql:param value="%${filter}%"/>
+                    </c:otherwise>
+                </c:choose>
+            </c:if>
         </sql:query>
 
         <c:set var="root" value="${file:commonRoot(file:getColumnFromResult(files,'virtualPath'))}"/>
