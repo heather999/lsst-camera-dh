@@ -9,6 +9,7 @@
 <%@taglib prefix="file" uri="http://portal.lsst.org/fileutils" %>
 <%@taglib uri="http://srs.slac.stanford.edu/filter" prefix="filter"%>
 <%@taglib uri="http://srs.slac.stanford.edu/utils" prefix="utils"%>
+<%@taglib prefix="dp" tagdir="/WEB-INF/tags/dataportal"%>
 
 <%-- 
     One stop shop for run related info
@@ -39,7 +40,7 @@
             join Subsystem ss on (ss.id=tt.subsystemId)
             join ActivityStatusHistory s on (s.id = (select max(id) from ActivityStatusHistory ss where ss.activityId=a.id))
             join ActivityFinalStatus f on (f.id=s.activityStatusId)
-            join HardwareLocationHistory hlh on (hlh.id= (select max(id) from HardwareLocationHistory ll where ll.id=h.id and (a.end is null or ll.creationTS < a.end)))
+            join HardwareLocationHistory hlh on (hlh.id= (select max(id) from HardwareLocationHistory ll where ll.hardwareId=h.id and (a.end is null or ll.creationTS < a.end)))
             join Location l on (l.id=hlh.locationId)
             join Site i on (i.id=l.siteId)
             join RunNumber r on (r.rootActivityId=a.id)
@@ -53,7 +54,8 @@
         <h2>Summary</h2>
         <table class="datatable">
             <utils:trEvenOdd reset="true"><th>Run Number</th><td>${run.runNumber}</td></utils:trEvenOdd>
-            <utils:trEvenOdd><th>Traveler</th><td><a href="/eTraveler/displayActivity.jsp?activityId=${run.id}">${run.name}</a></td></utils:trEvenOdd>
+            <dp:url var="travelerURL" value="/eTraveler/displayActivity.jsp?activityId=${run.id}"/>
+            <utils:trEvenOdd><th>Traveler</th><td><a href="${travelerURL}">${run.name}</a></td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Device Type</th><td>${run.hardwareType}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Device</th><td>${run.lsstid}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Status</th><td>${run.status}</td></utils:trEvenOdd>
