@@ -118,6 +118,24 @@
                 </c:url>
                 <a href="${report}">MET</a>
             </c:if>
+            <c:if test="${run.name=='Simulated_RAFT-EOT-01'}">
+                <c:url var="report" value="SummaryReport.jsp">
+                    <c:param name="run" value="${run.runNumber}"/>
+                </c:url>
+                <a href="${report}">EO-RAFT</a>
+            </c:if>
+            <c:if test="${run.name=='Simulated_RTM-EOT-01'}">
+                <c:url var="report" value="SummaryReport.jsp">
+                    <c:param name="run" value="${run.runNumber}"/>
+                </c:url>
+                <a href="${report}">EO-RAFT</a>
+            </c:if>
+            <c:if test="${run.name=='SR-RTM-EOT-03'}">
+                <c:url var="report" value="SummaryReport.jsp">
+                    <c:param name="run" value="${run.runNumber}"/>
+                </c:url>
+                <a href="${report}">EO-RAFT</a>
+            </c:if>        
         </c:if>
     </display:column>
     <display:column title="Links" class="leftAligned">
