@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.lsst.camera</groupId>
     <artifactId>org-lsst-camera-portal-web</artifactId>
-    <version>0.4.4-SNAPSHOT</version>
+    <version>0.4.4</version>
     <packaging>war</packaging>
     <name>LSST Camera Data Portal</name>    
 
@@ -146,7 +146,7 @@
         <url>https://github.com/lsst-camera-dh/portal-web</url>
         <connection>scm:git:git://github.com/lsst-camera-dh/portal-web.git</connection>
         <developerConnection>scm:git:ssh://git@github.com/lsst-camera-dh/portal-web.git</developerConnection>
-      <tag>HEAD</tag>
+      <tag>org-lsst-camera-portal-web-0.4.4</tag>
   </scm>
 
 </project>
