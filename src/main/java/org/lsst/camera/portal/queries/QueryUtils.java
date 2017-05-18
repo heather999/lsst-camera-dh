@@ -560,7 +560,7 @@ public class QueryUtils {
         return result;
     }
     
-    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority) throws SQLException {
+    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status) throws SQLException {
         List<NcrData> result = new ArrayList<>();
         String lower_lsstNum = lsstNum.toLowerCase();
         Connection c = null;
@@ -637,6 +637,14 @@ public class QueryUtils {
                     detailStatement.setInt(1, a.getInt("rootActivityId"));
                     ResultSet d = detailStatement.executeQuery();
                     d.first();
+                    // Check status filter
+                    if (status !=0) { // if not Any do a check
+                      Boolean curStatus = d.getBoolean("final");
+                      if ((status == 1) && (curStatus == true)) // Looking for Open NCRs
+                          continue;
+                      if ((status == 2) && (curStatus == false)) // Looking for NCRs
+                          continue;
+                    }
                     String ncrRunNum = getRunNumberFromRootActivityId(session, a.getInt("rootActivityId"));
                     NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), ncrRunNum, r.getString("lsstid"), r.getString("hdwType"),
                             d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
@@ -1220,7 +1228,7 @@ public class QueryUtils {
                 // Check for NCRs
                 //sensorData.setAllNcrs(getNcrTable(session,lsstId,0));
                 // no constraint on subsystem or labels
-                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0).size() > 0);
+                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0,0).size() > 0);
                 
                 sensorData.setVendorIngestDate(vendorIngestDate);
                 if(eoDate != null) sensorData.setSreot2Date(eoDate);

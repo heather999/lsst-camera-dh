@@ -43,9 +43,6 @@
     
 
 <h1>NCR Current Status</h1>
-<c:forEach var="ncrCheck" items="${ncrLabelQ.rows}">
-    <c:out value="${ncrCheck.name}" />
-</c:forEach>
 
 <input type=button onClick="parent.open('https://confluence.slac.stanford.edu/display/LSSTCAM/NCR+Traveler')" value='Confluence Doc'>
 
@@ -70,6 +67,11 @@
             <filter:filterOption value="${p.id}"><c:out value="${p.name}"/></filter:filterOption>
         </c:forEach>
     </filter:filterSelection>
+    <filter:filterSelection title="Status" var="ncrStatus" defaultValue="1">
+        <filter:filterOption value="0">Any</filter:filterOption>
+        <filter:filterOption value="1">Open</filter:filterOption>
+        <filter:filterOption value="2">Done</filter:filterOption>
+    </filter:filterSelection>
 </filter:filterTable>
 
        
@@ -80,7 +82,7 @@
     <c:set var="selectedLsstId" value="${param.lsstId}" scope="page"/>
 </c:if>
 
-<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem, label, priorityLab)}"/>
+<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem, label, priorityLab, ncrStatus)}"/>
 
 
 <%-- defaultsort index starts from 1 --%>
