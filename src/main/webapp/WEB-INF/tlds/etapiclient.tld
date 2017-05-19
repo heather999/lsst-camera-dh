@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib version="2.1" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd">
+  <tlib-version>1.0</tlib-version>
+  <short-name>etapiclient</short-name>
+<uri>http://camera.lsst.org/etapiclient</uri> 
+ <function>
+        <name>getRunInfo</name>
+        <function-class>org.lsst.camera.portal.queries.eTApi</function-class>
+        <function-signature>java.util.Map getRunInfo(java.lang.String, java.lang.Boolean)
+        </function-signature>
+    </function>
+    <function>
+        <name>getManufacturerId</name>
+        <function-class>org.lsst.camera.portal.queries.eTApi</function-class>
+        <function-signature>java.util.Map getManufacturerId(java.lang.String, java.lang.Boolean)
+        </function-signature>
+    </function>
+    <function>
+        <name>getRunSchemaResults</name>
+        <function-class>org.lsst.camera.portal.queries.eTApi</function-class>
+        <function-signature>java.util.Map getRunSchemaResults(java.lang.String, java.lang.Boolean)
+        </function-signature>
+    </function>
+    <function>
+        <name>getResultsJH</name>
+        <function-class>org.lsst.camera.portal.queries.eTApi</function-class>
+        <function-signature>java.util.Map getResultsJH(java.lang.String, java.lang.Boolean)
+        </function-signature>
+    </function>
+     <function>
+        <name>getResultsJH_schema</name>
+        <function-class>org.lsst.camera.portal.queries.eTApi</function-class>
+        <function-signature>java.util.Map getResultsJH_schema(java.lang.String, java.lang.Boolean, java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+        </function-signature>
+    </function>
+</taglib>
