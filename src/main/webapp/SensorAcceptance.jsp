@@ -110,6 +110,8 @@
                         <c:url var="ncrLink" value="ncrStatus.jsp">
                             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
                             <c:param name="lsstId" value="${sen.lsstId}"/>
+                            <c:param name="Status" value="0"/>
+                            <c:param name="submit" value="Filter"/>
                         </c:url>                
                         <a href="${ncrLink}" target="_blank"><c:out value="NCRs"/></a>
                     </c:when>

@@ -23,6 +23,7 @@ public class NcrData {
     private String statusName;
     private java.util.Date ncrCreationTime;
     private String priority;
+    private String currentStep;
     
     public NcrData(int actId, int rootId, String runN, String lsstId, String typeName, int sId, String sName, Date b, Boolean f,
             Date create) {
@@ -38,6 +39,7 @@ public class NcrData {
         this.finalStatus = f;
         this.ncrCreationTime = create;
         this.priority = "";
+        this.currentStep = "";
        
     }
 
@@ -133,6 +135,14 @@ public class NcrData {
     
     public void setPriority(String p) {
         priority = p == null || "".equals(p) ? "NA" : p;
+    }
+    
+    public String getCurrentStep() {
+        return currentStep;
+    }
+    
+    public void setCurrentStep(String p) {
+        currentStep = p == null || "".equals(p) ? "NA" : p;
     }
     
 }
