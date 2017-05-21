@@ -53,7 +53,11 @@
         <h2>Summary</h2>
         <table class="datatable">
             <utils:trEvenOdd reset="true"><th>Run Number</th><td>${run.runNumber}</td></utils:trEvenOdd>
-            <utils:trEvenOdd><th>Traveler</th><td><a href="/eTraveler/displayActivity.jsp?activityId=${run.id}">${run.name}</a></td></utils:trEvenOdd>
+            <c:url var="travelerURL" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
+                <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+                <c:param name="activityId" value="${run.id}"/>
+            </c:url>
+            <utils:trEvenOdd><th>Traveler</th><td><a href="${travelerURL}">${run.name}</a></td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Device Type</th><td>${run.hardwareType}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Device</th><td>${run.lsstid}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Status</th><td>${run.status}</td></utils:trEvenOdd>
@@ -70,7 +74,7 @@
                 <c:if test="${run.name=='SR-EOT-02'}"><li><a href="SummaryReport.jsp?run=${param.run}">EOTest Report</a></li></c:if>
                 <c:if test="${run.name=='SR-RSA-MET-07'}"><li><a href="SummaryReport.jsp?run=${param.run}">Metrology Report</a></li></c:if>
                 <c:if test="${run.name=='SR-RTM-EOT-03'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
-            </ul>
+                </ul>
         </c:if>
 
         <c:if test="${run.fileCount+run.floatCount+run.intCount+run.StringCount>0}">
