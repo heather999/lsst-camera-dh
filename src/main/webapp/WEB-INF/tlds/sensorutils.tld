@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<taglib version="2.1" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-jsptaglibrary_2_1.xsd">
+    <tlib-version>1.0</tlib-version>
+    <short-name>sensorutils</short-name>
+    <uri>http://camera.lsst.org/sensorutils</uri> 
+    <function>
+        <name>getAllUsingStepAndSchema</name>
+        <function-class>org.lsst.camera.portal.queries.SensorUtils</function-class>
+        <function-signature>java.util.Map getAllUsingStepAndSchema(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean)
+        </function-signature>
+    </function>
+    <function>
+        <name>getSensorSummaryTable</name>
+        <function-class>org.lsst.camera.portal.queries.SensorUtils</function-class>
+        <function-signature>java.util.List getSensorSummaryTable(javax.servlet.http.HttpSession,java.lang.String)
+        </function-signature>
+    </function>
+    <function>
+        <name>getMaxReadNoiseChannel</name>
+        <function-class>org.lsst.camera.portal.queries.SensorUtils</function-class>
+        <function-signature>java.util.Map getMaxReadNoiseChannel(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
+        </function-signature>
+    </function>
+    
+</taglib>

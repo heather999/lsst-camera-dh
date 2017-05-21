@@ -255,6 +255,46 @@ public class QueryUtils {
         return labelMap;
     }
 
+    public static List getHardwareTypesListFromGroup(HttpSession session, String group) throws SQLException {
+        List<String> typeNameList = new ArrayList<>();
+        List<Integer> typeIdList = new ArrayList<>();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            PreparedStatement findGroupStatement = c.prepareStatement("SELECT id, name FROM "
+                    + "HardwareGroup WHERE name = ?");
+            findGroupStatement.setString(1, group);
+            ResultSet r = findGroupStatement.executeQuery();
+            while (r.next()) {
+                Integer groupId = r.getInt("id");
+                PreparedStatement findHdwTypeStatement = c.prepareStatement("SELECT hardwareTypeId FROM "
+                        + "HardwareTypeGroupMapping WHERE hardwareGroupId = ?");
+                findHdwTypeStatement.setInt(1, groupId);
+                ResultSet r2 = findHdwTypeStatement.executeQuery();
+                while (r2.next())
+                    typeIdList.add(r2.getInt("hardwareTypeId"));
+                if (typeIdList.isEmpty()) return null;
+                String subStr = stringFromList(typeIdList);
+                PreparedStatement hdwTypeNameStatement = c.prepareStatement("SELECT name FROM "
+                        + "HardwareType WHERE id IN " + subStr);
+                ResultSet r3 = hdwTypeNameStatement.executeQuery();
+                while (r3.next())
+                    typeNameList.add(r3.getString("name"));
+            }
+           
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return typeNameList;
+    }
+    
     public static String getHardwareTypesFromGroup(HttpSession session, String group) throws SQLException {
         List<Integer> typeList = new ArrayList<>();
         String result = "";
@@ -413,7 +453,114 @@ public class QueryUtils {
         return activityMap;
     }
     
-    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId) throws SQLException {
+    public static String getPriorityLabel(HttpSession session, Integer objId) throws SQLException {
+        // Find Priority labels set on an object  These are meant to be mutually exclusive, but that is not enforced programmatically yet
+        String result = ""; 
+        HashMap<Integer, String> labelList = new HashMap<>();
+
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            PreparedStatement labelStatement = c.prepareStatement("select L.id as labelId, L.name as labelName, LH.id as lhid, LH.adding as adding "
+                    + "FROM LabelHistory LH " 
+                    + "INNER JOIN Label L on L.id=LH.labelId " 
+                    + "INNER JOIN LabelGroup LG ON LG.id=L.labelGroupId " 
+                    + "WHERE LOWER(LG.name) = \"priority\" and LH.objectId = ? ORDER BY lhid ASC");
+            labelStatement.setInt(1, objId);
+            ResultSet labelResult = labelStatement.executeQuery();
+            while (labelResult.next()) {
+                if (labelResult.getInt("adding")==1)
+                    labelList.put(labelResult.getInt("labelId"),labelResult.getString("labelName"));
+                else 
+                    labelList.remove(labelResult.getInt("labelId"));
+            }
+            for (String label : labelList.values()) {    
+                result += label + " ";
+            }
+           
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return result;
+    }
+     
+   
+    public static Boolean processNcr(HttpSession session, Integer ncrActId, Integer labelId) throws SQLException {
+        Boolean result = false; // Does not satisfy Label constraints
+        if (labelId == 0) return true; // Any should always return true
+        Integer actualLabel = labelId;
+       
+        // Handle all other labels
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            if (labelId == -1) { // Excluding Mistakes Only
+                // Find Label Id for Mistake
+                PreparedStatement mistakeStatement = c.prepareStatement("select L.name as labelName, L.id as theLabelId "
+                        + "from Label L "
+                        + "inner join LabelGroup LG on LG.id=L.labelGroupId "
+                        + "INNER JOIN Labelable LL on LL.id=LG.labelableId "
+                        + "WHERE LOWER(LL.name)=\"ncr\" " 
+                        + "AND LOWER(L.name)=\"mistake\"");
+        
+                ResultSet mistake = mistakeStatement.executeQuery();
+                if (mistake.first()) {
+                    actualLabel = mistake.getInt("theLabelId");
+                } else {
+                    return true; // If there is no mistake label, just return true to carry on
+                }
+
+            }
+            
+            // Check if this particular label Id is set on this NCR Exception object
+            PreparedStatement labelStatement = c.prepareStatement("SELECT LH.adding FROM LabelHistory LH " 
+                    + "WHERE LH.objectId IN (SELECT Exception.id from Exception WHERE NCRActivityId = ?) " 
+                    + "AND LH.labelId = ? ORDER BY LH.id DESC");
+            labelStatement.setInt(1,ncrActId);
+            labelStatement.setInt(2,actualLabel);
+            ResultSet r = labelStatement.executeQuery();
+            if (r.first()) { // found a match
+                Integer adding = r.getInt("adding");
+                if (labelId != -1) { // Not looking to ExcludeMistakes
+                    if (adding == 1) {
+                        result = true;
+                    } else {
+                        result = false;
+                    }
+                } else { // ExcludingMistakes, we find one, we should ignore this NCR
+                    if (adding == 1) {
+                        result = false; 
+                    } else {
+                        result = true;
+                    }
+                }
+            } else { // found no matches
+                if (labelId == -1) {
+                    result = true;
+                } else {
+                    result = false;
+                }
+            }
+          
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return result;
+    }
+    
+    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status) throws SQLException {
         List<NcrData> result = new ArrayList<>();
         String lower_lsstNum = lsstNum.toLowerCase();
         Connection c = null;
@@ -467,10 +614,20 @@ public class QueryUtils {
                     if ((!firstTime) && (curRootActId == lastRootActId)) {
                         continue;
                     }
+                    // Check for desired labels and whether they are set for this NCR where the rootActId is the ncrActId
+                    // in the Exception table
+                    // if label is ANY (0), then skip this check and carry on
+                    if ((labelId != 0) && (processNcr(session, curRootActId, labelId) == false))
+                            continue;
+                    
+                    // If ANY(0) then skip this check and carry on
+                    if (priority!=0 && (processNcr(session,curRootActId,priority) == false))
+                        continue;
+                    
                     PreparedStatement ncrStartStatement = c.prepareStatement("SELECT creationTS FROM Activity "
                             + "WHERE Activity.rootActivityId=?");
                     ncrStartStatement.setInt(1, a.getInt("rootActivityId"));
-                    ResultSet startResult = ncrStartStatement.executeQuery();
+                    ResultSet startResult = ncrStartStatement.executeQuery(); 
                     startResult.first();
                     // Find the status on the root activity
                     PreparedStatement detailStatement = c.prepareStatement("SELECT ASH.id, ASH.activityStatusId, AFS.name, "
@@ -480,11 +637,25 @@ public class QueryUtils {
                     detailStatement.setInt(1, a.getInt("rootActivityId"));
                     ResultSet d = detailStatement.executeQuery();
                     d.first();
+                    // Check status filter
+                    if (status !=0) { // if not Any do a check
+                      Boolean curStatus = d.getBoolean("final");
+                      if ((status == 1) && (curStatus == true)) // Looking for Open NCRs
+                          continue;
+                      if ((status == 2) && (curStatus == false)) // Looking for NCRs
+                          continue;
+                    }
                     String ncrRunNum = getRunNumberFromRootActivityId(session, a.getInt("rootActivityId"));
                     NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), ncrRunNum, r.getString("lsstid"), r.getString("hdwType"),
                             d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
                             startResult.getTimestamp("creationTS"));
                     ncr.setHdwId(r.getInt("hdwId"));
+                    PreparedStatement ncrObjIdStatement = c.prepareStatement("SELECT id from Exception "
+                            + "WHERE NCRActivityId = ?");
+                    ncrObjIdStatement.setInt(1,curRootActId);
+                    ResultSet ncrObjIdResult = ncrObjIdStatement.executeQuery();
+                    if (ncrObjIdResult.first())
+                        ncr.setPriority(getPriorityLabel(session, ncrObjIdResult.getInt("id")));
                     result.add(ncr);
                     lastRootActId = a.getInt("rootActivityId");
                     firstTime = false;
@@ -960,7 +1131,7 @@ public class QueryUtils {
                             + "JOIN Process pr ON act.processId=pr.id "
                             + "JOIN ActivityStatusHistory statusHist ON act.id=statusHist.activityId " 
                             + "JOIN ActivityFinalStatus AFS ON AFS.id=statusHist.activityStatusId " 
-                            + "WHERE hw.id = ? AND pr.name='SR-EOT-1' "
+                            + "WHERE hw.id = ? AND (pr.name='SR-EOT-1'OR pr.name='SR-CCD-EOT-01') "
                             + "ORDER BY statusHist.id DESC");
                     anyTs3.setInt(1, hdwId);
                     ResultSet anyTs3R = anyTs3.executeQuery();
@@ -1056,7 +1227,8 @@ public class QueryUtils {
                 
                 // Check for NCRs
                 //sensorData.setAllNcrs(getNcrTable(session,lsstId,0));
-                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0).size() > 0);
+                // no constraint on subsystem or labels
+                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0,0).size() > 0);
                 
                 sensorData.setVendorIngestDate(vendorIngestDate);
                 if(eoDate != null) sensorData.setSreot2Date(eoDate);
