@@ -100,7 +100,7 @@
     <function>
         <name>getSensorAcceptanceTable</name>
         <function-class>org.lsst.camera.portal.queries.QueryUtils</function-class>
-        <function-signature>java.util.List getSensorAcceptanceTable(javax.servlet.http.HttpSession)</function-signature>
+        <function-signature>java.util.List getSensorAcceptanceTable(javax.servlet.http.HttpSession, java.lang.String, java.lang.String,java.lang.Integer,java.lang.Integer,java.lang.Integer)</function-signature>
     </function>
     <function>
         <name>getHardwareStatusTable</name>
