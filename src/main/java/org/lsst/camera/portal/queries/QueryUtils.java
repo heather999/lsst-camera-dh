@@ -646,10 +646,28 @@ public class QueryUtils {
                           continue;
                     }
                     String ncrRunNum = getRunNumberFromRootActivityId(session, a.getInt("rootActivityId"));
+                    
+                    PreparedStatement currentStepStatement = c.prepareStatement("SELECT P.name "
+                            + "FROM Activity A "
+                            + "inner join ActivityStatusHistory ASH on ASH.id = (select max(id) from ActivityStatusHistory where activityId = A.id) "
+                            + "inner join ActivityFinalStatus AFS on AFS.id = ASH.activityStatusId "
+                            + "inner join Process P on P.id = A.processId "
+                            + "WHERE A.rootActivityId = ? "
+                            + "AND not AFS.isFinal "
+                            + "ORDER BY A.id DESC "
+                            + "limit 1;");
+                    currentStepStatement.setInt(1, a.getInt("rootActivityId"));
+                    ResultSet cs = currentStepStatement.executeQuery();
+                    String currentStepName = "";
+                    if (cs.next()) {
+                        currentStepName = cs.getString("name");
+                    } 
+                    
                     NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), ncrRunNum, r.getString("lsstid"), r.getString("hdwType"),
                             d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
                             startResult.getTimestamp("creationTS"));
                     ncr.setHdwId(r.getInt("hdwId"));
+                    ncr.setCurrentStep(currentStepName);
                     PreparedStatement ncrObjIdStatement = c.prepareStatement("SELECT id from Exception "
                             + "WHERE NCRActivityId = ?");
                     ncrObjIdStatement.setInt(1,curRootActId);
