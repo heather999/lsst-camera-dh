@@ -646,10 +646,28 @@ public class QueryUtils {
                           continue;
                     }
                     String ncrRunNum = getRunNumberFromRootActivityId(session, a.getInt("rootActivityId"));
+                    
+                    PreparedStatement currentStepStatement = c.prepareStatement("SELECT P.name "
+                            + "FROM Activity A "
+                            + "inner join ActivityStatusHistory ASH on ASH.id = (select max(id) from ActivityStatusHistory where activityId = A.id) "
+                            + "inner join ActivityFinalStatus AFS on AFS.id = ASH.activityStatusId "
+                            + "inner join Process P on P.id = A.processId "
+                            + "WHERE A.rootActivityId = ? "
+                            + "AND not AFS.isFinal "
+                            + "ORDER BY A.id DESC "
+                            + "limit 1;");
+                    currentStepStatement.setInt(1, a.getInt("rootActivityId"));
+                    ResultSet cs = currentStepStatement.executeQuery();
+                    String currentStepName = "";
+                    if (cs.next()) {
+                        currentStepName = cs.getString("name");
+                    } 
+                    
                     NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), ncrRunNum, r.getString("lsstid"), r.getString("hdwType"),
                             d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
                             startResult.getTimestamp("creationTS"));
                     ncr.setHdwId(r.getInt("hdwId"));
+                    ncr.setCurrentStep(currentStepName);
                     PreparedStatement ncrObjIdStatement = c.prepareStatement("SELECT id from Exception "
                             + "WHERE NCRActivityId = ?");
                     ncrObjIdStatement.setInt(1,curRootActId);
@@ -997,8 +1015,8 @@ public class QueryUtils {
         return result;
     }
     
-    //public static List getSensorAcceptanceTable(HttpSession session, Integer hardwareTypeId, String lsstNumPattern, String manu, String myGroup, Boolean byGroup, Integer labelId) throws SQLException {
-    public static List getSensorAcceptanceTable(HttpSession session) throws SQLException  {
+    public static List getSensorAcceptanceTable(HttpSession session, String lsstNum, String manuFilter,
+            Integer auth, Integer accept, Integer ncr) throws SQLException  {
         List<SensorAcceptanceData> result = new ArrayList<>();
         HashMap<Integer, Boolean> sensorsFound = new HashMap<>();
 
@@ -1019,21 +1037,36 @@ public class QueryUtils {
         try {
             c = ConnectionManager.getConnection(session);
 
-         //   Map<Integer, String> compIds = getFilteredComponentIds(session, hardwareTypeId, lsstNumPattern, manu, myGroup, byGroup);
-            //   String hdwTypeSet = "";
-            //   if (byGroup) {
-            //       hdwTypeSet = getHardwareTypesFromGroup(session, myGroup);
-            //   } else {
-            //       hdwTypeSet = getHardwareTypesFromSubsystem(session, myGroup);
-            //   }
-            PreparedStatement vendorS = c.prepareStatement("select hw.lsstId AS lsstId, hw.id AS hdwId, "
-                    + "hw.manufacturer, act.id, act.parentActivityId, act.end, "
-                    + "statusHist.activityStatusId from Activity act "
-                    + "join Hardware hw on act.hardwareId=hw.id "
-                    + "join Process pr on act.processId=pr.id "
-                    + "join ActivityStatusHistory statusHist on act.id=statusHist.activityId "
-                    + "where statusHist.activityStatusId=1 and pr.name='vendorIngest' "
-                    + "order by act.parentActivityId desc");
+            String lower_lsstNum = lsstNum.toLowerCase();
+            String lower_manu = manuFilter.toLowerCase();
+            Boolean manuParam = false, lsstNumParam = false;
+       
+            String saQuery = "select hw.lsstId AS lsstId, hw.id AS hdwId, hw.manufacturer, "
+                    + "act.id, act.parentActivityId, act.end,statusHist.activityStatusId from Activity act "
+                    + "INNER join Hardware hw on act.hardwareId=hw.id "
+                    + "INNER join Process pr on act.processId=pr.id "
+                    + "INNER join ActivityStatusHistory statusHist on act.id=statusHist.activityId "
+                    + "INNER JOIN HardwareType HT on HT.id = hw.hardwareTypeId "
+                    + "INNER JOIN Subsystem S ON S.id = HT.subsystemId "
+                    + "WHERE statusHist.activityStatusId=1 and pr.name='vendorIngest' AND LOWER(S.name) ='science raft' ";
+            if (!lower_manu.equals("any")) {
+                saQuery += "AND LOWER(hw.manufacturer)=? ";
+                manuParam = true;
+            }
+            if (!lower_lsstNum.equals("")) {
+                saQuery += "LOWER(hw.lsstId) LIKE concat('%', ?, '%') ";
+                lsstNumParam = true;
+            }
+            saQuery += "ORDER BY act.parentActivityId desc";
+  
+            
+            PreparedStatement vendorS = c.prepareStatement(saQuery);
+            if (manuParam) { // Check to see if we're filtering on manufacturer or lsstNum
+                vendorS.setString(1, lower_manu);
+                if (lsstNumParam)
+                    vendorS.setString(2, lower_lsstNum);
+            } else if (lsstNumParam)
+                vendorS.setString(1, lower_lsstNum);
 
             ResultSet vendorR = vendorS.executeQuery();
             while (vendorR.next()) { // loop over all sensors which have had a vendor ingest (SR-RCV-01)
@@ -1044,17 +1077,6 @@ public class QueryUtils {
                 if (sensorsFound.put(hdwId, true)!=null)
                     continue;
                 java.util.Date vendorIngestDate = vendorR.getTimestamp("end");
-                //PreparedStatement eot02S = c.prepareStatement("select hw.lsstId, act.id, "
-                //        + "act.parentActivityId AS parentActId, act.end, "
-                //        + "statusHist.activityStatusId, pr.name, SRH.schemaVersion, SRH.schemaInstance from Activity act "
-                //        + "join Hardware hw on act.hardwareId=hw.id "
-                //        + "join Process pr on act.processId=pr.id "
-                //        + "join ActivityStatusHistory statusHist on act.id=statusHist.activityId "
-                //        + "JOIN StringResultHarnessed SRH ON act.id=SRH.activityId "
-                //        + "where hw.id=? AND statusHist.activityStatusId=1 and pr.name='test_report_offline' "
-                 //       + "AND SRH.schemaName = 'package_versions' "
-                //        + "AND IF (SRH.schemaVersion > 0, SRH.value='eotest,SRH.name='eotest_version') "
-                //        + "order by act.parentActivityId desc");
                 
                 PreparedStatement eot02S = c.prepareStatement("select hw.lsstId, act.id, "
                         + "act.parentActivityId AS parentActId, act.end, "
@@ -1197,13 +1219,21 @@ public class QueryUtils {
                 ResultSet preshipApproveR = preshipApprove.executeQuery();
                 if (preshipApproveR.first() == true) {
                     if (preshipApproveR.getInt("activityStatusId") == 1) { // if we have completed the step
-                    sensorData.setPreshipApprovedValues(preshipApproveR.getInt("value")>0,null,preshipApproveR.getTimestamp("creationTs"));
+                        sensorData.setPreshipApprovedValues(preshipApproveR.getInt("value") > 0, null, preshipApproveR.getTimestamp("creationTs"));
                     } else {
                         sensorData.setPreshipApprovedStatus(preshipApproveR.getString("name"));
                     }
                 }
+                // Do any pre ship authorization filtering here
+                if (auth == 1) {  // Filtering for Authoized 
+                    if ((sensorData.getPreshipApproved() == null) || (sensorData.getPreshipApproved()==false))
+                        continue;
+                } else if (auth == 2) {  // Filtering for Not Authorized
+                    if ((sensorData.getPreshipApproved() == null)|| (sensorData.getPreshipApproved()==true))
+                        continue;
+                }
                 
-                // Check on preship Approval in SR-CCD-RCV-05
+                // Check on Acceptance in SR-CCD-RCV-05
                 PreparedStatement sensorAccepted = c.prepareStatement("SELECT hw.lsstId, act.id, "
                         + "statusHist.activityStatusId, IRM.value, IRM.creationTS, AFS.name " 
                         + "FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id " 
@@ -1219,16 +1249,31 @@ public class QueryUtils {
                 ResultSet sensorAcceptedR = sensorAccepted.executeQuery();
                 if (sensorAcceptedR.first() == true) {
                     if (sensorAcceptedR.getInt("activityStatusId") == 1) { // if we have completed the step
-                    sensorData.setSensorAcceptedValues(sensorAcceptedR.getInt("value")>0,null,sensorAcceptedR.getTimestamp("creationTs"));
+                        sensorData.setSensorAcceptedValues(sensorAcceptedR.getInt("value") > 0, null, sensorAcceptedR.getTimestamp("creationTs"));
                     } else {
                         sensorData.setSensorAcceptedStatus(sensorAcceptedR.getString("name"));
                     }
                 }
+
+                // Filter on Acceptance here
+                if (accept == 1) { // Accepted
+                    if ((sensorData.getSensorAccepted() == null) || (sensorData.getSensorAccepted() == false))
+                        continue;
+                } else if (accept == 2) { // Not Accepted
+                    if ((sensorData.getSensorAccepted() == null) || (sensorData.getSensorAccepted() == true))
+                        continue;
+                }
                 
                 // Check for NCRs
-                //sensorData.setAllNcrs(getNcrTable(session,lsstId,0));
                 // no constraint on subsystem or labels
                 sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0,0).size() > 0);
+                if (ncr != 0) { // if we're filtering on NCRs other than Any
+                    if ((ncr == 1) && (sensorData.getAnyNcrs()==true)) // Filter on No NCRs
+                        continue;
+                    if ((ncr == 2) && (sensorData.getAnyNcrs() == false)) // Filter on Has NCRs
+                        continue;
+                }
+                
                 
                 sensorData.setVendorIngestDate(vendorIngestDate);
                 if(eoDate != null) sensorData.setSreot2Date(eoDate);

@@ -94,8 +94,7 @@
         </c:url>
         <a href="${actLink}" target="_blank">${hdl.rootActivityId}</a>
     </display:column>
-    <%-- <display:column title="LSST_NUM" sortable="true"> ${hdl.lsstNum}</display:column> --%>
-    <display:column title="LSST_NUM" sortable="true" >
+    <display:column title="LSST_NUM" sortable="true" sortProperty="lsstNum">
         <c:url var="hdwNcrLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
             <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
             <c:param name="hardwareId" value="${hdl.hdwId}"/>
@@ -107,6 +106,7 @@
     <display:column title="NCR Start Time" sortable="true" >${hdl.ncrCreationTime}</display:column>
     <display:column title="Priority" sortable="true" >${hdl.priority}</display:column>
     <display:column title="Current NCR Status" sortable="true" >${hdl.statusName}</display:column>
+    <display:column title="Current Step" sortable="true" >${hdl.currentStep}</display:column>
     <display:column title="Closed?" sortable="true" >
         <c:choose>
             <c:when test="${hdl.finalStatus == true}">
