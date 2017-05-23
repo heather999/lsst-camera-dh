@@ -50,19 +50,20 @@
                 <sql:param value="${reports.rows[0].name}"/>        
             </sql:query>
             <c:set var="parentActivityId" value="${data.rows[0].id}"/>
+            <c:set var="reportId" value="${reportId==11?8:reportId}"/>
             <c:choose>
                 <c:when test="${empty param.component}">
-                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,reportId==8?actId:parentActivityId,reportId)}"/>
+                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,reportId)}"/>
                     <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
                     <c:if test="${!empty subcomponents}">
-                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,reportId==8?actId:parentActivityId,reportId==8?10:9,subcomponents)}"/>
+                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,9,subcomponents)}"/>
                         <c:if test="${!empty subComponentMap}">
                             <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,9)}"/>
                         </c:if>
                     </c:if>
                 </c:when>
                 <c:otherwise>
-                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,reportId==8?actId:parentActivityId,reportId==8?10:9, param.component)}"/>
+                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,9, param.component)}"/>
                     <c:set var="reportId" value="9"/>
                 </c:otherwise>
             </c:choose>

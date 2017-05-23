@@ -136,6 +136,12 @@
                 </c:url>
                 <a href="${report}">EO-RAFT</a>
             </c:if>        
+            <c:if test="${run.name=='SR-RTM-PROTOCOLS'}">
+                <c:url var="report" value="SummaryReport.jsp">
+                    <c:param name="run" value="${run.runNumber}"/>
+                </c:url>
+                <a href="${report}">EO-RAFT</a>
+            </c:if> 
         </c:if>
     </display:column>
     <display:column title="Links" class="leftAligned">
