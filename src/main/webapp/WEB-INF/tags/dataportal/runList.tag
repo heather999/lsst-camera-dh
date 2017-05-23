@@ -24,7 +24,7 @@
 
 <sql:query var="runs">
     select * from (
-    select r.runInt,r.runNumber,a.begin,a.end,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,
+    select r.runInt,r.runNumber,a.begin,a.end,p.name,a.id ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,
     (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount,
     (select count(*) from Activity aa join FloatResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as floatCount,
     (select count(*) from Activity aa join IntResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as intCount,
@@ -86,10 +86,16 @@
 
 <display:table name="${runs.rows}" sort="list" defaultsort="1" defaultorder="descending" class="datatable" id="run" >
     <display:column property="runNumber" sortProperty="runInt" title="Run" sortable="true" href="run.jsp" paramId="run"/>
-    <display:column property="name" title="Traveler" sortable="true"/>
+    <display:column sortProperty="name" title="Traveler" sortable="true">
+        <c:url var="travelerURL" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
+            <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+            <c:param name="activityId" value="${run.id}"/>
+        </c:url>
+        <a href="${travelerURL}">${run.name}</a>
+    </display:column>
     <display:column property="hardwareType" title="Device Type" sortable="true"/>
     <c:if test="${empty device || device=='any'}">
-       <display:column property="lsstid" title="Device" sortable="true" href="device.jsp" paramId="lsstId"/>
+        <display:column property="lsstid" title="Device" sortable="true" href="device.jsp" paramId="lsstId"/>
     </c:if>
     <display:column property="status" title="Status" sortable="true"/>
     <display:column property="subsystem" title="Subsystem" sortable="true"/>
@@ -136,6 +142,12 @@
                 </c:url>
                 <a href="${report}">EO-RAFT</a>
             </c:if>        
+            <c:if test="${run.name=='SR-RTM-PROTOCOLS'}">
+                <c:url var="report" value="SummaryReport.jsp">
+                    <c:param name="run" value="${run.runNumber}"/>
+                </c:url>
+                <a href="${report}">EO-RAFT</a>
+            </c:if> 
         </c:if>
     </display:column>
     <display:column title="Links" class="leftAligned">

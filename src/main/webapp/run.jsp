@@ -75,7 +75,9 @@
                 <c:if test="${run.name=='SR-EOT-02'}"><li><a href="SummaryReport.jsp?run=${param.run}">EOTest Report</a></li></c:if>
                 <c:if test="${run.name=='SR-RSA-MET-07'}"><li><a href="SummaryReport.jsp?run=${param.run}">Metrology Report</a></li></c:if>
                 <c:if test="${run.name=='SR-RTM-EOT-03'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
-                </ul>
+                <c:if test="${run.name=='Simulated_RTM-EOT-01'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
+                <c:if test="${run.name=='SR-RTM-PROTOCOLS'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
+            </ul>
         </c:if>
 
         <c:if test="${run.fileCount+run.floatCount+run.intCount+run.StringCount>0}">
