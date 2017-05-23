@@ -9,6 +9,7 @@
 <%@taglib prefix="file" uri="http://portal.lsst.org/fileutils" %>
 <%@taglib uri="http://srs.slac.stanford.edu/filter" prefix="filter"%>
 <%@taglib uri="http://srs.slac.stanford.edu/utils" prefix="utils"%>
+<%@taglib prefix="dp" tagdir="/WEB-INF/tags/dataportal"%>
 
 <%-- 
     One stop shop for run related info
@@ -39,7 +40,7 @@
             join Subsystem ss on (ss.id=tt.subsystemId)
             join ActivityStatusHistory s on (s.id = (select max(id) from ActivityStatusHistory ss where ss.activityId=a.id))
             join ActivityFinalStatus f on (f.id=s.activityStatusId)
-            join HardwareLocationHistory hlh on (hlh.id= (select max(id) from HardwareLocationHistory ll where ll.id=h.id and (a.end is null or ll.creationTS < a.end)))
+            join HardwareLocationHistory hlh on (hlh.id= (select max(id) from HardwareLocationHistory ll where ll.hardwareId=h.id and (a.end is null or ll.creationTS < a.end)))
             join Location l on (l.id=hlh.locationId)
             join Site i on (i.id=l.siteId)
             join RunNumber r on (r.rootActivityId=a.id)
@@ -53,7 +54,11 @@
         <h2>Summary</h2>
         <table class="datatable">
             <utils:trEvenOdd reset="true"><th>Run Number</th><td>${run.runNumber}</td></utils:trEvenOdd>
-            <utils:trEvenOdd><th>Traveler</th><td><a href="/eTraveler/displayActivity.jsp?activityId=${run.id}">${run.name}</a></td></utils:trEvenOdd>
+            <c:url var="travelerURL" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
+                <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+                <c:param name="activityId" value="${run.id}"/>
+            </c:url>
+            <utils:trEvenOdd><th>Traveler</th><td><a href="${travelerURL}">${run.name}</a></td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Device Type</th><td>${run.hardwareType}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Device</th><td>${run.lsstid}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Status</th><td>${run.status}</td></utils:trEvenOdd>
@@ -69,6 +74,9 @@
                 <li><a href="RawReport.jsp?run=${param.run}">Raw Report</a> (data dump)</li>
                 <c:if test="${run.name=='SR-EOT-02'}"><li><a href="SummaryReport.jsp?run=${param.run}">EOTest Report</a></li></c:if>
                 <c:if test="${run.name=='SR-RSA-MET-07'}"><li><a href="SummaryReport.jsp?run=${param.run}">Metrology Report</a></li></c:if>
+                <c:if test="${run.name=='SR-RTM-EOT-03'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
+                <c:if test="${run.name=='Simulated_RTM-EOT-01'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
+                <c:if test="${run.name=='SR-RTM-PROTOCOLS'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
             </ul>
         </c:if>
 

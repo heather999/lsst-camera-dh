@@ -14,8 +14,13 @@
 <%-- The list of normal or fragment attributes can be specified here: --%>
 <%@attribute name="sectionNum" type="java.lang.String" required="true"%>
 <%@attribute name="data" type="java.util.Map" required="true"%>
+<%@attribute name="subData" type="java.util.Map"%>
+<%@attribute name="run" type="java.lang.String"%>
 <%@attribute name="reportId" type="java.lang.Integer" required="true"%>
 
+<c:if test="${!empty subData}">
+    <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,9)}"/>
+</c:if>
 
 <sql:query var="specs" dataSource="${appVariables.reportDisplayDb}">
     select specid, description, spec_display, jexl_status, jexl_measurement, jexl_jobid from report_specs where report=?
@@ -32,7 +37,7 @@
     <display:table name="${specs.rows}" id="row" defaultsort="2" class="datatable">
         <display:column title="Status" sortable="true" class="sortable">
             <c:catch var="x">
-                <c:set var="status" value="${portal:jexlEvaluateData(data, row.jexl_status)}"/>
+                <c:set var="status" value="${portal:jexlEvaluateSubcomponentData(run, data, subData, subSpecs, row.jexl_status)}"/>
                 ${empty status ? "..." : status ? '<font color="green">&#x2714;</span>' : '<font color="red">&#x2718;<span>'}
             </c:catch>
             <c:if test="${!empty x}">???</c:if>
@@ -42,13 +47,13 @@
         <display:column property="Spec_Display" title="Specification"/>
         <display:column title="Value">
             <c:catch var="x">
-                ${portal:jexlEvaluateData(data, row.jexl_measurement)} 
+                ${portal:jexlEvaluateSubcomponentData(run, data, subData, subSpecs, row.jexl_measurement)} 
             </c:catch>
             <c:if test="${!empty x}">???</c:if>
         </display:column>
         <display:column title="Job Id">
             <c:catch var="x">
-                <ru:jobLink id="${portal:jexlEvaluateData(data, row.jexl_jobid)}"/> 
+                <ru:jobLink id="${portal:jexlEvaluateSubcomponentData(run, data, subData, subSpecs, row.jexl_jobid)}"/> 
             </c:catch>
             <c:if test="${!empty x}">???</c:if>
         </display:column>

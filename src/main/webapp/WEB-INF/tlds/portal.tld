@@ -202,7 +202,11 @@
         <function-class>org.lsst.camera.portal.queries.JexlUtils</function-class>
         <function-signature>java.util.Map jexlEvaluateData(java.util.Map, java.lang.String)</function-signature>
     </function>
-    
+    <function>
+        <name>jexlEvaluateSubcomponentData</name>
+        <function-class>org.lsst.camera.portal.queries.JexlUtils</function-class>
+        <function-signature>java.util.Map jexlEvaluateSubcomponentData(java.lang.String, java.util.Map, java.util.Map, org.lsst.camera.portal.queries.Specifications, java.lang.String)</function-signature>
+    </function>    
     <function>
         <name>getReportValues</name>
         <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
@@ -211,7 +215,28 @@
         </function-signature>
     </function>
     
-     <function>
+    <function>
+        <name>getReportValuesForSubcomponent</name>
+        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
+        <function-signature>
+           java.util.Map getReportValuesForSubcomponent(javax.servlet.http.HttpSession, java.lang.Integer, java.lang.Integer, java.lang.String)
+        </function-signature>
+    </function>
+    <function>
+        <name>getReportValuesForSubcomponents</name>
+        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
+        <function-signature>
+           java.util.Map getReportValuesForSubcomponents(javax.servlet.http.HttpSession, java.lang.Integer, java.lang.Integer, java.util.List)
+        </function-signature>
+    </function>    
+    <function>
+        <name>getSpecifications</name>
+        <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
+        <function-signature>
+           org.lsst.camera.portal.queries.Specifications getSpecifications(javax.servlet.http.HttpSession, java.lang.Integer)
+        </function-signature>
+    </function>    
+    <function>
         <name>getSensorReportValues</name>
         <function-class>org.lsst.camera.portal.queries.SensorAcceptanceUtils</function-class>
         <function-signature>
