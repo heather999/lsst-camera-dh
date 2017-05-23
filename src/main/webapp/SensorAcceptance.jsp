@@ -7,6 +7,8 @@
 <%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@taglib uri="http://displaytag.sf.net" prefix="display" %>
 <%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
+<%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
+
 
 <html>
     <head>
@@ -16,7 +18,38 @@
     <body>
         <h1>Sensor Acceptance Reports Available</h1>
 
-        <c:set var="sensorsWithAcceptance" value="${portal:getSensorAcceptanceTable(pageContext.session)}"/>
+        <c:set var="ccdManuString" value="${portal:getHardwareTypesFromGroup(pageContext.session, 'Generic-CCD')}" scope="page" />
+        <sql:query var="manuQ" scope="page">
+            SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${ccdManuString} ORDER BY manufacturer;
+        </sql:query>
+
+            <filter:filterTable>
+                <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
+                <filter:filterSelection title="Manufacturer" var="manu" defaultValue="any">
+                    <filter:filterOption value="any">Any</filter:filterOption>
+                    <c:forEach var="hdw" items="${manuQ.rows}">
+                        <filter:filterOption value="${hdw.manufacturer}"><c:out value="${hdw.manufacturer}"/></filter:filterOption>
+                    </c:forEach>
+                </filter:filterSelection>
+                <filter:filterSelection title="PreshipAuthorized" var="authorized" defaultValue="0">
+                    <filter:filterOption value="0">Any</filter:filterOption>
+                    <filter:filterOption value="1">Authorized</filter:filterOption>
+                    <filter:filterOption value="2">Not Authorized</filter:filterOption>
+                </filter:filterSelection>
+                <filter:filterSelection title="Accepted" var="accept" defaultValue="0">
+                    <filter:filterOption value="0">Any</filter:filterOption>
+                    <filter:filterOption value="1">Accepted</filter:filterOption>
+                    <filter:filterOption value="2">Not Accepted</filter:filterOption>
+                </filter:filterSelection>
+                <filter:filterSelection title="NCRs" var="ncr" defaultValue="0">
+                    <filter:filterOption value="0">Any</filter:filterOption>
+                    <filter:filterOption value="1">No NCRs</filter:filterOption>
+                    <filter:filterOption value="2">Has NCRs</filter:filterOption>
+                </filter:filterSelection>
+            </filter:filterTable>
+
+        
+        <c:set var="sensorsWithAcceptance" value="${portal:getSensorAcceptanceTable(pageContext.session, lsst_num, manu, authorized, accept, ncr)}"/>
 
         <display:table name="${sensorsWithAcceptance}" export="true" class="datatable" id="sen" defaultsort="1" >
             <display:column title="Sensor" sortProperty="lsstId" sortable="true" class="sortable" >
