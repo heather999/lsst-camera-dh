@@ -23,11 +23,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Objects;
+import java.util.Arrays;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
 import org.lsst.camera.portal.data.SensorSummary;
 import org.lsst.camera.portal.queries.eTApi;
 import org.lsst.camera.portal.queries.QueryUtils;
+import org.lsst.camera.portal.queries.SummaryUtils;
 import org.lsst.camera.portal.data.ComponentData;
 import org.lsst.camera.portal.data.SensorAcceptanceData;
 import org.lsst.camera.portal.data.TravelerInfo;
@@ -110,6 +112,50 @@ public class SensorUtils {
         }
         return result;
     }
+    
+    public static Integer getTotalTestsPassed(HttpSession session, Integer actId) throws SQLException {
+        Integer numTestsPassed = 0;
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            Integer parentActId = 0;
+            Integer reportId = 1;
+
+            PreparedStatement parentActIdS = c.prepareStatement("select parentActivityId FROM Activity WHERE id=?");
+            parentActIdS.setInt(1, actId);
+            ResultSet r = parentActIdS.executeQuery();
+            if (r.first())
+                parentActId = r.getInt("parentActivityId");
+            else 
+                return -999;
+
+            Map<String, Map<String, List<Object>>> theMap = SummaryUtils.getReportValues(session,parentActId,reportId);
+            Specifications specs = SummaryUtils.getSpecifications(session, reportId);
+            
+            // Make a list of all specs we want to extract
+            List<String> ourSpecs = Arrays.asList("CCD-007", "CCD-008", "CCD-009", "CCD-010", "CCD-011", "CCD-012", "CCD-013", 
+                    "CCD-014", "CCD-021", "CCD-022", "CCD-023", "CCD-024", "CCD-025", "CCD-026", "CCD-027", "CCD-028");
+            
+            Iterator<String> specIterator = ourSpecs.iterator();
+            while (specIterator.hasNext()) {
+                String curSpec = specIterator.next();
+                 boolean ok = (boolean) JexlUtils.jexlEvaluateData(theMap, specs.getStatusExpression(curSpec)); 
+                 if (ok) ++numTestsPassed;
+            }
+            
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        
+        return numTestsPassed;
+
+    }
 
     public static List getSensorSummaryTable(HttpSession session, String db) throws SQLException {
         List<SensorSummary> result = new ArrayList<>();
@@ -136,6 +182,7 @@ public class SensorUtils {
             // Loop over all the sensors with read_noise data
             for (Map.Entry<String, Object> entry : allJhData.entrySet()) {
  
+                Integer parentActId = 0;
                 ArrayList< Map<String, Object>> curSchema = extractSchema((Map<String,Object>)entry.getValue(),entry.getKey(),"read_noise","read_noise");
                 double max_read_noise = 0.0d;
                 int max_amp = 0;
@@ -144,6 +191,7 @@ public class SensorUtils {
                     if ((Integer) m.get("schemaInstance") == 0) {
                         continue;
                     }
+                    parentActId = (Integer) m.get("activityId");
                     Double read_noise = (Double) m.get("read_noise");
                     Integer amp = (Integer) m.get("amp");
                     if (read_noise > max_read_noise) {
@@ -152,10 +200,16 @@ public class SensorUtils {
                     }
 
                 }
+                // Use the parentActId to extract the results of all the eotest specs and get a count
+                int numTestsPassed = -999;
+                if (parentActId > 0)
+                    numTestsPassed = getTotalTestsPassed(session, parentActId);
+                
                 SensorSummary sensorData = new SensorSummary();
                 sensorData.setLsstId(entry.getKey());
                 sensorData.setMaxReadNoiseChannel(max_amp);
                 sensorData.setMaxReadNoise(Double.parseDouble(df.format(max_read_noise)));
+                sensorData.setNumTestsPassed(numTestsPassed);
                 result.add(sensorData);
             }
 
