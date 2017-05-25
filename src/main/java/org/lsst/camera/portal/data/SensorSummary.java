@@ -16,7 +16,7 @@ public class SensorSummary {
     private String lsstId;
     private Integer maxReadNoiseChannel;
     private Double maxReadNoise;
-    private Double percentDefects;
+    private String percentDefects;
     private Integer numTestsPassed;
     
    
@@ -24,7 +24,7 @@ public class SensorSummary {
         lsstId = "";
         maxReadNoiseChannel = 0;
         maxReadNoise = 0.0d;
-        percentDefects = 0.0d;
+        percentDefects = "";
         numTestsPassed = 0;
     }
     
@@ -41,7 +41,7 @@ public class SensorSummary {
         maxReadNoise = val;
     }
     
-    public void setPercentDefects(Double p) {
+    public void setPercentDefects(String p) {
         percentDefects = p;
     }
     
@@ -50,12 +50,12 @@ public class SensorSummary {
     }
   
     
-    public void setValues(String id, Integer readNoiseChannel, Double readNoise, Double defects,
+    public void setValues(String id, Integer readNoiseChannel, Double readNoise, String defects,
             Integer numTests) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
         maxReadNoiseChannel = readNoiseChannel;
         maxReadNoise = readNoise;
-        percentDefects = defects;
+        percentDefects = defects == null || "".equals(defects) ? "NA" : defects;
         numTestsPassed = numTests;
     }
     
@@ -72,7 +72,7 @@ public class SensorSummary {
          return maxReadNoise;
     }
     
-    public Double getPercentDefects() {
+    public String getPercentDefects() {
         return percentDefects;
     }
     

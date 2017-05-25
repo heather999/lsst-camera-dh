@@ -45,6 +45,7 @@
     <display:table name="${sensorSummaryTable}" id="curSensor" class="datatable" export="true" >
         <display:column title="LSST_Num" sortable="true" >${curSensor.lsstId}</display:column>
         <display:column title="Num of Tests Passed" sortable="true" >${curSensor.numTestsPassed}</display:column>
+        <display:column title="Percent Defects" >${curSensor.percentDefects}</display:column>
         <display:column title="Max Read Noise" sortable="true" >${curSensor.maxReadNoise}</display:column>
         <display:column title="Max Read Noise Channel" sortable="true" >${curSensor.maxReadNoiseChannel}</display:column>
 
