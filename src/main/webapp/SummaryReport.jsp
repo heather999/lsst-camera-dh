@@ -19,6 +19,9 @@
         </style>
     </head>
     <body>
+        
+        <c:set var="printButtonAll" value="${param.printall}"/>
+        
         <fmt:setTimeZone value="UTC"/>
         <c:set var="debug" value="${param.debug}"/>
         <sql:query var="sensor">
@@ -81,8 +84,19 @@
                 </c:forEach>
             </c:if>
 
-            <ru:printButton/>
-            <h1>
+            <c:if test="${!printButtonAll}">
+                <ru:printButton/>  
+            </c:if>
+                 <p/>   
+            <c:if test="${printButtonAll}">
+                <h3>List of links to different subcomponent pages</h3>
+                <c:forEach var="jump" items="${subcomponents}">
+                    <a href="#${jump}">${jump}</a> <br/>
+                </c:forEach>
+           </c:if>
+            <p/>
+            
+            <h1 id="${param.component}">
                 ${reports.rows[0].report_title} <a href="device.jsp?lsstId=${lsstId}">${lsstId}</a> 
                 <c:if test="${!empty param.component}">component <a href="device.jsp?lsstId=${param.component}">${param.component}</a></c:if> 
                 run <a href="run.jsp?run=${param.run}">${param.run}</a>
@@ -152,6 +166,18 @@
             </c:if>
 
         </c:forEach>
+                    
+        <c:if test="${printButtonAll=='true'}">
+           <c:set var="baseURL" value="SummaryReport.jsp"/>
+           <c:forEach var="sub" items="${subcomponents}" varStatus="status">
+               <a href="id=${sub}">${sub}</a>
+               <jsp:include page="${baseURL}" flush="false">    
+               <jsp:param name="run" value="${param.run}"/>
+               <jsp:param name="component" value="${sub}"/>
+               </jsp:include> 
+           </c:forEach>
+        </c:if>
+                    
     </c:if>
 </body>
 </html>
