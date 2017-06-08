@@ -93,7 +93,6 @@ public class SensorUtils {
 
             HashMap<String, Object> stepMap = (HashMap<String, Object>) sensorResults.get("steps");
             HashMap<String, Object> readNoiseStep = (HashMap<String, Object>) stepMap.get("read_noise");
-            //HashMap<String, Object> readNoiseSchema = (HashMap<String, Object>) readNoiseStep.get("read_noise");
             ArrayList< Map<String, Object>> readNoiseSchema = (ArrayList< Map<String, Object>>) readNoiseStep.get("read_noise");
             double max_read_noise = 0.0f;
             int max_amp = 0;
@@ -153,6 +152,14 @@ public class SensorUtils {
         }
         return percentDefects;
 
+    }
+    
+    public static Integer getWorstCTI(String schema) {  // charge inefficiency
+        Integer worstChannel = 0;
+        
+        return worstChannel;
+        
+        
     }
 
     public static List getSensorSummaryTable(HttpSession session, String db) throws SQLException {

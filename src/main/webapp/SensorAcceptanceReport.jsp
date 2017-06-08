@@ -207,12 +207,19 @@
                 <h1>Sensor Acceptance Status <a href="${hdwLink}" target="_blank"><c:out value="${lsstId}"/></a></h1>
 
                 <c:if test="${HaveVendData}">
+                    <%-- Despite setting timezone to UTC this is being converted to another timezone
                     Generated Vendor-Vendor <fmt:formatDate value="${SRRCV1end}" pattern="yyy-MM-dd HH:mm z"/>
+                    --%>
+                    Generated Vendor-Vendor <c:out value="${SRRCV1end}"/> UTC
                     <br/>
                     <br/>
                 </c:if>
 
+                    <%--  This is converting the time to something other than UTC, despite timezone being set above
                 Generated Vendor-LSST <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/>
+                    --%>
+                    Generated Vendor-LSST <c:out value="${end}"/> UTC
+                
                         <font color="purple">
                         &nbsp;&nbsp;&nbsp;&nbsp
                         <b>eotest Version: <c:out value="${param.eotestVer}"/></b>
@@ -220,7 +227,10 @@
 
                 <c:if test="${HaveTS3Data}">
                     <br/>
+                    <%-- This is converting to a timezone other than UTC, despite timezone being set above
                     Generated LSST-LSST <fmt:formatDate value="${SREOT01end}" pattern="yyy-MM-dd HH:mm z"/>
+                    --%>
+                    Generated LSST-LSST <c:out value="${SREOT01end}"/> UTC
                     
                         <font color="purple">
                         &nbsp;&nbsp;&nbsp;&nbsp
