@@ -73,7 +73,7 @@ public class SensorUtils {
 
     public static ArrayList< Map<String, Object>> extractSchema(Map<String, Object> data, String lsstNum, String step, String schema) {
         try {
-            //HashMap<String, Object> sensorResults = (HashMap<String, Object>) data.get(lsstNum);
+            if (data == null) return null;
             HashMap<String, Object> allStepMap = (HashMap<String, Object>) data.get("steps");
             HashMap<String, Object> singleStepMap = (HashMap<String, Object>) allStepMap.get(step);
             ArrayList< Map<String, Object>> schemaMap = (ArrayList< Map<String, Object>>) singleStepMap.get(schema);
@@ -150,15 +150,37 @@ public class SensorUtils {
         } catch (Exception e) {
             return "NA";
         }
-        return percentDefects;
+        String truncStr = percentDefects.replace("defective pixels: ","");
+        return truncStr;
 
     }
     
-    public static Integer getWorstCTI(String schema) {  // charge inefficiency
-        Integer worstChannel = 0;
-        
+    public static Integer getWorstCTI(ArrayList< Map<String, Object>> data, String schemaLow, String schemaHigh) {  // charge inefficiency
+        Integer worstChannel = -999;
+        if (data == null) {
+            return worstChannel;
+        }
+        Double max_cti = Double.NEGATIVE_INFINITY;
+        for (Object obj : data) {
+            Map<String, Object> m = (Map<String, Object>) obj;
+            if ((Integer) m.get("schemaInstance") == 0) {
+                continue;
+            }
+            Double ctiLow = (Double) m.get(schemaLow);
+            Double ctiHigh = (Double) m.get(schemaHigh);
+            Integer amp = (Integer) m.get("amp");
+            if (ctiLow > max_cti) {
+                max_cti = ctiLow;
+                worstChannel = amp;
+            } else if (ctiHigh > max_cti) {
+                max_cti = ctiHigh;
+                worstChannel = amp;
+            }
+
+        }
+
         return worstChannel;
-        
+
         
     }
 
@@ -179,18 +201,30 @@ public class SensorUtils {
             //c = ConnectionManager.getConnection(session);
             DecimalFormat df = new DecimalFormat("##.#");
 
-            Map<String, Object> allJhData = new HashMap<String, Object>();
+            Map<String, Object> allReadNoiseJhData = new HashMap<String, Object>();
+            Map<String, Object> allCteJhData = new HashMap<String, Object>();
+
             Iterator<String> iterator = hardwareTypesList.iterator();
             while (iterator.hasNext()) { // loop over all the hardware types and retrieve their JH data for all sensors
                 String hdwType = iterator.next();
-                Map<String, Object> curJhData = getAllUsingStepAndSchema(hdwType, "SR-EOT-1", db, "read_noise", "read_noise", prodServer);
-                if (curJhData != null) {
-                    allJhData.putAll(curJhData);
+                Map<String, Object> curReadNoiseJhData = getAllUsingStepAndSchema(hdwType, "SR-EOT-1", db, "read_noise", "read_noise", prodServer);
+                if (curReadNoiseJhData != null) {
+                    allReadNoiseJhData.putAll(curReadNoiseJhData);
+                }
+                Map<String, Object> curCteJhData = getAllUsingStepAndSchema(hdwType, "SR-EOT-1", db, "cte", "cte", prodServer);
+                if (curCteJhData != null) {
+                    allCteJhData.putAll(curCteJhData);
                 }
             }
             // Loop over all the sensors with read_noise data
-            for (Map.Entry<String, Object> entry : allJhData.entrySet()) {
+            for (Map.Entry<String, Object> entry : allReadNoiseJhData.entrySet()) {
  
+                // Pull out CTE data if available
+                ArrayList< Map<String, Object>> curCteSchema = extractSchema((Map<String,Object>)allCteJhData.get(entry.getKey()),entry.getKey(),"cte","cte");
+                Integer worstHCTIChannel = getWorstCTI(curCteSchema, "cti_low_serial", "cti_high_serial");
+                Integer worstVCTIChannel = getWorstCTI(curCteSchema, "cti_low_parallel", "cti_high_parallel");
+
+                
                 Integer parentActId = 0;
                 ArrayList< Map<String, Object>> curSchema = extractSchema((Map<String,Object>)entry.getValue(),entry.getKey(),"read_noise","read_noise");
                 double max_read_noise = 0.0d;
@@ -232,6 +266,8 @@ public class SensorUtils {
                 sensorData.setMaxReadNoise(Double.parseDouble(df.format(max_read_noise)));
                 sensorData.setNumTestsPassed(numTestsPassed);
                 sensorData.setPercentDefects(percentDefects);
+                sensorData.setWorstHCTIChannel(worstHCTIChannel);
+                sensorData.setWorstVCTIChannel(worstVCTIChannel);
                 result.add(sensorData);
             }
 

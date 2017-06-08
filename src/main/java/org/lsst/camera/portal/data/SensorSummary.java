@@ -18,6 +18,8 @@ public class SensorSummary {
     private Double maxReadNoise;
     private String percentDefects;
     private Integer numTestsPassed;
+    private Integer worstHCTIChannel;  // serial charge inefficiency
+    private Integer worstVCTIChannel; // parallel charge inefficiency
     
    
     public void SensorSummary() {
@@ -26,6 +28,8 @@ public class SensorSummary {
         maxReadNoise = 0.0d;
         percentDefects = "";
         numTestsPassed = 0;
+        worstHCTIChannel = -999;
+        worstVCTIChannel = -999;
     }
     
     public void setLsstId(String id) {
@@ -48,8 +52,15 @@ public class SensorSummary {
     public void setNumTestsPassed(Integer num) {
         numTestsPassed = num;
     }
-  
     
+    public void setWorstHCTIChannel(Integer c) {
+        worstHCTIChannel = c;
+    }
+    
+    public void setWorstVCTIChannel(Integer c) {
+        worstVCTIChannel = c;
+    }
+  
     public void setValues(String id, Integer readNoiseChannel, Double readNoise, String defects,
             Integer numTests) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
@@ -75,9 +86,15 @@ public class SensorSummary {
     public String getPercentDefects() {
         return percentDefects;
     }
-    
     public Integer getNumTestsPassed() {
         return numTestsPassed;
     }
     
+    public Integer getWorstHCTIChannel() {
+        return worstHCTIChannel;
+    }
+    
+    public Integer getWorstVCTIChannel() {
+        return worstVCTIChannel;
+    }
 }
