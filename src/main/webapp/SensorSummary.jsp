@@ -43,8 +43,8 @@
     
   
   <c:set var="sensorSummaryTable" value="${sensorutils:getSensorSummaryTable(pageContext.session,appVariables.dataSourceMode)}"/>
-  <display:table name="${sensorSummaryTable}" id="curSensor" class="datatable" export="true" >
-      <display:column title="LSST_NUM" sortable="true" >
+  <display:table name="${sensorSummaryTable}" id="curSensor" defaultsort="1" class="datatable" export="true" >
+      <display:column title="LSST_NUM" sortable="true" sortProperty="lsstId" >
           <c:url var="hdwLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
               <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
               <c:param name="hardwareId" value="${curSensor.hardwareId}"/>
@@ -57,6 +57,13 @@
       <display:column title="VCTI Worst<br>Channel" >${curSensor.worstVCTIChannel}</display:column>
       <display:column title="Max Read Noise" sortable="true" >${curSensor.maxReadNoise}</display:column>
       <display:column title="Max Read Noise<br/>Channel" sortable="true" >${curSensor.maxReadNoiseChannel}</display:column>
+      <display:column title="Sensor Acceptance<br>Link" > 
+          <c:url var="acceptanceLink" value="SensorAcceptanceReport.jsp">
+              <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+              <c:param name="lsstId" value="${curSensor.lsstId}"/>
+          </c:url>
+          <a href="${acceptanceLink}" target="_blank"><c:out value="link"/></a>
+      </display:column>
 
   </display:table>
 
