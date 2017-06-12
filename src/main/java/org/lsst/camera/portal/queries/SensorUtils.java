@@ -38,19 +38,6 @@ import org.lsst.camera.portal.data.ComponentData;
 import org.lsst.camera.portal.data.SensorAcceptanceData;
 import org.lsst.camera.portal.data.TravelerInfo;
 
-/*import org.lsst.camera.portal.data.TravelerStatus;
- import org.lsst.camera.portal.data.HardwareStatus;
- import org.lsst.camera.portal.data.HdwStatusLoc;
- import org.lsst.camera.portal.data.HdwStatusRelationship;
- import org.lsst.camera.portal.data.Activity;
- import org.lsst.camera.portal.data.NcrData;
- import org.lsst.camera.portal.data.TravelerInfo;
- import org.lsst.camera.portal.data.ReportData;
- import org.lsst.camera.portal.data.TestReportPathData;
- import org.lsst.camera.portal.data.ComponentData;
- import org.lsst.camera.portal.data.CatalogFileData;
- import org.lsst.camera.portal.data.SensorAcceptanceData;
- */
 import org.srs.web.base.db.ConnectionManager;
 
 /**
@@ -220,6 +207,8 @@ public class SensorUtils {
             for (Map.Entry<String, Object> entry : allReadNoiseJhData.entrySet()) {
  
                 // Pull out CTE data if available
+                Map<String,Object> curCte = (Map<String,Object>)allCteJhData.get(entry.getKey());;
+                Integer hid = (Integer) curCte.get("hid");
                 ArrayList< Map<String, Object>> curCteSchema = extractSchema((Map<String,Object>)allCteJhData.get(entry.getKey()),entry.getKey(),"cte","cte");
                 Integer worstHCTIChannel = getWorstCTI(curCteSchema, "cti_low_serial", "cti_high_serial");
                 Integer worstVCTIChannel = getWorstCTI(curCteSchema, "cti_low_parallel", "cti_high_parallel");
@@ -262,6 +251,7 @@ public class SensorUtils {
                 
                 SensorSummary sensorData = new SensorSummary();
                 sensorData.setLsstId(entry.getKey());
+                sensorData.setHardwareId(hid);
                 sensorData.setMaxReadNoiseChannel(max_amp);
                 sensorData.setMaxReadNoise(Double.parseDouble(df.format(max_read_noise)));
                 sensorData.setNumTestsPassed(numTestsPassed);

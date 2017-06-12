@@ -41,22 +41,29 @@
     <display:table name="${jhschemaapi.entrySet()}" id="jhschemaapi"/> 
   --%>
     
-    <c:set var="sensorSummaryTable" value="${sensorutils:getSensorSummaryTable(pageContext.session,appVariables.dataSourceMode)}"/>
-    <display:table name="${sensorSummaryTable}" id="curSensor" class="datatable" export="true" >
-        <display:column title="LSST_Num" sortable="true" >${curSensor.lsstId}</display:column>
-        <display:column title="Num of Tests<br>Passed" sortable="true" >${curSensor.numTestsPassed}</display:column>
-        <display:column title="Percent Defects" >${curSensor.percentDefects}</display:column>
-        <display:column title="HCTI Worst<br>Channel" >${curSensor.worstHCTIChannel}</display:column>
-        <display:column title="VCTI Worst<br>Channel" >${curSensor.worstVCTIChannel}</display:column>
-        <display:column title="Max Read Noise" sortable="true" >${curSensor.maxReadNoise}</display:column>
-        <display:column title="Max Read Noise<br/>Channel" sortable="true" >${curSensor.maxReadNoiseChannel}</display:column>
-
-    </display:table>
-    
-    
-    
   
-    
+  <c:set var="sensorSummaryTable" value="${sensorutils:getSensorSummaryTable(pageContext.session,appVariables.dataSourceMode)}"/>
+  <display:table name="${sensorSummaryTable}" id="curSensor" class="datatable" export="true" >
+      <display:column title="LSST_NUM" sortable="true" >
+          <c:url var="hdwLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+              <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+              <c:param name="hardwareId" value="${curSensor.hardwareId}"/>
+          </c:url>
+          <a href="${hdwLink}" target="_blank"><c:out value="${curSensor.lsstId}"/></a>
+      </display:column>
+      <display:column title="Num of Tests<br>Passed" sortable="true" >${curSensor.numTestsPassed}</display:column>
+      <display:column title="Percent Defects" >${curSensor.percentDefects}</display:column>
+      <display:column title="HCTI Worst<br>Channel" >${curSensor.worstHCTIChannel}</display:column>
+      <display:column title="VCTI Worst<br>Channel" >${curSensor.worstVCTIChannel}</display:column>
+      <display:column title="Max Read Noise" sortable="true" >${curSensor.maxReadNoise}</display:column>
+      <display:column title="Max Read Noise<br/>Channel" sortable="true" >${curSensor.maxReadNoiseChannel}</display:column>
+
+  </display:table>
+
+
+
+
+
     </body>
 </html>
 

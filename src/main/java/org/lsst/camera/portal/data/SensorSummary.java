@@ -14,6 +14,7 @@ package org.lsst.camera.portal.data;
 public class SensorSummary {
     
     private String lsstId;
+    private Integer hardwareId;
     private Integer maxReadNoiseChannel;
     private Double maxReadNoise;
     private String percentDefects;
@@ -24,6 +25,7 @@ public class SensorSummary {
    
     public void SensorSummary() {
         lsstId = "";
+        hardwareId = 0;
         maxReadNoiseChannel = 0;
         maxReadNoise = 0.0d;
         percentDefects = "";
@@ -36,6 +38,9 @@ public class SensorSummary {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
     }
   
+    public void setHardwareId(Integer i) { 
+        hardwareId = i;
+    }
 
     public void setMaxReadNoiseChannel(Integer r) {
         maxReadNoiseChannel = r;
@@ -73,6 +78,10 @@ public class SensorSummary {
   
     public String getLsstId() {
         return lsstId;
+    }
+    
+    public Integer getHardwareId() {
+        return hardwareId;
     }
  
     public Integer getMaxReadNoiseChannel() {
