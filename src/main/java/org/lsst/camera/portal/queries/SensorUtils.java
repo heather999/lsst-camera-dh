@@ -47,11 +47,66 @@ import org.srs.web.base.db.ConnectionManager;
 public class SensorUtils {
     
     private static final Logger logger = Logger.getLogger(SensorUtils.class.getName());
+    
+    public static String getHardwareTypeFromId(HttpSession session, String lsstNum)  throws SQLException {
+        Connection c = null;
+
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            PreparedStatement idStatement = c.prepareStatement("SELECT HT.name FROM "
+                    + "Hardware H INNER JOIN HardwareType HT ON H.hardwareTypeId = HT.id "
+                    + "WHERE H.lsstId=?");
+            idStatement.setString(1, lsstNum);
+            ResultSet r = idStatement.executeQuery();
+            if (r.first()) 
+                return r.getString("name").toUpperCase();
+            else
+                return null;
+        } catch(Exception e) {            
+            return null;
+        } finally {
+            if (c != null) {
+                c.close();
+            }
+           
+        }
+    }
+    
+    public static String getEoTestVersion(HttpSession session, String traveler, String step, String lsstNum, String db, Boolean prodServer) {
+        String str = null;
+        Map<String, Object> result = null;
+        String schema = "package_versions";
+        try {
+            String hdwType = getHardwareTypeFromId(session, lsstNum);
+            if (hdwType == null) {
+                return null;
+            }
+            result = eTApi.getResultsJH_schema(db, prodServer, traveler, hdwType, step, schema, lsstNum);
+            ArrayList< Map<String, Object>> schemaMap = extractSchema(result, lsstNum, step, schema);
+            for (Object obj : schemaMap) {
+                Map<String, Object> m = (Map<String, Object>) obj;
+                if ((Integer) m.get("schemaInstance") == 0) {
+                    continue;
+                }
+                            // The format changed, so check for both
+                if ((str = (String)m.get("eotest_version")) != null)
+                    return str;
+                else if (m.get("eotest") != null) {
+                    return ((String) m.get("version"));
+                }
+            }
+        } catch (Exception e) {
+            return null;
+        }
+        return str;
+    }
 
     public static Map getAllUsingStepAndSchema(String hdwType, String traveler, String db, String step, String schema, Boolean prodServer) {
         Map<String, Object> result = null;
         try {
             result = eTApi.getResultsJH_schema(db, prodServer, traveler, hdwType, step, schema, null);
+            
         } catch (Exception e) {
             return null;
         }

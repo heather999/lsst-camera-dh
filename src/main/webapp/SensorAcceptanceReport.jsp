@@ -9,6 +9,8 @@
 <%@taglib prefix="dp" tagdir="/WEB-INF/tags/dataportal"%>
 <%@taglib prefix="ru" tagdir="/WEB-INF/tags/reports"%>
 <%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
+<%@taglib prefix="sensorutils" uri="http://camera.lsst.org/sensorutils" %>
+
 
 <html>
     <head>

@@ -45,9 +45,9 @@
   <c:set var="sensorSummaryTable" value="${sensorutils:getSensorSummaryTable(pageContext.session,appVariables.dataSourceMode)}"/>
   <display:table name="${sensorSummaryTable}" id="curSensor" defaultsort="1" class="datatable" export="true" >
       <display:column title="LSST_NUM" sortable="true" sortProperty="lsstId" >
-          <c:url var="hdwLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+          <c:url var="hdwLink" value="/device.jsp">
               <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
-              <c:param name="hardwareId" value="${curSensor.hardwareId}"/>
+              <c:param name="lsstId" value="${curSensor.lsstId}"/>
           </c:url>
           <a href="${hdwLink}" target="_blank"><c:out value="${curSensor.lsstId}"/></a>
       </display:column>
