@@ -83,7 +83,7 @@ public class SensorUtils {
                 return null;
             }
             result = eTApi.getResultsJH_schema(db, prodServer, traveler, hdwType, step, schema, lsstNum);
-            ArrayList< Map<String, Object>> schemaMap = extractSchema(result, lsstNum, step, schema);
+            ArrayList< Map<String, Object>> schemaMap = extractSchema((Map<String,Object>) result.get(lsstNum), lsstNum, step, schema);
             for (Object obj : schemaMap) {
                 Map<String, Object> m = (Map<String, Object>) obj;
                 if ((Integer) m.get("schemaInstance") == 0) {

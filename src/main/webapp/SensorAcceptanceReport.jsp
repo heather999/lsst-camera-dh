@@ -113,21 +113,14 @@
             <c:if test="${sensorTS3.rowCount>0}">
                 <c:set var="HaveTS3Data" value="true"/>
                 <c:set var="SREOT01end" value="${sensorTS3.rows[0].end}"/>  
-                
-                 <sql:query var="eotestTS3VerQ">
-                SELECT name, value FROM StringResultHarnessed 
-                WHERE activityId=? AND name="eotest_version"
-                <sql:param value="${TS3ActId}"/>
-            </sql:query>
-                <c:if test="${eotestTS3VerQ.rowCount>0}">
-                    <c:set var="eotestTS3Version" value="${eotestTS3VerQ.rows[0].value}"/>
-                    eotestTS3Version = ${eotestTS3Version}
-                </c:if>
-                <%--
-                pActId2 = ${pActId2}
-                ${HaveTS3Data}
-                rowCount ${sensorTS3.rowCount}
-                --%>
+                <c:choose>
+                    <c:when test = "${empty param.ts3eotestVer}">
+                        <c:set var="ts3eotestVer" value="${sensorutils:getEoTestVersion(pageContext.session, 'SR-EOT-1', 'test_report', lsstId, appVariables.dataSourceMode, true)}"/>
+                    </c:when>
+                    <c:otherwise>
+                         <c:set var="ts3eotestVer" value="${param.ts3eotestVer}"/>   
+                    </c:otherwise>
+                </c:choose>
             </c:if>
         </c:if>
 
@@ -236,7 +229,7 @@
                     
                         <font color="purple">
                         &nbsp;&nbsp;&nbsp;&nbsp
-                        <b>eotest Version: <c:out value="${param.ts3eotestVer}"/></b>
+                        <b>eotest Version: <c:out value="${ts3eotestVer}"/></b>
                     </font>
                     <br/>
                 </c:if>

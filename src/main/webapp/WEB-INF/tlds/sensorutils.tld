@@ -12,7 +12,7 @@
     <function>
         <name>getEoTestVersion</name>
         <function-class>org.lsst.camera.portal.queries.SensorUtils</function-class>
-        <function-signature>java.lang.String getEoTestVersion(java.servlet.http.HttpSession,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean)
+        <function-signature>java.lang.String getEoTestVersion(javax.servlet.http.HttpSession,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean)
         </function-signature>
     </function>
     <function>
