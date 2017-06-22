@@ -92,8 +92,10 @@ public class SensorUtils {
                             // The format changed, so check for both
                 if ((str = (String)m.get("eotest_version")) != null)
                     return str;
-                else if (m.get("eotest") != null) {
-                    return ((String) m.get("version"));
+                //else if (m.get("eotest") != null) {
+                //    return ((String) m.get("version"));
+                else if (((String)m.get("package")).equals("eotest")) {
+                    return ((String)m.get("version"));
                 }
             }
         } catch (Exception e) {

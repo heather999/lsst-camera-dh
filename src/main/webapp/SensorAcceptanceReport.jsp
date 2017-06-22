@@ -215,9 +215,18 @@
                     --%>
                     Generated Vendor-LSST <c:out value="${end}"/> UTC
                 
+                    <c:choose>
+                    <c:when test = "${empty param.eotestVer}">
+                        <c:set var="eotestVer" value="${sensorutils:getEoTestVersion(pageContext.session, 'SR-EOT-02', 'test_report_offline', lsstId, appVariables.dataSourceMode, true)}"/>
+                    </c:when>
+                    <c:otherwise>
+                         <c:set var="eotestVer" value="${param.eotestVer}"/>   
+                    </c:otherwise>
+                </c:choose>
+                    
                         <font color="purple">
                         &nbsp;&nbsp;&nbsp;&nbsp
-                        <b>eotest Version: <c:out value="${param.eotestVer}"/></b>
+                        <b>eotest Version: <c:out value="${eotestVer}"/></b>
                     </font>
 
                 <c:if test="${HaveTS3Data}">
