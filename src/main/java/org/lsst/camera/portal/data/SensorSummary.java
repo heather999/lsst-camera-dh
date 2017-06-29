@@ -17,10 +17,14 @@ public class SensorSummary {
     private Integer hardwareId;
     private Integer maxReadNoiseChannel;
     private Double maxReadNoise;
+    private Boolean passedReadNoise;
     private String percentDefects;
+    private Boolean passedPercentDefects;
     private Integer numTestsPassed;
     private Integer worstHCTIChannel;  // serial charge inefficiency
+    private Boolean passedHCTI;
     private Integer worstVCTIChannel; // parallel charge inefficiency
+    private Boolean passedVCTI;
     
    
     public void SensorSummary() {
@@ -32,6 +36,10 @@ public class SensorSummary {
         numTestsPassed = 0;
         worstHCTIChannel = -999;
         worstVCTIChannel = -999;
+        passedReadNoise = false;
+        passedHCTI = false;
+        passedVCTI = false;
+        passedPercentDefects = false;
     }
     
     public void setLsstId(String id) {
@@ -65,7 +73,24 @@ public class SensorSummary {
     public void setWorstVCTIChannel(Integer c) {
         worstVCTIChannel = c;
     }
+    
+    public void setPassedReadNoise(Boolean b) {
+        passedReadNoise = b;
+    }
+    
+    public void setPassedVCTI(Boolean b) {
+        passedVCTI = b;
+    }
+    
+    public void setPassedHCTI(Boolean b) {
+        passedHCTI = b;
+    }
   
+    public void setPassedPercentDefects(Boolean b) {
+        passedPercentDefects = b;
+    }
+            
+    
     public void setValues(String id, Integer readNoiseChannel, Double readNoise, String defects,
             Integer numTests) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
@@ -105,5 +130,21 @@ public class SensorSummary {
     
     public Integer getWorstVCTIChannel() {
         return worstVCTIChannel;
+    }
+
+    public Boolean getPassedReadNoise() {
+        return passedReadNoise;
+    }
+
+    public Boolean getPassedHCTI() {
+        return passedHCTI;
+    }
+
+    public Boolean getPassedVCTI() {
+        return passedVCTI;
+    }
+    
+    public Boolean getPassedPercentDefects() { 
+        return passedPercentDefects;
     }
 }

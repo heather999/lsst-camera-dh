@@ -160,10 +160,19 @@ public class SensorUtils {
         return result;
     }
     
-    public static Integer getTotalTestsPassed(HttpSession session, Map<String, Map<String, List<Object>>> theMap, Specifications specs) {
+    public static Boolean getTestResult(Map<String, Map<String, List<Object>>> theMap, Specifications specs, String curSpec) {
+        Boolean passed = false;
+        try {
+            passed = (boolean) JexlUtils.jexlEvaluateData(theMap, specs.getStatusExpression(curSpec));
+        } catch (Exception e) {
+            return false;
+        }
+        return passed;
+    }
+    
+    public static Integer getTotalTestsPassed(Map<String, Map<String, List<Object>>> theMap, Specifications specs) {
         Integer numTestsPassed = 0;
 
-        Integer reportId = 1;
         // Make a list of all specs we want to extract
         List<String> ourSpecs = Arrays.asList("CCD-007", "CCD-008", "CCD-009", "CCD-010", "CCD-011", "CCD-012",
                 "CCD-014", "CCD-021", "CCD-022", "CCD-023", "CCD-024", "CCD-025", "CCD-026", "CCD-027", "CCD-028");
@@ -292,6 +301,10 @@ public class SensorUtils {
                 // Use the parentActId to extract the results of all the eotest specs and get a count
                 int numTestsPassed = -999;
                 String percentDefects = "NA";
+                Boolean passedReadNoise = false;
+                Boolean passedHCTI = false;
+                Boolean passedVCTI = false;
+                Boolean passedPercentDefects = false;
                 int actIdForSpecs = 0;
                 if (parentActId > 0) {
                     PreparedStatement parentActIdS = c.prepareStatement("select parentActivityId FROM Activity WHERE id=?");
@@ -302,7 +315,12 @@ public class SensorUtils {
                     } 
                     Map<String, Map<String, List<Object>>> theMap = SummaryUtils.getReportValues(session, actIdForSpecs, reportId);
  
-                    numTestsPassed = getTotalTestsPassed(session, theMap, specs);
+                    numTestsPassed = getTotalTestsPassed(theMap, specs);
+                    passedReadNoise = getTestResult(theMap, specs, "CCD-007");
+                    passedVCTI = getTestResult(theMap, specs, "CCD-011");
+                    passedHCTI = getTestResult(theMap, specs, "CCD-010");
+                    passedPercentDefects = getTestResult(theMap, specs, "CCD-012");
+
                     percentDefects = getPercentDefects(session, theMap, specs);
                 }
                 
@@ -315,6 +333,10 @@ public class SensorUtils {
                 sensorData.setPercentDefects(percentDefects);
                 sensorData.setWorstHCTIChannel(worstHCTIChannel);
                 sensorData.setWorstVCTIChannel(worstVCTIChannel);
+                sensorData.setPassedReadNoise(passedReadNoise);
+                sensorData.setPassedHCTI(passedHCTI);
+                sensorData.setPassedVCTI(passedVCTI);
+                sensorData.setPassedPercentDefects(passedPercentDefects);
                 result.add(sensorData);
             }
 

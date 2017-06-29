@@ -51,11 +51,77 @@
           </c:url>
           <a href="${hdwLink}" target="_blank"><c:out value="${curSensor.lsstId}"/></a>
       </display:column>
-      <display:column title="Specs<br>Passed" sortable="true" >${curSensor.numTestsPassed}</display:column>
-      <display:column title="Percent Defects" >${curSensor.percentDefects}</display:column>
-      <display:column title="HCTI Worst<br>Channel" >${curSensor.worstHCTIChannel}</display:column>
-      <display:column title="VCTI Worst<br>Channel" >${curSensor.worstVCTIChannel}</display:column>
-      <display:column title="Max Read Noise" sortable="true" >${curSensor.maxReadNoise}</display:column>
+      <display:column title="Specs<br>Passed" sortable="true" >
+          <c:choose>
+              <c:when test="${curSensor.numTestsPassed == 15}">
+                  <font color="green">
+                  ${curSensor.numTestsPassed}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.numTestsPassed}
+                  </font>
+              </c:otherwise>
+          </c:choose>
+      </display:column>
+      <display:column title="HCTI Worst<br>Channel" >
+          <c:choose>
+              <c:when test="${curSensor.passedHCTI}">
+                  <font color="green">
+                  ${curSensor.worstHCTIChannel}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.worstHCTIChannel}
+                  </font>
+              </c:otherwise>
+          </c:choose>
+      </display:column>
+      <display:column title="VCTI Worst<br>Channel" >
+          <c:choose>
+              <c:when test="${curSensor.passedVCTI}">
+                  <font color="green">
+                  ${curSensor.worstVCTIChannel}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.worstVCTIChannel}
+                  </font>
+              </c:otherwise>
+          </c:choose>        
+      </display:column>
+      <display:column title="Percent Defects" >
+          <c:choose>
+              <c:when test="${curSensor.passedPercentDefects}">
+                  <font color="green">
+                  ${curSensor.percentDefects}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.percentDefects}
+                  </font>
+              </c:otherwise>
+          </c:choose>      
+      </display:column>
+      <display:column title="Max Read Noise" sortable="true" >
+          <c:choose>
+              <c:when test="${curSensor.passedReadNoise}">
+                  <font color="green">
+                  ${curSensor.maxReadNoise}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.maxReadNoise}
+                  </font>
+              </c:otherwise>
+          </c:choose>
+
+      </display:column>
       <display:column title="Max Read Noise<br/>Channel" sortable="true" >${curSensor.maxReadNoiseChannel}</display:column>
       <display:column title="Sensor Acceptance<br>Link" > 
           <c:url var="acceptanceLink" value="SensorAcceptanceReport.jsp">
@@ -74,4 +140,3 @@
     </body>
 </html>
 
- 
