@@ -51,7 +51,7 @@
           </c:url>
           <a href="${hdwLink}" target="_blank"><c:out value="${curSensor.lsstId}"/></a>
       </display:column>
-      <display:column title="Num of Tests<br>Passed" sortable="true" >${curSensor.numTestsPassed}</display:column>
+      <display:column title="Specs<br>Passed" sortable="true" >${curSensor.numTestsPassed}</display:column>
       <display:column title="Percent Defects" >${curSensor.percentDefects}</display:column>
       <display:column title="HCTI Worst<br>Channel" >${curSensor.worstHCTIChannel}</display:column>
       <display:column title="VCTI Worst<br>Channel" >${curSensor.worstVCTIChannel}</display:column>
