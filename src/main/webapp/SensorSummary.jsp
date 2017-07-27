@@ -51,7 +51,7 @@
           </c:url>
           <a href="${hdwLink}" target="_blank"><c:out value="${curSensor.lsstId}"/></a>
       </display:column>
-      <display:column title="Specs<br>Passed" sortable="true" >
+      <display:column title="Specs<br>Passed<br>15" sortable="true" >
           <c:choose>
               <c:when test="${curSensor.numTestsPassed == 15}">
                   <font color="green">
@@ -65,30 +65,30 @@
               </c:otherwise>
           </c:choose>
       </display:column>
-      <display:column title="HCTI Worst<br>Channel" >
+      <display:column title="HCTI<br>Value/Channel" >
           <c:choose>
               <c:when test="${curSensor.passedHCTI}">
                   <font color="green">
-                  ${curSensor.worstHCTIChannel}
+                  ${curSensor.worstHCTI} / ${curSensor.worstHCTIChannel}
                   </font>
               </c:when>
               <c:otherwise>
                   <font color="red">
-                  ${curSensor.worstHCTIChannel}
+                  ${curSensor.worstHCTI} / ${curSensor.worstHCTIChannel}
                   </font>
               </c:otherwise>
           </c:choose>
       </display:column>
-      <display:column title="VCTI Worst<br>Channel" >
+      <display:column title="VCTI<br>Value/Channel" >
           <c:choose>
               <c:when test="${curSensor.passedVCTI}">
                   <font color="green">
-                  ${curSensor.worstVCTIChannel}
+                  ${curSensor.worstVCTI} / ${curSensor.worstVCTIChannel}
                   </font>
               </c:when>
               <c:otherwise>
                   <font color="red">
-                  ${curSensor.worstVCTIChannel}
+                  ${curSensor.worstVCTI} / ${curSensor.worstVCTIChannel}
                   </font>
               </c:otherwise>
           </c:choose>        

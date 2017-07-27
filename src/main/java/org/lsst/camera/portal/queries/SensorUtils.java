@@ -208,10 +208,13 @@ public class SensorUtils {
 
     }
     
-    public static Integer getWorstCTI(ArrayList< Map<String, Object>> data, String schemaLow, String schemaHigh) {  // charge inefficiency
+    public static Map getWorstCTI(ArrayList< Map<String, Object>> data, String schemaLow, String schemaHigh) {  // charge inefficiency
+        Map<Integer, String> pairResult = new HashMap<>();
+        DecimalFormat df = new DecimalFormat("###.#");
+
         Integer worstChannel = -999;
         if (data == null) {
-            return worstChannel;
+            return null;
         }
         Double max_cti = Double.NEGATIVE_INFINITY;
         for (Object obj : data) {
@@ -231,8 +234,8 @@ public class SensorUtils {
             }
 
         }
-
-        return worstChannel;
+        pairResult.put(worstChannel, df.format(max_cti * 1000000));
+        return pairResult;
 
         
     }
@@ -276,8 +279,8 @@ public class SensorUtils {
                 Map<String,Object> curCte = (Map<String,Object>)allCteJhData.get(entry.getKey());;
                 Integer hid = (Integer) curCte.get("hid");
                 ArrayList< Map<String, Object>> curCteSchema = extractSchema((Map<String,Object>)allCteJhData.get(entry.getKey()),entry.getKey(),"cte","cte");
-                Integer worstHCTIChannel = getWorstCTI(curCteSchema, "cti_low_serial", "cti_high_serial");
-                Integer worstVCTIChannel = getWorstCTI(curCteSchema, "cti_low_parallel", "cti_high_parallel");
+                Map<Integer, String> worstHCTI = getWorstCTI(curCteSchema, "cti_low_serial", "cti_high_serial");
+                Map<Integer, String> worstVCTI = getWorstCTI(curCteSchema, "cti_low_parallel", "cti_high_parallel");
 
                 
                 Integer parentActId = 0;
@@ -331,8 +334,14 @@ public class SensorUtils {
                 sensorData.setMaxReadNoise(Double.parseDouble(df.format(max_read_noise)));
                 sensorData.setNumTestsPassed(numTestsPassed);
                 sensorData.setPercentDefects(percentDefects);
-                sensorData.setWorstHCTIChannel(worstHCTIChannel);
-                sensorData.setWorstVCTIChannel(worstVCTIChannel);
+                if (worstHCTI != null) {
+                    sensorData.setWorstHCTIChannel((Integer)worstHCTI.keySet().iterator().next());
+                    sensorData.setWorstHCTI((String)worstHCTI.values().iterator().next());
+                }
+                if (worstVCTI != null) {
+                    sensorData.setWorstVCTIChannel((Integer)worstVCTI.keySet().iterator().next());
+                    sensorData.setWorstVCTI((String)worstVCTI.values().iterator().next());
+                }
                 sensorData.setPassedReadNoise(passedReadNoise);
                 sensorData.setPassedHCTI(passedHCTI);
                 sensorData.setPassedVCTI(passedVCTI);

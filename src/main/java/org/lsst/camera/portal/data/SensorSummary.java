@@ -22,8 +22,10 @@ public class SensorSummary {
     private Boolean passedPercentDefects;
     private Integer numTestsPassed;
     private Integer worstHCTIChannel;  // serial charge inefficiency
+    private String worstHCTI;
     private Boolean passedHCTI;
     private Integer worstVCTIChannel; // parallel charge inefficiency
+    private String worstVCTI;
     private Boolean passedVCTI;
     
    
@@ -36,6 +38,8 @@ public class SensorSummary {
         numTestsPassed = 0;
         worstHCTIChannel = -999;
         worstVCTIChannel = -999;
+        worstHCTI = "";
+        worstVCTI = "";
         passedReadNoise = false;
         passedHCTI = false;
         passedVCTI = false;
@@ -70,8 +74,16 @@ public class SensorSummary {
         worstHCTIChannel = c;
     }
     
+    public void setWorstHCTI(String d) {
+        worstHCTI = d;
+    }
+    
     public void setWorstVCTIChannel(Integer c) {
         worstVCTIChannel = c;
+    }
+    
+    public void setWorstVCTI(String d) {
+        worstVCTI = d;
     }
     
     public void setPassedReadNoise(Boolean b) {
@@ -124,8 +136,16 @@ public class SensorSummary {
         return numTestsPassed;
     }
     
+    public String getWorstHCTI () {
+        return worstHCTI;
+    }
+    
     public Integer getWorstHCTIChannel() {
         return worstHCTIChannel;
+    }
+    
+    public String getWorstVCTI() {
+        return worstVCTI;
     }
     
     public Integer getWorstVCTIChannel() {
