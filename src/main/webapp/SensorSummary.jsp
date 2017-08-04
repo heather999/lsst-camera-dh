@@ -130,7 +130,7 @@
           </c:url>
           <a href="${acceptanceLink}" target="_blank"><c:out value="link"/></a>
       </display:column>
-
+      <display:column title="Data Source" sortable="true">${curSensor.dataSource}</display:column>
   </display:table>
 
 

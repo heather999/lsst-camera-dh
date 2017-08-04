@@ -19,4 +19,4 @@
 <head>
     <title>Corner Raft Overview</title>
 </head>
-<dp:subsystem sub="Corner Raft" explorer="oneCrComponent.jsp" title="Corner Raft Sensor Current Status"/>
+<dp:subsystem sub="Corner Raft" subname="Corner Raft" explorer="oneCrComponent.jsp" title="Corner Raft Sensor Current Status"/>

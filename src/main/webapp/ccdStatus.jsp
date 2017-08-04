@@ -20,6 +20,6 @@
     <title>Science Raft Sensor Overview</title>
 </head>
 
-<dp:subsystem sub="Generic-CCD" explorer="oneComponent.jsp" bygroup="1" title="Science Raft Sensor Current Status and Location" />
+<dp:subsystem sub="Generic-CCD" subname="Science Raft" explorer="oneComponent.jsp" bygroup="1" title="Science Raft Sensor Current Status and Location" />
 
 

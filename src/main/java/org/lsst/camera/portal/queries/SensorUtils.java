@@ -207,7 +207,7 @@ public class SensorUtils {
         return truncStr;
 
     }
-    
+
     public static Map getWorstCTI(ArrayList< Map<String, Object>> data, String schemaLow, String schemaHigh) {  // charge inefficiency
         Map<Integer, String> pairResult = new HashMap<>();
         DecimalFormat df = new DecimalFormat("###.#");
@@ -237,12 +237,92 @@ public class SensorUtils {
         pairResult.put(worstChannel, df.format(max_cti * 1000000));
         return pairResult;
 
-        
+    }
+
+    public static SensorSummary processSensor(Map.Entry<String, Object> entry, Map<String, Object> allCteJhData, Connection c, HttpSession session, int reportId, Specifications specs) throws SQLException {
+        SensorSummary sensorData = null;
+        DecimalFormat df = new DecimalFormat("##.#");
+
+
+        try {
+            // Pull out CTE data if available
+            Map<String, Object> curCte = (Map<String, Object>) allCteJhData.get(entry.getKey());
+            Integer hid = (Integer) curCte.get("hid");
+            ArrayList< Map<String, Object>> curCteSchema = extractSchema((Map<String, Object>) allCteJhData.get(entry.getKey()), entry.getKey(), "cte", "cte");
+            Map<Integer, String> worstHCTI = getWorstCTI(curCteSchema, "cti_low_serial", "cti_high_serial");
+            Map<Integer, String> worstVCTI = getWorstCTI(curCteSchema, "cti_low_parallel", "cti_high_parallel");
+
+            Integer parentActId = 0;
+            ArrayList< Map<String, Object>> curSchema = extractSchema((Map<String, Object>) entry.getValue(), entry.getKey(), "read_noise", "read_noise");
+            double max_read_noise = 0.0d;
+            int max_amp = 0;
+            for (Object obj : curSchema) {
+                Map<String, Object> m = (Map<String, Object>) obj;
+                if ((Integer) m.get("schemaInstance") == 0) {
+                    continue;
+                }
+                parentActId = (Integer) m.get("activityId");
+                Double read_noise = (Double) m.get("read_noise");
+                Integer amp = (Integer) m.get("amp");
+                if (read_noise > max_read_noise) {
+                    max_read_noise = read_noise;
+                    max_amp = amp;
+                }
+
+            }
+            // Use the parentActId to extract the results of all the eotest specs and get a count
+            int numTestsPassed = -999;
+            String percentDefects = "NA";
+            Boolean passedReadNoise = false;
+            Boolean passedHCTI = false;
+            Boolean passedVCTI = false;
+            Boolean passedPercentDefects = false;
+            int actIdForSpecs = 0;
+            if (parentActId > 0) {
+                PreparedStatement parentActIdS = c.prepareStatement("select parentActivityId FROM Activity WHERE id=?");
+                parentActIdS.setInt(1, parentActId);
+                ResultSet r = parentActIdS.executeQuery();
+                if (r.first()) {
+                    actIdForSpecs = r.getInt("parentActivityId");
+                }
+                Map<String, Map<String, List<Object>>> theMap = SummaryUtils.getReportValues(session, actIdForSpecs, reportId);
+
+                numTestsPassed = getTotalTestsPassed(theMap, specs);
+                passedReadNoise = getTestResult(theMap, specs, "CCD-007");
+                passedVCTI = getTestResult(theMap, specs, "CCD-011");
+                passedHCTI = getTestResult(theMap, specs, "CCD-010");
+                passedPercentDefects = getTestResult(theMap, specs, "CCD-012");
+
+                percentDefects = getPercentDefects(session, theMap, specs);
+            }
+
+            sensorData = new SensorSummary();
+            sensorData.setLsstId(entry.getKey());
+            sensorData.setHardwareId(hid);
+            sensorData.setMaxReadNoiseChannel(max_amp);
+            sensorData.setMaxReadNoise(Double.parseDouble(df.format(max_read_noise)));
+            sensorData.setNumTestsPassed(numTestsPassed);
+            sensorData.setPercentDefects(percentDefects);
+            if (worstHCTI != null) {
+                sensorData.setWorstHCTIChannel((Integer) worstHCTI.keySet().iterator().next());
+                sensorData.setWorstHCTI((String) worstHCTI.values().iterator().next());
+            }
+            if (worstVCTI != null) {
+                sensorData.setWorstVCTIChannel((Integer) worstVCTI.keySet().iterator().next());
+                sensorData.setWorstVCTI((String) worstVCTI.values().iterator().next());
+            }
+            sensorData.setPassedReadNoise(passedReadNoise);
+            sensorData.setPassedHCTI(passedHCTI);
+            sensorData.setPassedVCTI(passedVCTI);
+            sensorData.setPassedPercentDefects(passedPercentDefects);
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "**Error while creating Sensor Summary Table: ", e);
+        }
+        return (sensorData);
     }
 
     public static List getSensorSummaryTable(HttpSession session, String db) throws SQLException {
         List<SensorSummary> result = new ArrayList<>();
-        //HashMap<Integer, Boolean> sensorsFound = new HashMap<>();
 
         Boolean prodServer = true;
         Connection c = null;
@@ -259,6 +339,9 @@ public class SensorUtils {
 
             Map<String, Object> allReadNoiseJhData = new HashMap<String, Object>();
             Map<String, Object> allCteJhData = new HashMap<String, Object>();
+            
+            Map<String, Object> allReadNoiseJhVendor = new HashMap<String, Object>();
+            Map<String, Object> allCteJhVendor = new HashMap<String, Object>();
 
             Iterator<String> iterator = hardwareTypesList.iterator();
             while (iterator.hasNext()) { // loop over all the hardware types and retrieve their JH data for all sensors
@@ -271,12 +354,29 @@ public class SensorUtils {
                 if (curCteJhData != null) {
                     allCteJhData.putAll(curCteJhData);
                 }
+                // Repeat for SR-EOT-02 vendor eotest
+                Map<String, Object> curReadNoiseJhVendor = getAllUsingStepAndSchema(hdwType, "SR-EOT-02", db, "read_noise", "read_noise", prodServer);
+                if (curReadNoiseJhVendor != null) {
+                    allReadNoiseJhVendor.putAll(curReadNoiseJhVendor);
+                 } 
+                Map<String, Object> curCteJhVendor = getAllUsingStepAndSchema(hdwType, "SR-EOT-02", db, "cte_vendorIngest", "cte_vendorIngest", prodServer);
+                if (curCteJhVendor != null) {
+                    allCteJhVendor.putAll(curCteJhVendor);
+                }
             }
-            // Loop over all the sensors with read_noise data
+             
+            // Remove all the sensors with TS3 data from the map of vendor data
+            allReadNoiseJhVendor.keySet().removeAll(allReadNoiseJhData.keySet());
+            allCteJhVendor.keySet().removeAll(allCteJhData.keySet());
+            
+            // Loop over all the sensors with TS3 read_noise data
             for (Map.Entry<String, Object> entry : allReadNoiseJhData.entrySet()) {
  
+                SensorSummary sensorData = processSensor(entry, allCteJhData, c, session, reportId, specs);
+                
                 // Pull out CTE data if available
-                Map<String,Object> curCte = (Map<String,Object>)allCteJhData.get(entry.getKey());;
+                /*
+                Map<String,Object> curCte = (Map<String,Object>)allCteJhData.get(entry.getKey());
                 Integer hid = (Integer) curCte.get("hid");
                 ArrayList< Map<String, Object>> curCteSchema = extractSchema((Map<String,Object>)allCteJhData.get(entry.getKey()),entry.getKey(),"cte","cte");
                 Map<Integer, String> worstHCTI = getWorstCTI(curCteSchema, "cti_low_serial", "cti_high_serial");
@@ -346,7 +446,20 @@ public class SensorUtils {
                 sensorData.setPassedHCTI(passedHCTI);
                 sensorData.setPassedVCTI(passedVCTI);
                 sensorData.setPassedPercentDefects(passedPercentDefects);
-                result.add(sensorData);
+                        */
+                if (sensorData != null) {
+                    sensorData.setDataSource("TS3");
+                    result.add(sensorData);
+                }
+            
+            }
+            for (Map.Entry<String, Object> entry : allReadNoiseJhVendor.entrySet()) {
+ 
+                SensorSummary sensorData = processSensor(entry, allCteJhVendor, c, session, reportId, specs);
+                if (sensorData != null) {
+                    sensorData.setDataSource("Vendor");
+                    result.add(sensorData);
+                }
             }
 
             return result;

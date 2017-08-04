@@ -27,7 +27,7 @@ public class SensorSummary {
     private Integer worstVCTIChannel; // parallel charge inefficiency
     private String worstVCTI;
     private Boolean passedVCTI;
-    
+    private String dataSource;    
    
     public void SensorSummary() {
         lsstId = "";
@@ -44,6 +44,7 @@ public class SensorSummary {
         passedHCTI = false;
         passedVCTI = false;
         passedPercentDefects = false;
+        dataSource = "TS3";
     }
     
     public void setLsstId(String id) {
@@ -102,6 +103,9 @@ public class SensorSummary {
         passedPercentDefects = b;
     }
             
+    public void setDataSource(String s) {
+        dataSource = s == null || "".equals(s) ? "NA" : s; 
+    }
     
     public void setValues(String id, Integer readNoiseChannel, Double readNoise, String defects,
             Integer numTests) {
@@ -166,5 +170,9 @@ public class SensorSummary {
     
     public Boolean getPassedPercentDefects() { 
         return passedPercentDefects;
+    }
+    
+    public String getDataSource() {
+        return dataSource;
     }
 }

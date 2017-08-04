@@ -52,9 +52,11 @@
         </filter:filterSelection>
         <filter:filterSelection title="Labels" var="labelId" defaultValue="0">
             <filter:filterOption value="0">Any</filter:filterOption>
+            <%-- HMK Aug 4 2017 disabling labels for now
             <c:forEach var="label" items="${labelQ.rows}">
                 <filter:filterOption value="${label.id}"><c:out value="${label.name}"/></filter:filterOption>
                 </c:forEach>                        
+            --%>
         </filter:filterSelection>
     </filter:filterTable>
 

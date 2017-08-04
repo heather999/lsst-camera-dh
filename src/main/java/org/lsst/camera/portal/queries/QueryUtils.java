@@ -1505,7 +1505,8 @@ public class QueryUtils {
             }
 
             for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
-                if (labelId > 0) {
+                /*
+                if (labelId > 0) { // Disable labels for now HMK Aug 4 2017
                     PreparedStatement labelStatement = c.prepareStatement("SELECT HSH.id, HSH.adding, HSH.hardwareId "
                             + "FROM HardwareStatusHistory HSH "
                             + "INNER JOIN Hardware H ON H.id = HSH.hardwareId "
@@ -1519,7 +1520,7 @@ public class QueryUtils {
                     {
                         continue;
                     }
-                }
+                } */
                 
                 // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
                 PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
@@ -1534,7 +1535,9 @@ public class QueryUtils {
                 statusResult.first();
                 
                 // Retrieve all active labels 
-                HashMap<Integer, String> labelMap = getAllActiveLabels(session, lsstId);
+                /* HMK Aug 4 2017 disabling labels for now
+                        HashMap<Integer, String> labelMap = getAllActiveLabels(session, lsstId);
+                */
 
                 // Retrieve the list of locations associated with this CCD, ordered by creation time in descending order
                 PreparedStatement hdwLocStatement = c.prepareStatement("SELECT Hardware.lsstId, Hardware.id, Hardware.creationTS,"
@@ -1627,7 +1630,7 @@ public class QueryUtils {
                 hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
                         locResult.getString("sname"), locResult.getTimestamp("creationTS"),
                         travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
-                hsl.setLabelMap(labelMap);
+                // HMK Aug 4 2017, disable labels for now hsl.setLabelMap(labelMap);
                 result.add(hsl);
 
             }
