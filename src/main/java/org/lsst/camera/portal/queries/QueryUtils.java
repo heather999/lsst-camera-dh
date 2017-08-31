@@ -222,25 +222,32 @@ public class QueryUtils {
     }
     
     public static HashMap getAllActiveLabels(HttpSession session, String lsstId) throws SQLException {
+        // Only dealing with Hardware labels right now
         HashMap<Integer, String> labelMap = new HashMap<>();
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
 
             // Get all label activity for this lsstNum
-            PreparedStatement labelStatement = c.prepareStatement("SELECT HSH.id, HSH.adding, HSH.hardwareId, "
-                    + "HS.id AS labelId, HS.name "
-                    + "FROM HardwareStatusHistory HSH "
-                    + "JOIN Hardware H ON H.id = HSH.hardwareId "
-                    + "INNER JOIN HardwareStatus HS ON HSH.hardwareStatusId=HS.id "
-                    + "WHERE H.lsstId = ? AND HS.isStatusValue = 0 ORDER BY HSH.id ASC");
+            PreparedStatement labelStatement = c.prepareStatement("SELECT LH.adding, LH.objectId, L.id, L.name, LL.tableName, "
+                    + "LH.id as historyId, H.id as hdwId, H.lsstId FROM Label L "
+                    + "INNER JOIN LabelHistory LH on L.id=LH.labelId "
+                    + "INNER JOIN LabelGroup LG on LG.id=L.labelGroupId " 
+                    + "INNER JOIN Labelable LL on LL.id=LG.labelableId " 
+                    + "INNER JOIN Hardware H on H.id=LH.objectId " 
+                    + "WHERE H.lsstId=? "
+                    + "ORDER BY LH.id DESC, L.id");
                     labelStatement.setString(1, lsstId);
             ResultSet r = labelStatement.executeQuery();
+            int curLabelId, lastLabelId = -999;
             while (r.next()) {
-                if (r.getInt("adding")==1)  {
-                    labelMap.put(r.getInt("labelId"), r.getString("name"));
-                } else {
-                    labelMap.remove(r.getInt("labelId"));
+                curLabelId = r.getInt("id");
+
+                if (lastLabelId != curLabelId) {
+                    lastLabelId = curLabelId;
+                    if (r.getInt("adding") == 1) {
+                        labelMap.put(curLabelId, r.getString("name"));
+                    } 
                 }
             }
 
@@ -711,7 +718,6 @@ public class QueryUtils {
                     idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId,Hardware.manufacturer,Hardware.creationTS "
                     + "FROM Hardware,HardwareType WHERE Hardware.hardwareTypeId=HardwareType.id AND "
                     + " HardwareType.id IN " + hdwTypeSet);
-                    //idStatement.setInt(1,hdwType);
                 }
                 else {
                     idStatement = c.prepareStatement("SELECT Hardware.id,Hardware.lsstId,Hardware.manufacturer,Hardware.creationTS "
@@ -745,22 +751,26 @@ public class QueryUtils {
             ResultSet r = idStatement.executeQuery();
             while (r.next()) {
                 String lsstId = r.getString("lsstId");
-                if (labelId > 0) {
-
-                    PreparedStatement labelStatement = c.prepareStatement("SELECT HSH.id, HSH.adding, HSH.hardwareId "
-                            + "FROM HardwareStatusHistory HSH "
-                            + "INNER JOIN Hardware H ON H.id = HSH.hardwareId "
-                            + "WHERE H.lsstId =? AND HSH.hardwareStatusId = ? "
-                            + "ORDER BY HSH.id DESC");
-                    labelStatement.setString(1, lsstId);
-                    labelStatement.setInt(2, labelId);
+                
+                if (labelId > 0) { 
+                    PreparedStatement labelStatement = c.prepareStatement("SELECT  LH.adding, LH.objectId, L.id, "
+                            + "LL.tableName, LH.id as historyId, H.id as hdwId, H.lsstId FROM Label L "
+                            + "INNER JOIN LabelHistory LH on L.id=LH.labelId "
+                            + "INNER JOIN LabelGroup LG on LG.id=L.labelGroupId "
+                            + "INNER JOIN Labelable LL on LL.id=LG.labelableId "
+                            + "INNER JOIN Hardware H on H.id=LH.objectId "
+                            + "WHERE L.id=? AND H.lsstId = ? "
+                            + "ORDER BY LH.id DESC");
+                    labelStatement.setString(2, lsstId);
+                    labelStatement.setInt(1, labelId);
                     ResultSet labelResult = labelStatement.executeQuery();
                     if ((labelResult.first() == false)
                             || (labelResult.getInt("adding") != 1)) // skip components that do not satisy the label
                     {
                         continue;
                     }
-                }
+                } 
+              
                 ComponentData comp = new ComponentData(lsstId, r.getString("manufacturer"), r.getInt("id"), r.getTimestamp("creationTS"));
                 result.add(comp);
             }
@@ -937,22 +947,26 @@ public class QueryUtils {
             ResultSet r = idStatement.executeQuery();
             while (r.next()) {
                 String lsstId = r.getString("lsstId");
-                if (labelId > 0) {
-
-                    PreparedStatement labelStatement = c.prepareStatement("SELECT HSH.id, HSH.adding, HSH.hardwareId "
-                            + "FROM HardwareStatusHistory HSH "
-                            + "INNER JOIN Hardware H ON H.id = HSH.hardwareId "
-                            + "WHERE H.lsstId =? AND HSH.hardwareStatusId = ? "
-                            + "ORDER BY HSH.id DESC");
-                    labelStatement.setString(1, lsstId);
-                    labelStatement.setInt(2, labelId);
+                
+                if (labelId > 0) { 
+                    PreparedStatement labelStatement = c.prepareStatement("SELECT  LH.adding, LH.objectId, L.id, "
+                            + "LL.tableName, LH.id as historyId, H.id as hdwId, H.lsstId FROM Label L "
+                            + "INNER JOIN LabelHistory LH on L.id=LH.labelId "
+                            + "INNER JOIN LabelGroup LG on LG.id=L.labelGroupId "
+                            + "INNER JOIN Labelable LL on LL.id=LG.labelableId "
+                            + "INNER JOIN Hardware H on H.id=LH.objectId "
+                            + "WHERE L.id=? AND H.lsstId = ? "
+                            + "ORDER BY LH.id DESC");
+                    labelStatement.setString(2, lsstId);
+                    labelStatement.setInt(1, labelId);
                     ResultSet labelResult = labelStatement.executeQuery();
                     if ((labelResult.first() == false)
                             || (labelResult.getInt("adding") != 1)) // skip components that do not satisy the label
                     {
                         continue;
                     }
-                }
+                } 
+             
                 result.put(r.getInt("id"), lsstId);
             }
 
@@ -1505,22 +1519,25 @@ public class QueryUtils {
             }
 
             for (String lsstId : compIds.values()) { // Loop over all the ccd LSST ids
-                /*
-                if (labelId > 0) { // Disable labels for now HMK Aug 4 2017
-                    PreparedStatement labelStatement = c.prepareStatement("SELECT HSH.id, HSH.adding, HSH.hardwareId "
-                            + "FROM HardwareStatusHistory HSH "
-                            + "INNER JOIN Hardware H ON H.id = HSH.hardwareId "
-                            + "WHERE H.lsstId =? AND HSH.hardwareStatusId = ? "
-                            + "ORDER BY HSH.id DESC");
-                    labelStatement.setString(1, lsstId);
-                    labelStatement.setInt(2, labelId);
+                // HMK New Labels
+                if (labelId > 0) { 
+                    PreparedStatement labelStatement = c.prepareStatement("SELECT  LH.adding, LH.objectId, L.id, "
+                            + "LL.tableName, LH.id as historyId, H.id as hdwId, H.lsstId FROM Label L "
+                            + "INNER JOIN LabelHistory LH on L.id=LH.labelId "
+                            + "INNER JOIN LabelGroup LG on LG.id=L.labelGroupId "
+                            + "INNER JOIN Labelable LL on LL.id=LG.labelableId "
+                            + "INNER JOIN Hardware H on H.id=LH.objectId "
+                            + "WHERE L.id=? AND H.lsstId = ? "
+                            + "ORDER BY LH.id DESC");
+                    labelStatement.setString(2, lsstId);
+                    labelStatement.setInt(1, labelId);
                     ResultSet labelResult = labelStatement.executeQuery();
                     if ((labelResult.first() == false)
                             || (labelResult.getInt("adding") != 1)) // skip components that do not satisy the label
                     {
                         continue;
                     }
-                } */
+                } 
                 
                 // Retrieve list of statuses for this CCD, ordered by creation time, in descending order
                 PreparedStatement hdwStatusStatement = c.prepareStatement("SELECT Hardware.lsstId,HardwareStatus.name, "
@@ -1535,9 +1552,8 @@ public class QueryUtils {
                 statusResult.first();
                 
                 // Retrieve all active labels 
-                /* HMK Aug 4 2017 disabling labels for now
-                        HashMap<Integer, String> labelMap = getAllActiveLabels(session, lsstId);
-                */
+                HashMap<Integer, String> labelMap = getAllActiveLabels(session, lsstId);
+                
 
                 // Retrieve the list of locations associated with this CCD, ordered by creation time in descending order
                 PreparedStatement hdwLocStatement = c.prepareStatement("SELECT Hardware.lsstId, Hardware.id, Hardware.creationTS,"
@@ -1630,7 +1646,7 @@ public class QueryUtils {
                 hsl.setValues(locResult.getString("lsstId"), statusResult.getString("name"), locResult.getString("name"),
                         locResult.getString("sname"), locResult.getTimestamp("creationTS"),
                         travelerName, curActProcName, curActStatusName, curActLastTime, travStartTime, inNCR);
-                // HMK Aug 4 2017, disable labels for now hsl.setLabelMap(labelMap);
+                hsl.setLabelMap(labelMap);
                 result.add(hsl);
 
             }

@@ -35,17 +35,16 @@
         SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${hdwTypeString} ORDER BY manufacturer;
     </sql:query>
 
-        <%-- Disable Labels for now HMK Aug 4 2017
+     
     <sql:query var="labelQ" scope="page">
-        select DISTINCT L.name, L.id FROM Label L
+        select DISTINCT L.name, L.id, LG.name AS groupName FROM Label L
     INNER JOIN LabelHistory LH on L.id=LH.labelId
     INNER JOIN LabelGroup LG on LG.id=L.labelGroupId
     INNER JOIN Labelable LL on LL.id=LG.labelableId
     INNER JOIN Subsystem S on S.id=LG.subsystemId
-    WHERE S.name = ${subname}
-    ORDER BY name;
+    WHERE S.shortName = "${subname}"
+    ORDER BY LG.name;
     </sql:query>
---%>
     
     <filter:filterTable>
         <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
@@ -58,11 +57,9 @@
             
         <filter:filterSelection title="Labels" var="labelsChosen" defaultValue="0">
             <filter:filterOption value="0">Any</filter:filterOption>
-            <%-- HMK Aug 4 2017 disable labels for now
             <c:forEach var="label" items="${labelQ.rows}">
-                <filter:filterOption value="${label.id}"><c:out value="${label.name}"/></filter:filterOption>
+                <filter:filterOption value="${label.id}"><c:out value="${label.groupName}:${label.name}"/></filter:filterOption>
                 </c:forEach> 
-             --%>
         </filter:filterSelection>
             
     </filter:filterTable>

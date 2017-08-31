@@ -15,6 +15,7 @@
 <%@attribute name="groupName" required="true"%>
 <%@attribute name="title" required="true"%>
 <%@attribute name="sub" required="false"%>
+<%@attribute name="subname" required="true"%>
 <%@attribute name="bygroup" required="false"%>
 
 <h1>${title}</h1>
@@ -37,10 +38,15 @@
     </sql:query>
 
     <sql:query var="labelQ" scope="page">
-        SELECT DISTINCT name, HardwareStatus.id FROM HardwareStatus INNER JOIN HardwareStatusHistory ON HardwareStatus.id = HardwareStatusHistory.hardwareStatusId 
-        INNER JOIN Hardware ON Hardware.id = HardwareStatusHistory.hardwareId AND Hardware.hardwareTypeId IN ${hdwTypeString}
-        WHERE isStatusValue=0 ORDER BY name;
+        select DISTINCT L.name, L.id, LG.name AS groupName FROM Label L
+    INNER JOIN LabelHistory LH on L.id=LH.labelId
+    INNER JOIN LabelGroup LG on LG.id=L.labelGroupId
+    INNER JOIN Labelable LL on LL.id=LG.labelableId
+    INNER JOIN Subsystem S on S.id=LG.subsystemId
+    WHERE S.shortName = "${subname}"
+    ORDER BY LG.name;
     </sql:query>
+    
 
     <filter:filterTable>
         <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
@@ -52,11 +58,9 @@
         </filter:filterSelection>
         <filter:filterSelection title="Labels" var="labelId" defaultValue="0">
             <filter:filterOption value="0">Any</filter:filterOption>
-            <%-- HMK Aug 4 2017 disabling labels for now
             <c:forEach var="label" items="${labelQ.rows}">
-                <filter:filterOption value="${label.id}"><c:out value="${label.name}"/></filter:filterOption>
+                <filter:filterOption value="${label.id}"><c:out value="${label.groupName}:${label.name}"/></filter:filterOption>
                 </c:forEach>                        
-            --%>
         </filter:filterSelection>
     </filter:filterTable>
 
