@@ -43,7 +43,7 @@
     INNER JOIN LabelGroup LG on LG.id=L.labelGroupId
     INNER JOIN Labelable LL on LL.id=LG.labelableId
     INNER JOIN Subsystem S on S.id=LG.subsystemId
-    WHERE S.shortName = "${subname}"
+    WHERE S.shortName = "${subname}" AND LL.name="hardware"
     ORDER BY LG.name;
     </sql:query>
     
