@@ -29,13 +29,22 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
 --%>
 
 <filter:filterTable>
-    <filter:filterSelection title="Subsystem" var="subsystem" defaultValue="any">
+    <filter:filterSelection title="Hardware<br>Subsystem" var="subsystem" defaultValue="any">
         <filter:filterOption value="any">Any</filter:filterOption>
         <sql:query var="subsystems">
             select name from Subsystem order by name
         </sql:query>
         <c:forEach var="row" items="${subsystems.rows}">
             <filter:filterOption value="${row.name}">${row.name}</filter:filterOption>
+        </c:forEach>
+    </filter:filterSelection>
+    <filter:filterSelection title="Traveler<br>Subsystem" var="tsubsystem" defaultValue="-1">
+        <filter:filterOption value="-1">Any</filter:filterOption>
+        <sql:query var="tsubsystems">
+            select id,name from Subsystem order by name
+        </sql:query>
+        <c:forEach var="row" items="${tsubsystems.rows}">
+            <filter:filterOption value="${row.id}">${row.name}</filter:filterOption>
         </c:forEach>
     </filter:filterSelection>
 </filter:filterTable>
@@ -45,16 +54,18 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
     concat(AFS.name,'') as status,
     P.id as processId, 
     concat(P.name, ' v', P.version) as processName,
+    P.shortDescription,
     H.id as hardwareId, H.lsstId, H.manufacturerId,
     HT.name as hardwareName, HT.id as hardwareTypeId,
-    HI.identifier as nickName, concat(RN.runNumber,'') as runNumber,
-    S.name as subName
+    concat(RN.runNumber,'') as runNumber,
+    S.name as subName, TT.subsystemId
     from Activity A
     inner join Process P on A.processId=P.id
     inner join Hardware H on A.hardwareId=H.id
     inner join HardwareType HT on H.hardwareTypeId=HT.id
     inner join Subsystem S on S.id=HT.subsystemId
     inner join ActivityStatusHistory ASH on ASH.activityId=A.id and ASH.id=(select max(id) from ActivityStatusHistory where activityId=A.id)
+    inner join TravelerType TT on TT.rootProcessId = (select Process.id from Process INNER JOIN Activity A2 ON A2.processId=Process.id WHERE A2.id=A.rootActivityId)
     inner join ActivityFinalStatus AFS on AFS.id=ASH.activityStatusId
     inner join RunNumber RN on RN.rootActivityId=A.rootActivityId 
     left join HardwareIdentifier HI on HI.hardwareId=H.id 
@@ -66,6 +77,10 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
     <c:if test="${subsystem!='any'}">
         and S.name=?
         <sql:param value="${subsystem}"/>
+    </c:if> 
+     <c:if test="${tsubsystem!=-1}">
+        and TT.subsystemId=?
+        <sql:param value="${tsubsystem}"/>
     </c:if> 
     <c:if test="${! empty processId}">
         and P.id=?<sql:param value="${processId}"/>
@@ -114,9 +129,6 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
                         href="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp?dataSourceMode=${appVariables.dataSourceMode}" paramId="hardwareId" paramProperty="hardwareId"/>
         <display:column property="manufacturerId" title="Manufacturer Serial Number" sortable="true" headerClass="sortable"
                         href="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp?dataSourceMode=${appVariables.dataSourceMode}" paramId="hardwareId" paramProperty="hardwareId"/>
-        <c:if test="${'null' != preferences.idAuthName}">
-            <display:column property="nickName" title="${preferences.idAuthName} Identifier" sortable="true" headerClass="sortable"/>
-        </c:if>
     </c:if>
     <c:if test="${(empty processId && empty hardwareId) || preferences.showFilteredColumns}">
         <display:column property="hardwareName" title="Component Type" sortable="true" headerClass="sortable"
