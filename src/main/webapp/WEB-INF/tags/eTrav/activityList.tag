@@ -10,6 +10,8 @@
 <%@taglib prefix="sql" uri="http://java.sun.com/jsp/jstl/sql"%>
 <%@taglib prefix="display" uri="http://displaytag.sf.net"%>
 <%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
+<%@taglib uri="http://srs.slac.stanford.edu/filter" prefix="filter"%>
+
 
 <%@attribute name="done"%>
 <%@attribute name="hardwareId"%>
@@ -26,6 +28,18 @@
 http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names-with-jstl-sqlquery
 --%>
 
+<filter:filterTable>
+    <filter:filterSelection title="Subsystem" var="subsystem" defaultValue="any">
+        <filter:filterOption value="any">Any</filter:filterOption>
+        <sql:query var="subsystems">
+            select name from Subsystem order by name
+        </sql:query>
+        <c:forEach var="row" items="${subsystems.rows}">
+            <filter:filterOption value="${row.name}">${row.name}</filter:filterOption>
+        </c:forEach>
+    </filter:filterSelection>
+</filter:filterTable>
+
 <sql:query var="result" >
     select concat(A.id,'') as activityId, A.rootActivityId, A.begin, A.end, A.createdBy, A.closedBy,
     concat(AFS.name,'') as status,
@@ -33,11 +47,13 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
     concat(P.name, ' v', P.version) as processName,
     H.id as hardwareId, H.lsstId, H.manufacturerId,
     HT.name as hardwareName, HT.id as hardwareTypeId,
-    HI.identifier as nickName, concat(RN.runNumber,'') as runNumber 
+    HI.identifier as nickName, concat(RN.runNumber,'') as runNumber,
+    S.name as subName
     from Activity A
     inner join Process P on A.processId=P.id
     inner join Hardware H on A.hardwareId=H.id
     inner join HardwareType HT on H.hardwareTypeId=HT.id
+    inner join Subsystem S on S.id=HT.subsystemId
     inner join ActivityStatusHistory ASH on ASH.activityId=A.id and ASH.id=(select max(id) from ActivityStatusHistory where activityId=A.id)
     inner join ActivityFinalStatus AFS on AFS.id=ASH.activityStatusId
     inner join RunNumber RN on RN.rootActivityId=A.rootActivityId 
@@ -47,6 +63,10 @@ http://stackoverflow.com/questions/14431907/how-to-access-duplicate-column-names
     <c:if test="${! empty travelersOnly}">
         and A.processEdgeId IS NULL 
     </c:if>
+    <c:if test="${subsystem!='any'}">
+        and S.name=?
+        <sql:param value="${subsystem}"/>
+    </c:if> 
     <c:if test="${! empty processId}">
         and P.id=?<sql:param value="${processId}"/>
     </c:if>
