@@ -28,15 +28,15 @@
             select * from (
             select h.id,h.lsstId,h.manufacturer,h.model,h.manufactureDate,t.name type,ss.name subsystem,l.name location,i.name site,st.name status,
             (select group_concat(ls.name) from HardwareStatusHistory hlh 
-               join HardwareStatus ls on (ls.id=hlh.hardwareStatusId) 
-               where hlh.id in ( 
-               select max(ss.id) from HardwareStatusHistory ss 
-                  join HardwareStatus stst on (ss.hardwareStatusId=stst.id)
-                  where ss.hardwareId=h.id and stst.isStatusValue=false group by hardwareStatusId
-               )
-               and hlh.adding=true
-               group by hlh.hardwareId
-               order by ls.name
+            join HardwareStatus ls on (ls.id=hlh.hardwareStatusId) 
+            where hlh.id in ( 
+            select max(ss.id) from HardwareStatusHistory ss 
+            join HardwareStatus stst on (ss.hardwareStatusId=stst.id)
+            where ss.hardwareId=h.id and stst.isStatusValue=false group by hardwareStatusId
+            )
+            and hlh.adding=true
+            group by hlh.hardwareId
+            order by ls.name
             ) labels
             from Hardware h
             join HardwareType t on (h.hardwareTypeId = t.id)
@@ -45,9 +45,9 @@
             join Location l on (l.id=hlh.locationId)
             join Site i on (i.id=l.siteId)
             left outer join HardwareStatusHistory hsh on (hsh.id= (
-               select max(ss.id) from HardwareStatusHistory ss 
-               join HardwareStatus stst on (ss.hardwareStatusId=stst.id)
-               where ss.hardwareId=h.id and stst.isStatusValue=true))
+            select max(ss.id) from HardwareStatusHistory ss 
+            join HardwareStatus stst on (ss.hardwareStatusId=stst.id)
+            where ss.hardwareId=h.id and stst.isStatusValue=true))
             left outer join HardwareStatus st on (hsh.hardwareStatusId=st.id)
             where h.lsstId=?
             ) x
@@ -74,7 +74,7 @@
         </c:url>
         See also the <a href="${hardware}">full e-Traveler Component page</a>.
         <h2>Reports for device</h2>
-        
+
         <c:if test="${device.type=='ITL-CCD' || device.type=='e2v-CCD'}">
             <c:url var="deviceReport" value="SensorAcceptanceReport.jsp">
                 <c:param name="lsstId" value="${device.lsstId}"/>
@@ -84,7 +84,12 @@
 
         <h2>Runs for device</h2>
 
-        <dp:runList mostRecent="true" device="${param.lsstId}"/>     
+        <filter:filterTable>
+            <filter:filterCheckbox title="Most Recent" var="mostRecent" defaultValue="true"/>
+            <input type="hidden" name="lsstId" value="${param.lsstId}">
+        </filter:filterTable>
+
+        <dp:runList mostRecent="${mostRecent}" device="${param.lsstId}"/>     
 
     </body>
 </html>
