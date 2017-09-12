@@ -59,7 +59,8 @@
                     <filter:filterOption value="${row.name}">${row.name}</filter:filterOption>
                 </c:forEach>
             </filter:filterSelection>
-            <filter:filterSelection title="Label" var="label" defaultValue="any">
+            <filter:filterSelection title="Label" var="label" defaultValue="">
+                <filter:filterOption value="">Don't care</filter:filterOption>
                 <filter:filterOption value="any">Any</filter:filterOption>
                 <filter:filterOption value="none">None</filter:filterOption>
                 <sql:query var="labels">
@@ -116,6 +117,7 @@
             </c:if>
             <c:choose>
                 <c:when test="${label=='any'}">
+                    and lids is not null
                 </c:when>
                 <c:when test="${label=='none'}">
                     and lids is null

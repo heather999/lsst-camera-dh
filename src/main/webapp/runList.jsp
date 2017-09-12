@@ -67,10 +67,25 @@
                     <filter:filterOption value="${row.name}">${row.name}</filter:filterOption>
                 </c:forEach>
             </filter:filterSelection>
+            <filter:filterSelection title="Label" var="labels" defaultValue="">
+                <filter:filterOption value="">Don't care</filter:filterOption>
+                <filter:filterOption value="any">Any</filter:filterOption>
+                <filter:filterOption value="none">None</filter:filterOption>
+                <sql:query var="labels">
+                    select DISTINCT concat(LG.name,':',L.name) name, L.id FROM Label L
+                    INNER JOIN LabelGroup LG on LG.id=L.labelGroupId
+                    join Labelable on Labelable.id=LG.labelableId
+                    WHERE Labelable.name="run"
+                    ORDER BY LG.name, L.name
+                </sql:query>
+                <c:forEach var="row" items="${labels.rows}">
+                    <filter:filterOption value="${row.id}">${row.name}</filter:filterOption>
+                </c:forEach>
+            </filter:filterSelection>
             <filter:filterInput title="Run min" var="runMin"/>
             <filter:filterInput title="Run max" var="runMax"/>
         </filter:filterTable>
 
-        <dp:runList mostRecent="${mostRecent}" runMin="${runMin}" runMax="${runMax}" site="${site}" status="${status}" subsystem="${subsystem}" traveler="${traveler}"/>     
+        <dp:runList mostRecent="${mostRecent}" runMin="${runMin}" runMax="${runMax}" site="${site}" status="${status}" subsystem="${subsystem}" traveler="${traveler}" labels="${labels}"/>     
     </body>
 </html>
