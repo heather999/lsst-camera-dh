@@ -89,14 +89,13 @@
             where ss.hardwareId=h.id and stst.isStatusValue=true))
             left outer join HardwareStatus st on (hsh.hardwareStatusId=st.id)
             left outer join ( 
-                select lh.objectId,group_concat(concat(lg.name,':',l.name) SEPARATOR ', ') labels,group_concat(l.id) lids
+                select lh.objectId,group_concat(concat(lg.name,':',l.name) ORDER BY lg.name, l.name SEPARATOR ', ') labels,group_concat(l.id ORDER BY lg.name, l.name) lids
                 from Label l
                 join LabelGroup lg on (lg.id=l.labelgroupid)
                 join Labelable la on (la.id=lg.labelableid and la.tableName='Hardware')
                 join LabelHistory lh on (lh.id=(select max(id) from LabelHistory lhh where lhh.objectid=lh.objectId and lhh.LabelableId=la.id and lhh.labelId=l.id))
                 where lh.adding=true
                 group by lh.objectId
-                order by lg.name, l.name
             ) l on (l.objectId=h.id)
             where true
             <c:if test="${subsystem!='any'}">
