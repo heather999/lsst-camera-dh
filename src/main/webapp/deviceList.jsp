@@ -63,7 +63,11 @@
                 <filter:filterOption value="any">Any</filter:filterOption>
                 <filter:filterOption value="none">None</filter:filterOption>
                 <sql:query var="labels">
-                    select id,name from HardwareStatus where isStatusValue=false
+                    select DISTINCT concat(LG.name,':',L.name) name, L.id FROM Label L
+                        INNER JOIN LabelGroup LG on LG.id=L.labelGroupId
+                        join Labelable on Labelable.id=LG.labelableId
+                        WHERE Labelable.name="hardware"
+                        ORDER BY LG.name, L.name
                 </sql:query>
                 <c:forEach var="row" items="${labels.rows}">
                     <filter:filterOption value="${row.id}">${row.name}</filter:filterOption>
@@ -85,17 +89,15 @@
             where ss.hardwareId=h.id and stst.isStatusValue=true))
             left outer join HardwareStatus st on (hsh.hardwareStatusId=st.id)
             left outer join ( 
-            select hlh.hardwareId,group_concat(ls.name) labels,group_concat(ls.id) lids  from HardwareStatusHistory hlh 
-            join HardwareStatus ls on (ls.id=hlh.hardwareStatusId) 
-            where hlh.id in ( 
-            select max(ss.id) from HardwareStatusHistory ss 
-            join HardwareStatus stst on (ss.hardwareStatusId=stst.id)
-            where ss.hardwareId=hlh.hardwareId and stst.isStatusValue=false group by hardwareStatusId
-            )
-            and hlh.adding=true
-            group by hlh.hardwareId
-            order by ls.name
-            ) l on (l.hardwareId=h.id)
+                select lh.objectId,group_concat(concat(lg.name,':',l.name) SEPARATOR ', ') labels,group_concat(l.id) lids
+                from Label l
+                join LabelGroup lg on (lg.id=l.labelgroupid)
+                join Labelable la on (la.id=lg.labelableid and la.tableName='Hardware')
+                join LabelHistory lh on (lh.id=(select max(id) from LabelHistory lhh where lhh.objectid=lh.objectId and lhh.LabelableId=la.id and lhh.labelId=l.id))
+                where lh.adding=true
+                group by lh.objectId
+                order by lg.name, l.name
+            ) l on (l.objectId=h.id)
             where true
             <c:if test="${subsystem!='any'}">
                 and ss.name=?
