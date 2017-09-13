@@ -26,18 +26,7 @@
 
         <sql:query var="result">
             select * from (
-            select h.id,h.lsstId,h.manufacturer,h.model,h.manufactureDate,t.name type,ss.name subsystem,l.name location,i.name site,st.name status,
-            (select group_concat(ls.name) from HardwareStatusHistory hlh 
-            join HardwareStatus ls on (ls.id=hlh.hardwareStatusId) 
-            where hlh.id in ( 
-            select max(ss.id) from HardwareStatusHistory ss 
-            join HardwareStatus stst on (ss.hardwareStatusId=stst.id)
-            where ss.hardwareId=h.id and stst.isStatusValue=false group by hardwareStatusId
-            )
-            and hlh.adding=true
-            group by hlh.hardwareId
-            order by ls.name
-            ) labels
+            select h.id,h.lsstId,h.manufacturer,h.model,h.manufactureDate,t.name type,ss.name subsystem,l.name location,i.name site,st.name status,l.labels
             from Hardware h
             join HardwareType t on (h.hardwareTypeId = t.id)
             join Subsystem ss on (ss.id=t.subsystemId)
@@ -49,6 +38,15 @@
             join HardwareStatus stst on (ss.hardwareStatusId=stst.id)
             where ss.hardwareId=h.id and stst.isStatusValue=true))
             left outer join HardwareStatus st on (hsh.hardwareStatusId=st.id)
+            left outer join ( 
+                select lh.objectId,group_concat(concat(lg.name,':',l.name) ORDER BY lg.name, l.name SEPARATOR ', ') labels,group_concat(l.id ORDER BY lg.name, l.name) lids
+                from Label l
+                join LabelGroup lg on (lg.id=l.labelgroupid)
+                join Labelable la on (la.id=lg.labelableid and la.tableName='Hardware')
+                join LabelHistory lh on (lh.id=(select max(id) from LabelHistory lhh where lhh.objectid=lh.objectId and lhh.LabelableId=la.id and lhh.labelId=l.id))
+                where lh.adding=true
+                group by lh.objectId
+            ) l on (l.objectId=h.id)
             where h.lsstId=?
             ) x
             <sql:param value="${param.lsstId}"/>
