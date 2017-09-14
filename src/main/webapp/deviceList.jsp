@@ -59,9 +59,9 @@
                     <filter:filterOption value="${row.name}">${row.name}</filter:filterOption>
                 </c:forEach>
             </filter:filterSelection>
-            <filter:filterSelection title="Label" var="label" defaultValue="">
-                <filter:filterOption value="">Don't care</filter:filterOption>
-                <filter:filterOption value="any">Any</filter:filterOption>
+            <filter:filterSelection title="Label" var="label" defaultValue="any">
+                <filter:filterOption value="any">Don't care</filter:filterOption>
+                <filter:filterOption value="anyLabel">Any</filter:filterOption>
                 <filter:filterOption value="none">None</filter:filterOption>
                 <sql:query var="labels">
                     select DISTINCT concat(LG.name,':',L.name) name, L.id FROM Label L
@@ -117,6 +117,8 @@
             </c:if>
             <c:choose>
                 <c:when test="${label=='any'}">
+                </c:when>
+                <c:when test="${label=='anyLabel'}">
                     and lids is not null
                 </c:when>
                 <c:when test="${label=='none'}">

@@ -93,6 +93,8 @@
     </c:choose>
     <c:choose>
         <c:when test="${labels=='any'}">
+        </c:when>
+        <c:when test="${labels=='anyLabel'}">
             and lids is not null
         </c:when>
         <c:when test="${labels=='none'}">
