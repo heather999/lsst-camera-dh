@@ -4,6 +4,18 @@
     <short-name>sensorutils</short-name>
     <uri>http://camera.lsst.org/sensorutils</uri> 
     <function>
+        <name>getHardwareTypeFromId</name>
+        <function-class>org.lsst.camera.portal.queries.SensorUtils</function-class>
+        <function-signature>java.lang.String getHardwareTypeFromId(java.servlet.http.HttpSession, java.lang.String)
+        </function-signature>
+    </function>
+    <function>
+        <name>getEoTestVersion</name>
+        <function-class>org.lsst.camera.portal.queries.SensorUtils</function-class>
+        <function-signature>java.lang.String getEoTestVersion(javax.servlet.http.HttpSession,java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean)
+        </function-signature>
+    </function>
+    <function>
         <name>getAllUsingStepAndSchema</name>
         <function-class>org.lsst.camera.portal.queries.SensorUtils</function-class>
         <function-signature>java.util.Map getAllUsingStepAndSchema(java.lang.String,java.lang.String,java.lang.String,java.lang.String,java.lang.Boolean)

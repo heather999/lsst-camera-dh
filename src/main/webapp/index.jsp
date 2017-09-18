@@ -33,28 +33,32 @@
         </ul>  
 
         <h2>CCD Links</h2>
-        <dp:url var="ccdStatusLink" value="/ccdStatus.jsp"/>
-        <dp:url var="ccdExplorerLink" value="/oneComponent.jsp"/>
-        <dp:url var="crExplorerLink" value="/oneCrComponent.jsp"/>
-        <dp:url var="crStatusLink" value="/crStatus.jsp"/>
-        <dp:url var="reportsLink" value="/reports.jsp"/>
-        <dp:url var="acceptanceReportLink" value="/SensorAcceptance.jsp"/>
+        <dp:url var="ccdStatus" value="/ccdStatus.jsp"/>
+        <dp:url var="ccdExplorer" value="/oneComponent.jsp"/>
+        <dp:url var="crExplorer" value="/oneCrComponent.jsp"/>
+        <dp:url var="crStatus" value="/crStatus.jsp"/>
+        <dp:url var="reports" value="/reports.jsp"/>
+        <dp:url var="acceptanceReport" value="/SensorAcceptance.jsp"/>
         <dp:url var="sensorDevices" value="/deviceList.jsp?Type=3&submit=Filter"/>
+        <dp:url var="sensorSummary" value="/SensorSummary.jsp"/>
+    
         <ul>   
 
-            <li><a href="${ccdStatusLink}" title="Science Raft CCD Overview" style=""><strong>Science Raft CCD Overview</strong></a></li>
+            <li><a href="${ccdStatus}" title="Science Raft CCD Overview" style=""><strong>Science Raft CCD Overview</strong></a></li>
 
-            <li><a href="${ccdExplorerLink}" title="Science Raft CCD Explorer" style=""><strong>Science Raft CCD Explorer</strong></a></li>
+            <li><a href="${ccdExplorer}" title="Science Raft CCD Explorer" style=""><strong>Science Raft CCD Explorer</strong></a></li>
 
-            <li> <a href="${reportsLink}" title="Science Raft CCD Data and Reports" style=""><strong>Science Raft CCD Data and Reports</strong></a></li>
-            <li> <a href="${acceptanceReportLink}" title="Sensor Acceptance" style=""><strong>Sensor Acceptance</strong></a> (or see <a href="${sensorDevices}"><strong>Device list filtered by CCD</strong>)</a></li>
-
+            <li> <a href="${reports}" title="Science Raft CCD Data and Reports" style=""><strong>Science Raft CCD Data and Reports</strong></a></li>
+            <li> <a href="${acceptanceReport}" title="Sensor Acceptance" style=""><strong>Sensor Acceptance</strong></a> (or see <a href="${sensorDevices}"><strong>Device list filtered by CCD</strong>)</a></li>
+    <%-- Holding this back for now HMK Aug 3 2017
+            <li> <a href="${sensorSummary}" title="Sensor Summary" style=""><strong>Sensor Summary</strong></a></li>
+    --%>
         </ul>
 
         <ul>
-            <li><a href="${crStatusLink}" title="Corner Raft CCD Overview" style=""><strong>Corner Raft CCD Overview</strong></a></li>
+            <li><a href="${crStatus}" title="Corner Raft CCD Overview" style=""><strong>Corner Raft CCD Overview</strong></a></li>
 
-            <li><a href="${crExplorerLink}" title="Corner Raft CCD Explorer" style=""><strong>Corner Raft CCD Explorer</strong></a></li>
+            <li><a href="${crExplorer}" title="Corner Raft CCD Explorer" style=""><strong>Corner Raft CCD Explorer</strong></a></li>
         </ul>
 
 

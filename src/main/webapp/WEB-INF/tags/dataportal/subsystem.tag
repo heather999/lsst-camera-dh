@@ -12,6 +12,7 @@
 
 
 <%@attribute name="sub" required="true"%>
+<%@attribute name="subname" required="true"%>
 <%@attribute name="explorer" required="true"%>
 <%@attribute name="bygroup" required="false"%>
 <%@attribute name="title" required="true"%>
@@ -34,12 +35,16 @@
         SELECT DISTINCT manufacturer FROM Hardware, HardwareType where Hardware.hardwareTypeId=HardwareType.id AND HardwareType.id IN ${hdwTypeString} ORDER BY manufacturer;
     </sql:query>
 
+     
     <sql:query var="labelQ" scope="page">
-        SELECT DISTINCT name, HardwareStatus.id FROM HardwareStatus INNER JOIN HardwareStatusHistory ON HardwareStatus.id = HardwareStatusHistory.hardwareStatusId 
-        INNER JOIN Hardware ON Hardware.id = HardwareStatusHistory.hardwareId AND Hardware.hardwareTypeId IN ${hdwTypeString}
-        WHERE isStatusValue=0 ORDER BY name;
+    select DISTINCT L.name, L.id, LG.name AS groupName FROM Label L
+    INNER JOIN LabelHistory LH on L.id=LH.labelId
+    INNER JOIN LabelGroup LG on LG.id=L.labelGroupId
+    INNER JOIN Labelable LL on LL.id=LG.labelableId
+    INNER JOIN Subsystem S on S.id=LG.subsystemId
+    WHERE S.shortName = "${subname}" AND LL.name="hardware"
+    ORDER BY LG.name;
     </sql:query>
-
     
     <filter:filterTable>
         <filter:filterInput var="lsst_num" title="LSST_NUM (substring search)"/>
@@ -49,12 +54,14 @@
                 <filter:filterOption value="${hdw.manufacturer}"><c:out value="${hdw.manufacturer}"/></filter:filterOption>
                 </c:forEach>
         </filter:filterSelection>
+            
         <filter:filterSelection title="Labels" var="labelsChosen" defaultValue="0">
             <filter:filterOption value="0">Any</filter:filterOption>
             <c:forEach var="label" items="${labelQ.rows}">
-                <filter:filterOption value="${label.id}"><c:out value="${label.name}"/></filter:filterOption>
-                </c:forEach>                        
+                <filter:filterOption value="${label.id}"><c:out value="${label.groupName}:${label.name}"/></filter:filterOption>
+                </c:forEach> 
         </filter:filterSelection>
+            
     </filter:filterTable>
 
 

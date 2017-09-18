@@ -41,10 +41,102 @@
     <display:table name="${jhschemaapi.entrySet()}" id="jhschemaapi"/> 
   --%>
     
-    <c:set var="sensorSummaryTable" value="${sensorutils:getSensorSummaryTable(pageContext.session,appVariables.dataSourceMode)}"/>
-    <display:table name="${sensorSummaryTable}" id="curSensor" class="datatable"/>
-    
+  
+  <c:set var="sensorSummaryTable" value="${sensorutils:getSensorSummaryTable(pageContext.session,appVariables.dataSourceMode)}"/>
+  <display:table name="${sensorSummaryTable}" id="curSensor" defaultsort="1" class="datatable" export="true" >
+      <display:column title="LSST_NUM" sortable="true" sortProperty="lsstId" >
+          <c:url var="hdwLink" value="/device.jsp">
+              <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+              <c:param name="lsstId" value="${curSensor.lsstId}"/>
+          </c:url>
+          <a href="${hdwLink}" target="_blank"><c:out value="${curSensor.lsstId}"/></a>
+      </display:column>
+      <display:column title="Specs<br>Passed<br>15" sortable="true" >
+          <c:choose>
+              <c:when test="${curSensor.numTestsPassed == 15}">
+                  <font color="green">
+                  ${curSensor.numTestsPassed}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.numTestsPassed}
+                  </font>
+              </c:otherwise>
+          </c:choose>
+      </display:column>
+      <display:column title="HCTI<br>Value/Channel" >
+          <c:choose>
+              <c:when test="${curSensor.passedHCTI}">
+                  <font color="green">
+                  ${curSensor.worstHCTI} / ${curSensor.worstHCTIChannel}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.worstHCTI} / ${curSensor.worstHCTIChannel}
+                  </font>
+              </c:otherwise>
+          </c:choose>
+      </display:column>
+      <display:column title="VCTI<br>Value/Channel" >
+          <c:choose>
+              <c:when test="${curSensor.passedVCTI}">
+                  <font color="green">
+                  ${curSensor.worstVCTI} / ${curSensor.worstVCTIChannel}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.worstVCTI} / ${curSensor.worstVCTIChannel}
+                  </font>
+              </c:otherwise>
+          </c:choose>        
+      </display:column>
+      <display:column title="Percent Defects" >
+          <c:choose>
+              <c:when test="${curSensor.passedPercentDefects}">
+                  <font color="green">
+                  ${curSensor.percentDefects}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.percentDefects}
+                  </font>
+              </c:otherwise>
+          </c:choose>      
+      </display:column>
+      <display:column title="Max Read Noise" sortable="true" >
+          <c:choose>
+              <c:when test="${curSensor.passedReadNoise}">
+                  <font color="green">
+                  ${curSensor.maxReadNoise}
+                  </font>
+              </c:when>
+              <c:otherwise>
+                  <font color="red">
+                  ${curSensor.maxReadNoise}
+                  </font>
+              </c:otherwise>
+          </c:choose>
+
+      </display:column>
+      <display:column title="Max Read Noise<br/>Channel" sortable="true" >${curSensor.maxReadNoiseChannel}</display:column>
+      <display:column title="Sensor Acceptance<br>Link" > 
+          <c:url var="acceptanceLink" value="SensorAcceptanceReport.jsp">
+              <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+              <c:param name="lsstId" value="${curSensor.lsstId}"/>
+          </c:url>
+          <a href="${acceptanceLink}" target="_blank"><c:out value="link"/></a>
+      </display:column>
+      <display:column title="Data Source" sortable="true">${curSensor.dataSource}</display:column>
+  </display:table>
+
+
+
+
+
     </body>
 </html>
 
- 

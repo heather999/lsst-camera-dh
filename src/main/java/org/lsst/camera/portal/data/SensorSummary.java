@@ -14,24 +14,46 @@ package org.lsst.camera.portal.data;
 public class SensorSummary {
     
     private String lsstId;
+    private Integer hardwareId;
     private Integer maxReadNoiseChannel;
     private Double maxReadNoise;
-    private Double percentDefects;
+    private Boolean passedReadNoise;
+    private String percentDefects;
+    private Boolean passedPercentDefects;
     private Integer numTestsPassed;
-    
+    private Integer worstHCTIChannel;  // serial charge inefficiency
+    private String worstHCTI;
+    private Boolean passedHCTI;
+    private Integer worstVCTIChannel; // parallel charge inefficiency
+    private String worstVCTI;
+    private Boolean passedVCTI;
+    private String dataSource;    
    
     public void SensorSummary() {
         lsstId = "";
+        hardwareId = 0;
         maxReadNoiseChannel = 0;
         maxReadNoise = 0.0d;
-        percentDefects = 0.0d;
+        percentDefects = "";
         numTestsPassed = 0;
+        worstHCTIChannel = -999;
+        worstVCTIChannel = -999;
+        worstHCTI = "";
+        worstVCTI = "";
+        passedReadNoise = false;
+        passedHCTI = false;
+        passedVCTI = false;
+        passedPercentDefects = false;
+        dataSource = "TS3";
     }
     
     public void setLsstId(String id) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
     }
   
+    public void setHardwareId(Integer i) { 
+        hardwareId = i;
+    }
 
     public void setMaxReadNoiseChannel(Integer r) {
         maxReadNoiseChannel = r;
@@ -41,27 +63,66 @@ public class SensorSummary {
         maxReadNoise = val;
     }
     
-    public void setPercentDefects(Double p) {
+    public void setPercentDefects(String p) {
         percentDefects = p;
     }
     
     public void setNumTestsPassed(Integer num) {
         numTestsPassed = num;
     }
-  
     
-    public void setValues(String id, Integer readNoiseChannel, Double readNoise, Double defects,
+    public void setWorstHCTIChannel(Integer c) {
+        worstHCTIChannel = c;
+    }
+    
+    public void setWorstHCTI(String d) {
+        worstHCTI = d;
+    }
+    
+    public void setWorstVCTIChannel(Integer c) {
+        worstVCTIChannel = c;
+    }
+    
+    public void setWorstVCTI(String d) {
+        worstVCTI = d;
+    }
+    
+    public void setPassedReadNoise(Boolean b) {
+        passedReadNoise = b;
+    }
+    
+    public void setPassedVCTI(Boolean b) {
+        passedVCTI = b;
+    }
+    
+    public void setPassedHCTI(Boolean b) {
+        passedHCTI = b;
+    }
+  
+    public void setPassedPercentDefects(Boolean b) {
+        passedPercentDefects = b;
+    }
+            
+    public void setDataSource(String s) {
+        dataSource = s == null || "".equals(s) ? "NA" : s; 
+    }
+    
+    public void setValues(String id, Integer readNoiseChannel, Double readNoise, String defects,
             Integer numTests) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
         maxReadNoiseChannel = readNoiseChannel;
         maxReadNoise = readNoise;
-        percentDefects = defects;
+        percentDefects = defects == null || "".equals(defects) ? "NA" : defects;
         numTestsPassed = numTests;
     }
     
   
     public String getLsstId() {
         return lsstId;
+    }
+    
+    public Integer getHardwareId() {
+        return hardwareId;
     }
  
     public Integer getMaxReadNoiseChannel() {
@@ -72,12 +133,46 @@ public class SensorSummary {
          return maxReadNoise;
     }
     
-    public Double getPercentDefects() {
+    public String getPercentDefects() {
         return percentDefects;
     }
-    
     public Integer getNumTestsPassed() {
         return numTestsPassed;
     }
     
+    public String getWorstHCTI () {
+        return worstHCTI;
+    }
+    
+    public Integer getWorstHCTIChannel() {
+        return worstHCTIChannel;
+    }
+    
+    public String getWorstVCTI() {
+        return worstVCTI;
+    }
+    
+    public Integer getWorstVCTIChannel() {
+        return worstVCTIChannel;
+    }
+
+    public Boolean getPassedReadNoise() {
+        return passedReadNoise;
+    }
+
+    public Boolean getPassedHCTI() {
+        return passedHCTI;
+    }
+
+    public Boolean getPassedVCTI() {
+        return passedVCTI;
+    }
+    
+    public Boolean getPassedPercentDefects() { 
+        return passedPercentDefects;
+    }
+    
+    public String getDataSource() {
+        return dataSource;
+    }
 }
