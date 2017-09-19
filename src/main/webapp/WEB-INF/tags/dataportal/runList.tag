@@ -21,10 +21,11 @@
 <%@attribute name="site" type="java.lang.String" description="Site to display"%>
 <%@attribute name="status" type="java.lang.String" description="Status to display"%>
 <%@attribute name="device" type="java.lang.String" description="Device to display"%>
+<%@attribute name="labels" type="java.lang.String" description="Label id to display"%>
 
 <sql:query var="runs">
     select * from (
-    select r.runInt,r.runNumber,a.begin,a.end,p.name,a.id ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,
+    select r.runInt,r.runNumber,a.begin,a.end,p.name,a.id ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,ll.labels,
     (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount,
     (select count(*) from Activity aa join FloatResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as floatCount,
     (select count(*) from Activity aa join IntResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as intCount,
@@ -41,6 +42,15 @@
     join Location l on (l.id=hlh.locationId)
     join Site i on (i.id=l.siteId)
     join RunNumber r on (r.rootActivityId=a.id)
+    left outer join ( 
+    select lh.objectId,group_concat(concat(lg.name,':',l.name) ORDER BY lg.name, l.name SEPARATOR ', ') labels,group_concat(l.id ORDER BY lg.name, l.name) lids
+    from Label l
+    join LabelGroup lg on (lg.id=l.labelgroupid)
+    join Labelable la on (la.id=lg.labelableid and la.tableName='RunNumber')
+    join LabelHistory lh on (lh.id=(select max(id) from LabelHistory lhh where lhh.objectid=lh.objectId and lhh.LabelableId=la.id and lhh.labelId=l.id))
+    where lh.adding=true
+    group by lh.objectId
+    ) ll on (ll.objectId=r.id)
     where a.parentActivityId is null 
     <c:if test="${mostRecent}">
         and a.id=(select max(id) from Activity aaa where aaa.processId=a.processId and aaa.hardwareId=a.hardwareId)
@@ -81,6 +91,20 @@
             and f.isFinal=false
         </c:when>
     </c:choose>
+    <c:choose>
+        <c:when test="${labels=='any'}">
+        </c:when>
+        <c:when test="${labels=='anyLabel'}">
+            and lids is not null
+        </c:when>
+        <c:when test="${labels=='none'}">
+            and lids is null
+        </c:when>
+        <c:when test="${!empty labels}">
+            and find_in_set(?,lids)<>0
+            <sql:param value="${labels}"/>
+        </c:when>
+    </c:choose>   
     ) x
 </sql:query>
 
@@ -100,6 +124,7 @@
     <display:column property="status" title="Status" sortable="true"/>
     <display:column property="subsystem" title="Subsystem" sortable="true"/>
     <display:column property="site" title="Site" sortable="true"/>
+    <display:column property="labels" title="Labels" sortable="true"/>
     <display:column sortProperty="begin" title="Begin (UTC)" sortable="true">
         <fmt:formatDate value="${run.begin}" pattern="yyyy-MM-dd HH:mm:ss"/>
     </display:column>

@@ -27,7 +27,7 @@
 
         <sql:query var="result">
             select * from (
-            select r.runInt,r.runNumber,a.begin,a.end,a.id,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,
+            select r.runInt,r.runNumber,a.begin,a.end,a.id,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,ll.labels,
             (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount,
             (select count(*) from Activity aa join FloatResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as floatCount,
             (select count(*) from Activity aa join IntResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as intCount,
@@ -44,6 +44,15 @@
             join Location l on (l.id=hlh.locationId)
             join Site i on (i.id=l.siteId)
             join RunNumber r on (r.rootActivityId=a.id)
+            left outer join ( 
+                select lh.objectId,group_concat(concat(lg.name,':',l.name) ORDER BY lg.name, l.name SEPARATOR ', ') labels,group_concat(l.id ORDER BY lg.name, l.name) lids
+                from Label l
+                join LabelGroup lg on (lg.id=l.labelgroupid)
+                join Labelable la on (la.id=lg.labelableid and la.tableName='RunNumber')
+                join LabelHistory lh on (lh.id=(select max(id) from LabelHistory lhh where lhh.objectid=lh.objectId and lhh.LabelableId=la.id and lhh.labelId=l.id))
+                where lh.adding=true
+                group by lh.objectId
+            ) ll on (ll.objectId=r.id)
             where a.parentActivityId is null 
             and r.runInt = ?
             ) x
@@ -64,6 +73,7 @@
             <utils:trEvenOdd><th>Status</th><td>${run.status}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Subsystem</th><td>${run.subsystem}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Site</th><td>${run.site}</td></utils:trEvenOdd>
+            <utils:trEvenOdd><th>Labels</th><td>${run.labels}</td></utils:trEvenOdd>
             <utils:trEvenOdd><th>Begin</th><td><fmt:formatDate value="${run.begin}" pattern="yyyy-MM-dd HH:mm:ss"/></td></utils:trEvenOdd>
             <utils:trEvenOdd><th>End</th><td><fmt:formatDate value="${run.end}" pattern="yyyy-MM-dd HH:mm:ss"/></td></utils:trEvenOdd>
             </table>

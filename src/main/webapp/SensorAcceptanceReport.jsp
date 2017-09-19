@@ -9,6 +9,8 @@
 <%@taglib prefix="dp" tagdir="/WEB-INF/tags/dataportal"%>
 <%@taglib prefix="ru" tagdir="/WEB-INF/tags/reports"%>
 <%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
+<%@taglib prefix="sensorutils" uri="http://camera.lsst.org/sensorutils" %>
+
 
 <html>
     <head>
@@ -111,21 +113,14 @@
             <c:if test="${sensorTS3.rowCount>0}">
                 <c:set var="HaveTS3Data" value="true"/>
                 <c:set var="SREOT01end" value="${sensorTS3.rows[0].end}"/>  
-                
-                 <sql:query var="eotestTS3VerQ">
-                SELECT name, value FROM StringResultHarnessed 
-                WHERE activityId=? AND name="eotest_version"
-                <sql:param value="${TS3ActId}"/>
-            </sql:query>
-                <c:if test="${eotestTS3VerQ.rowCount>0}">
-                    <c:set var="eotestTS3Version" value="${eotestTS3VerQ.rows[0].value}"/>
-                    eotestTS3Version = ${eotestTS3Version}
-                </c:if>
-                <%--
-                pActId2 = ${pActId2}
-                ${HaveTS3Data}
-                rowCount ${sensorTS3.rowCount}
-                --%>
+                <c:choose>
+                    <c:when test = "${empty param.ts3eotestVer}">
+                        <c:set var="ts3eotestVer" value="${sensorutils:getEoTestVersion(pageContext.session, 'SR-EOT-1', 'test_report', lsstId, appVariables.dataSourceMode, true)}"/>
+                    </c:when>
+                    <c:otherwise>
+                         <c:set var="ts3eotestVer" value="${param.ts3eotestVer}"/>   
+                    </c:otherwise>
+                </c:choose>
             </c:if>
         </c:if>
 
@@ -207,24 +202,43 @@
                 <h1>Sensor Acceptance Status <a href="${hdwLink}" target="_blank"><c:out value="${lsstId}"/></a></h1>
 
                 <c:if test="${HaveVendData}">
+                    <%-- Despite setting timezone to UTC this is being converted to another timezone
                     Generated Vendor-Vendor <fmt:formatDate value="${SRRCV1end}" pattern="yyy-MM-dd HH:mm z"/>
+                    --%>
+                    Generated Vendor-Vendor <c:out value="${SRRCV1end}"/> UTC
                     <br/>
                     <br/>
                 </c:if>
 
+                    <%--  This is converting the time to something other than UTC, despite timezone being set above
                 Generated Vendor-LSST <fmt:formatDate value="${end}" pattern="yyy-MM-dd HH:mm z"/>
+                    --%>
+                    Generated Vendor-LSST <c:out value="${end}"/> UTC
+                
+                    <c:choose>
+                    <c:when test = "${empty param.eotestVer}">
+                        <c:set var="eotestVer" value="${sensorutils:getEoTestVersion(pageContext.session, 'SR-EOT-02', 'test_report_offline', lsstId, appVariables.dataSourceMode, true)}"/>
+                    </c:when>
+                    <c:otherwise>
+                         <c:set var="eotestVer" value="${param.eotestVer}"/>   
+                    </c:otherwise>
+                </c:choose>
+                    
                         <font color="purple">
                         &nbsp;&nbsp;&nbsp;&nbsp
-                        <b>eotest Version: <c:out value="${param.eotestVer}"/></b>
+                        <b>eotest Version: <c:out value="${eotestVer}"/></b>
                     </font>
 
                 <c:if test="${HaveTS3Data}">
                     <br/>
+                    <%-- This is converting to a timezone other than UTC, despite timezone being set above
                     Generated LSST-LSST <fmt:formatDate value="${SREOT01end}" pattern="yyy-MM-dd HH:mm z"/>
+                    --%>
+                    Generated LSST-LSST <c:out value="${SREOT01end}"/> UTC
                     
                         <font color="purple">
                         &nbsp;&nbsp;&nbsp;&nbsp
-                        <b>eotest Version: <c:out value="${param.ts3eotestVer}"/></b>
+                        <b>eotest Version: <c:out value="${ts3eotestVer}"/></b>
                     </font>
                     <br/>
                 </c:if>

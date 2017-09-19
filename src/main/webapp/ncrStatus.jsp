@@ -86,7 +86,7 @@
 
 
 <%-- defaultsort index starts from 1 --%>
-<display:table name="${ncrTable}" export="true" defaultsort="4" defaultorder="descending" class="datatable" id="hdl" >
+<display:table name="${ncrTable}" export="true" defaultsort="1" defaultorder="descending" class="datatable" id="hdl" >
     <display:column title="NCR Number" sortable="true" sortProperty="rootActivityId" >
         <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
             <c:param name="activityId" value="${hdl.rootActivityId}"/>
