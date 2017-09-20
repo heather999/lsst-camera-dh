@@ -30,12 +30,14 @@ import org.lsst.camera.portal.data.HdwStatusLoc;
 import org.lsst.camera.portal.data.HdwStatusRelationship;
 import org.lsst.camera.portal.data.Activity;
 import org.lsst.camera.portal.data.NcrData;
+import org.lsst.camera.portal.data.NcrMissingSignatures;
 import org.lsst.camera.portal.data.TravelerInfo;
 import org.lsst.camera.portal.data.ReportData;
 import org.lsst.camera.portal.data.TestReportPathData;
 import org.lsst.camera.portal.data.ComponentData;
 import org.lsst.camera.portal.data.CatalogFileData;
 import org.lsst.camera.portal.data.SensorAcceptanceData;
+import org.lsst.camera.portal.queries.eTApi;
 import org.srs.web.base.db.ConnectionManager;
 
 
@@ -497,6 +499,37 @@ public class QueryUtils {
         return result;
     }
      
+    public static List<NcrMissingSignatures> findMissingSignatures(String runNum, int hdwId, String db) {
+        List<NcrMissingSignatures> result = new ArrayList<>();
+
+        try {
+            Map<Integer, Object> etResults = eTApi.getMissingSignatures(db);
+
+            HashMap<String, Object> expData = (HashMap<String, Object>) etResults.get(hdwId);
+        // Parse the results to find all the activities for this runNum and hdwId that have missing sigs
+
+            HashMap<String, Object> runData = (HashMap<String, Object>) expData.get(runNum);
+
+            HashMap<String, Object> stepData = (HashMap<String, Object>) runData.get("steps");
+            // iterate over the steps, and then iterate over the list of substeps with missing sigs
+
+            for (String step : stepData.keySet()) {
+                ArrayList<Object> inputs = (ArrayList<Object>) stepData.get(step);
+                for (Object sigObj : inputs) {
+                    HashMap<String, Object> sig = (HashMap<String, Object>) sigObj;
+                    if (((String) sig.get("signerValue")).isEmpty()) {
+                        NcrMissingSignatures myobj = new NcrMissingSignatures((Integer) sig.get("activityId"), runNum, (String) sig.get("signerRequest"));
+                        result.add(myobj);
+                    }
+
+                }
+            }
+            return result;
+        } catch (Exception e) {
+            return null;
+        }
+
+    }
    
     public static Boolean processNcr(HttpSession session, Integer ncrActId, Integer labelId) throws SQLException {
         Boolean result = false; // Does not satisfy Label constraints
@@ -567,7 +600,7 @@ public class QueryUtils {
         return result;
     }
     
-    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status) throws SQLException {
+    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status, String db) throws SQLException {
         List<NcrData> result = new ArrayList<>();
         String lower_lsstNum = lsstNum.toLowerCase();
         Connection c = null;
@@ -608,9 +641,10 @@ public class QueryUtils {
             }
             ResultSet r = ncrStatement.executeQuery();
             while (r.next()) {
+                int hdwId = r.getInt("hdwId");
                 PreparedStatement actStatement = c.prepareStatement("SELECT A.id AS actId, A.rootActivityId, A.creationTS "
                         + "FROM Activity A WHERE A.inNCR='TRUE' AND A.hardwareId=? ORDER BY rootActivityId DESC");
-                actStatement.setInt(1, r.getInt("hdwId"));
+                actStatement.setInt(1, hdwId);
                 ResultSet a = actStatement.executeQuery();
                 int lastRootActId = 0;
                 Boolean firstTime = true;
@@ -630,7 +664,7 @@ public class QueryUtils {
                     // If ANY(0) then skip this check and carry on
                     if (priority!=0 && (processNcr(session,curRootActId,priority) == false))
                         continue;
-                    
+                                        
                     PreparedStatement ncrStartStatement = c.prepareStatement("SELECT creationTS FROM Activity "
                             + "WHERE Activity.rootActivityId=?");
                     ncrStartStatement.setInt(1, a.getInt("rootActivityId"));
@@ -654,6 +688,8 @@ public class QueryUtils {
                     }
                     String ncrRunNum = getRunNumberFromRootActivityId(session, a.getInt("rootActivityId"));
                     
+                    List<NcrMissingSignatures> missing = findMissingSignatures(ncrRunNum, hdwId, db);
+
                     PreparedStatement currentStepStatement = c.prepareStatement("SELECT P.name "
                             + "FROM Activity A "
                             + "inner join ActivityStatusHistory ASH on ASH.id = (select max(id) from ActivityStatusHistory where activityId = A.id) "
@@ -675,6 +711,7 @@ public class QueryUtils {
                             startResult.getTimestamp("creationTS"));
                     ncr.setHdwId(r.getInt("hdwId"));
                     ncr.setCurrentStep(currentStepName);
+                    if (missing != null) ncr.setMissingSigs(missing);
                     PreparedStatement ncrObjIdStatement = c.prepareStatement("SELECT id from Exception "
                             + "WHERE NCRActivityId = ?");
                     ncrObjIdStatement.setInt(1,curRootActId);
@@ -1028,9 +1065,9 @@ public class QueryUtils {
         }
         return result;
     }
-    
+     
     public static List getSensorAcceptanceTable(HttpSession session, String lsstNum, String manuFilter,
-            Integer auth, Integer accept, Integer ncr) throws SQLException  {
+            Integer auth, Integer accept, Integer ncr, String db) throws SQLException  {
         List<SensorAcceptanceData> result = new ArrayList<>();
         HashMap<Integer, Boolean> sensorsFound = new HashMap<>();
 
@@ -1280,7 +1317,7 @@ public class QueryUtils {
                 
                 // Check for NCRs
                 // no constraint on subsystem or labels
-                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0,0).size() > 0);
+                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0,0,db).size() > 0);
                 if (ncr != 0) { // if we're filtering on NCRs other than Any
                     if ((ncr == 1) && (sensorData.getAnyNcrs()==true)) // Filter on No NCRs
                         continue;

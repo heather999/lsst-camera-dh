@@ -4,7 +4,11 @@
  * and open the template in the editor.
  */
 package org.lsst.camera.portal.data;
+import org.lsst.camera.portal.data.NcrMissingSignatures;
 import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
+
 /**
  *
  * @author heather
@@ -24,6 +28,8 @@ public class NcrData {
     private java.util.Date ncrCreationTime;
     private String priority;
     private String currentStep;
+    private int numMissingSigs;
+    private List<NcrMissingSignatures> missingSigs;
     
     public NcrData(int actId, int rootId, String runN, String lsstId, String typeName, int sId, String sName, Date b, Boolean f,
             Date create) {
@@ -40,7 +46,8 @@ public class NcrData {
         this.ncrCreationTime = create;
         this.priority = "";
         this.currentStep = "";
-       
+        this.missingSigs = new ArrayList<>();
+        this.numMissingSigs = 0;
     }
 
     public Integer getActivityId() {
@@ -145,4 +152,19 @@ public class NcrData {
         currentStep = p == null || "".equals(p) ? "NA" : p;
     }
     
+   
+    public void setMissingSigs(List<NcrMissingSignatures> m) {
+        if (!m.isEmpty()) {
+            missingSigs.addAll(m);
+            numMissingSigs = missingSigs.size();
+        }
+    }
+    
+    public List<NcrMissingSignatures> getMissingSigs() {
+        return missingSigs;
+    }
+    
+    public int getNumMissingSigs() {
+        return numMissingSigs;
+    }
 }
