@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
+import java.util.List;
 import java.io.IOException;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -172,19 +173,10 @@ public class eTApi {
   public static Map getResultsJH_schema(String db, Boolean prodServer, String travelerName, String hardwareType,
           String stepName, String schemaName, String experimentSN) 
     throws UnsupportedEncodingException, EtClientException, IOException {
-    //boolean prodServer=false;
-    //System.out.println("\n\nRunning testGetResultsJH_schema");
-    //System.out.println("prodServer is " + prodServer);
-    //boolean localServer=false;
-    //System.out.println("localServer is " + localServer);
 
     EtClientServices myService =
       new EtClientServices(db, null, prodServer);
-    //String travelerName="SR-EOT-1";
-    //String hardwareType="ITL-CCD";
-    //String stepName="read_noise";
-    //String schemaName="package_versions";
-    //String experimentSN="ITL-3800C-021";
+    
 
     String function="getResultsJH";
     System.out.println("Arguments are travelerName=" + travelerName +
@@ -211,6 +203,56 @@ public class eTApi {
       myService.close();
     }
   }
+  
+  
+  public static Map getMissingSignatures(String db)
+    throws UnsupportedEncodingException, EtClientException, IOException {
+    boolean prodServer = false;
+    boolean localServer = false;
+    String appSuffix="-jrb";
+
+    //String db="Prod";
+    
+    ArrayList<String> statusL = new ArrayList<>();
+    statusL.add("inProgress");
+    statusL.add("paused");
+    statusL.add("stopped");
+    statusL.add("new");
+    
+    EtClientServices myService =
+      new EtClientServices(db, null, prodServer, localServer, appSuffix);
+
+    try {
+      HashMap<Integer, Object> results =
+        myService.getMissingSignatures(statusL);
+      return results;
+//      for (Integer hid: results.keySet()) {
+//        HashMap<String, Object> expData = (HashMap<String, Object>) results.get(hid);
+        /* NOTE:  Following is  certainly not quite right. 
+               At the very least, printManualSteps won't do the
+               right thing since step data is an array list (of maps),
+               not a map
+         */
+//        for (String run : expData.keySet()) {
+//          HashMap<String, Object> runData =
+//            (HashMap<String, Object>) expData.get(run);
+          //for (String key : runData.keySet())  {
+          //  if (!key.equals("steps")) {   // general run info
+          //    System.out.println(key + ":" + runData.get(key));
+          //  }
+//          }
+//          printMissingSigs((HashMap<String, Object>) runData.get("steps"));
+ //       }
+      //}
+    } catch (Exception ex) {
+      System.out.println("Post failed with message " + ex.getMessage());
+      throw new EtClientException(ex.getMessage());
+    } finally {
+      myService.close();
+    }
+  }
+
+  
 
   /* New Stuff
   @Ignore @Test

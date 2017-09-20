@@ -82,7 +82,7 @@
     <c:set var="selectedLsstId" value="${param.lsstId}" scope="page"/>
 </c:if>
 
-<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem, label, priorityLab, ncrStatus)}"/>
+<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem, label, priorityLab, ncrStatus, appVariables.dataSourceMode)}"/>
 
 
 <%-- defaultsort index starts from 1 --%>
@@ -124,6 +124,15 @@
                 </font>
             </c:otherwise>
         </c:choose>
+    </display:column>
+    <display:column title="Signatures<br>Missing" sortable="true" >${hdl.numMissingSigs}</display:column>
+    <display:column title="Signature<br>Groups" sortable="true" >
+            <c:if test="${hdl.numMissingSigs != 0}">
+                <c:forEach items="${hdl.missingSigs}" var="m"> 
+                    ${m.group}<br>
+                </c:forEach>
+            </c:if>
+
     </display:column>
     <display:setProperty name="export.excel.filename" value="ncrStatus.xls"/> 
     <display:setProperty name="export.csv.filename" value="ncrStatus.csv"/> 

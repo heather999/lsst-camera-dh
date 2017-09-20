@@ -49,7 +49,7 @@
             </filter:filterTable>
 
         
-        <c:set var="sensorsWithAcceptance" value="${portal:getSensorAcceptanceTable(pageContext.session, lsst_num, manu, authorized, accept, ncr)}"/>
+        <c:set var="sensorsWithAcceptance" value="${portal:getSensorAcceptanceTable(pageContext.session, lsst_num, manu, authorized, accept, ncr, appVariables.dataSourceMode)}"/>
 
         <display:table name="${sensorsWithAcceptance}" export="true" class="datatable" id="sen" defaultsort="1" >
             <display:column title="Sensor" sortProperty="lsstId" sortable="true" class="sortable" >
