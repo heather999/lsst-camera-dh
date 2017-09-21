@@ -126,7 +126,7 @@
         </c:choose>
     </display:column>
     <display:column title="Signatures<br>Missing" sortable="true" >${hdl.numMissingSigs}</display:column>
-    <display:column title="Signature<br>Groups" sortable="true" >
+    <display:column title="Signature<br>Groups<br>Missing" sortable="true" >
             <c:if test="${hdl.numMissingSigs != 0}">
                 <c:forEach items="${hdl.missingSigs}" var="m"> 
                     ${m.group}<br>

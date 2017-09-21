@@ -109,6 +109,8 @@
             <display:column title="Accepted" sortable="true" >
                 <c:choose>
                     <c:when test="${empty sen.sensorAccepted}">  <%-- if sensorAccepted flag is unavailable --%>
+                        NA
+                        <%--
                         <c:choose>
                             <c:when test="${empty sen.sensorAcceptedStatus}">
                                 NA
@@ -117,6 +119,7 @@
                                 ${sen.sensorAcceptedStatus}
                             </c:otherwise>
                         </c:choose>
+                        --%>
                     </c:when>
                     <c:otherwise> <%-- check sensor Acceptance --%>
                         <c:choose>
