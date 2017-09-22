@@ -600,7 +600,7 @@ public class QueryUtils {
         return result;
     }
     
-    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status, String db) throws SQLException {
+    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status, String db, Boolean signatures) throws SQLException {
         List<NcrData> result = new ArrayList<>();
         String lower_lsstNum = lsstNum.toLowerCase();
         Connection c = null;
@@ -689,6 +689,7 @@ public class QueryUtils {
                     String ncrRunNum = getRunNumberFromRootActivityId(session, a.getInt("rootActivityId"));
                     
                     List<NcrMissingSignatures> missing = findMissingSignatures(ncrRunNum, hdwId, db);
+                    if (signatures && missing==null) continue; // if only searching for signatures, skip those w/o missing sigs
 
                     PreparedStatement currentStepStatement = c.prepareStatement("SELECT P.name "
                             + "FROM Activity A "
@@ -1317,7 +1318,7 @@ public class QueryUtils {
                 
                 // Check for NCRs
                 // no constraint on subsystem or labels
-                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0,0,db).size() > 0);
+                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0,0,db,false).size() > 0);
                 if (ncr != 0) { // if we're filtering on NCRs other than Any
                     if ((ncr == 1) && (sensorData.getAnyNcrs()==true)) // Filter on No NCRs
                         continue;
