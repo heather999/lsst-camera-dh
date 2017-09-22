@@ -39,6 +39,8 @@ import org.lsst.camera.portal.data.CatalogFileData;
 import org.lsst.camera.portal.data.SensorAcceptanceData;
 import org.lsst.camera.portal.queries.eTApi;
 import org.srs.web.base.db.ConnectionManager;
+import org.srs.groupmanager.GroupManager;
+import org.srs.groupmanager.UserInfo;
 
 
 
@@ -501,7 +503,7 @@ public class QueryUtils {
      
     public static List<NcrMissingSignatures> findMissingSignatures(String runNum, int hdwId, String db) {
         List<NcrMissingSignatures> result = new ArrayList<>();
-
+        
         try {
             Map<Integer, Object> etResults = eTApi.getMissingSignatures(db);
 
@@ -518,7 +520,15 @@ public class QueryUtils {
                 for (Object sigObj : inputs) {
                     HashMap<String, Object> sig = (HashMap<String, Object>) sigObj;
                     if (((String) sig.get("signerValue")).isEmpty()) {
-                        NcrMissingSignatures myobj = new NcrMissingSignatures((Integer) sig.get("activityId"), runNum, (String) sig.get("signerRequest"));
+                        String group = (String) sig.get("signerRequest");
+                        List<UserInfo> gmUserInfo = GroupManager.getListOfUsersInGroup(group, "LSST-CAMERA");
+                        List<String> names = new ArrayList<>();
+                        Iterator<UserInfo> iterator = gmUserInfo.iterator();
+                        while (iterator.hasNext()) {
+                            UserInfo t = iterator.next();
+                            names.add(t.getFullName());
+                        }
+                        NcrMissingSignatures myobj = new NcrMissingSignatures((Integer) sig.get("activityId"), runNum, group, names);
                         result.add(myobj);
                     }
 
@@ -530,12 +540,14 @@ public class QueryUtils {
         }
 
     }
-   
+
     public static Boolean processNcr(HttpSession session, Integer ncrActId, Integer labelId) throws SQLException {
         Boolean result = false; // Does not satisfy Label constraints
-        if (labelId == 0) return true; // Any should always return true
+        if (labelId == 0) {
+            return true; // Any should always return true
+        }
         Integer actualLabel = labelId;
-       
+
         // Handle all other labels
         Connection c = null;
         try {
@@ -547,9 +559,9 @@ public class QueryUtils {
                         + "from Label L "
                         + "inner join LabelGroup LG on LG.id=L.labelGroupId "
                         + "INNER JOIN Labelable LL on LL.id=LG.labelableId "
-                        + "WHERE LOWER(LL.name)=\"ncr\" " 
+                        + "WHERE LOWER(LL.name)=\"ncr\" "
                         + "AND LOWER(L.name)=\"mistake\"");
-        
+
                 ResultSet mistake = mistakeStatement.executeQuery();
                 if (mistake.first()) {
                     actualLabel = mistake.getInt("theLabelId");
@@ -558,13 +570,13 @@ public class QueryUtils {
                 }
 
             }
-            
+
             // Check if this particular label Id is set on this NCR Exception object
-            PreparedStatement labelStatement = c.prepareStatement("SELECT LH.adding FROM LabelHistory LH " 
-                    + "WHERE LH.objectId IN (SELECT Exception.id from Exception WHERE NCRActivityId = ?) " 
+            PreparedStatement labelStatement = c.prepareStatement("SELECT LH.adding FROM LabelHistory LH "
+                    + "WHERE LH.objectId IN (SELECT Exception.id from Exception WHERE NCRActivityId = ?) "
                     + "AND LH.labelId = ? ORDER BY LH.id DESC");
-            labelStatement.setInt(1,ncrActId);
-            labelStatement.setInt(2,actualLabel);
+            labelStatement.setInt(1, ncrActId);
+            labelStatement.setInt(2, actualLabel);
             ResultSet r = labelStatement.executeQuery();
             if (r.first()) { // found a match
                 Integer adding = r.getInt("adding");
@@ -576,7 +588,7 @@ public class QueryUtils {
                     }
                 } else { // ExcludingMistakes, we find one, we should ignore this NCR
                     if (adding == 1) {
-                        result = false; 
+                        result = false;
                     } else {
                         result = true;
                     }
@@ -588,7 +600,7 @@ public class QueryUtils {
                     result = false;
                 }
             }
-          
+
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -600,7 +612,7 @@ public class QueryUtils {
         return result;
     }
     
-    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status, String db) throws SQLException {
+    public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status, String db, Boolean signatures) throws SQLException {
         List<NcrData> result = new ArrayList<>();
         String lower_lsstNum = lsstNum.toLowerCase();
         Connection c = null;
@@ -689,6 +701,7 @@ public class QueryUtils {
                     String ncrRunNum = getRunNumberFromRootActivityId(session, a.getInt("rootActivityId"));
                     
                     List<NcrMissingSignatures> missing = findMissingSignatures(ncrRunNum, hdwId, db);
+                    if (signatures && missing==null) continue; // if only searching for signatures, skip those w/o missing sigs
 
                     PreparedStatement currentStepStatement = c.prepareStatement("SELECT P.name "
                             + "FROM Activity A "
@@ -1317,7 +1330,7 @@ public class QueryUtils {
                 
                 // Check for NCRs
                 // no constraint on subsystem or labels
-                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0,0,db).size() > 0);
+                sensorData.setAnyNcrs(getNcrTable(session,lsstId,0,0,0,0,db,false).size() > 0);
                 if (ncr != 0) { // if we're filtering on NCRs other than Any
                     if ((ncr == 1) && (sensorData.getAnyNcrs()==true)) // Filter on No NCRs
                         continue;
