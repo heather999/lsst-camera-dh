@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.lsst.camera</groupId>
     <artifactId>org-lsst-camera-portal-web</artifactId>
-    <version>0.5.3-SNAPSHOT</version>
+    <version>0.5.5-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>LSST Camera Data Portal</name>    
 
@@ -51,7 +51,7 @@
         <dependency>
             <groupId>org.lsst.camera</groupId>
             <artifactId>org-lsst-camera-etraveler-javaclient</artifactId>
-            <version>1.5.3-SNAPSHOT</version>
+            <version>1.5.3</version>
         </dependency>
         <dependency>
             <groupId>srs</groupId>
