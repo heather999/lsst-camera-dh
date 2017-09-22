@@ -71,7 +71,7 @@
                 </c:choose>
             </display:column>
             <display:column title="Signatures<br>Missing" sortable="true" >${hdl.numMissingSigs}</display:column>
-            <display:column title="Signature<br>Groups" sortable="true" >
+            <display:column title="Signature<br>Groups<br>Missing" sortable="true" >
                 <c:if test="${hdl.numMissingSigs != 0}">
                     <c:forEach items="${hdl.missingSigs}" var="m"> 
                         ${m.group}<br>
@@ -116,9 +116,14 @@
                 </c:if>
             </display:column>
                 
-                <%--
-    <display:column title="Members" > </display:column>
-                --%>
+    <display:column title="Members" > 
+        <c:if test = "${hdl.numMissingSigs != 0}">
+            <c:forEach items="${hdl.missingSigs}" var="n">
+                ${n.gmNames}<br>   
+            </c:forEach>
+        </c:if>
+    </display:column>
+                
 
                 <display:setProperty name="export.excel.filename" value="ncrStatus.xls"/> 
                 <display:setProperty name="export.csv.filename" value="ncrStatus.csv"/> 
