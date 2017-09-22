@@ -207,11 +207,9 @@ public class eTApi {
   
   public static Map getMissingSignatures(String db)
     throws UnsupportedEncodingException, EtClientException, IOException {
-    boolean prodServer = false;
+    boolean prodServer = true;
     boolean localServer = false;
-    String appSuffix="-jrb";
-
-    //String db="Prod";
+    //String appSuffix="-jrb";
     
     ArrayList<String> statusL = new ArrayList<>();
     statusL.add("inProgress");
@@ -220,7 +218,7 @@ public class eTApi {
     statusL.add("new");
     
     EtClientServices myService =
-      new EtClientServices(db, null, prodServer, localServer, appSuffix);
+      new EtClientServices(db, null, prodServer, localServer);
 
     try {
       HashMap<Integer, Object> results =
