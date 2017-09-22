@@ -90,14 +90,14 @@
 
         <display:table name="${ncrTable}" export="true" defaultsort="1" defaultorder="descending" class="datatable" id="hdl" >
 
-                <display:column title="NCR Number" sortable="true" sortProperty="rootActivityId" >
-                    <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
-                        <c:param name="activityId" value="${hdl.rootActivityId}"/>
-                        <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
-                    </c:url>
-                    <a href="${actLink}" target="_blank">${hdl.rootActivityId}</a>
-                </display:column>
-                
+            <display:column title="NCR Number" sortable="true" sortProperty="rootActivityId" >
+                <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
+                    <c:param name="activityId" value="${hdl.rootActivityId}"/>
+                    <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+                </c:url>
+                <a href="${actLink}" target="_blank">${hdl.rootActivityId}</a>
+            </display:column>
+
             <display:column title="LSST_NUM" sortable="true" sortProperty="lsstNum">
                 <c:url var="hdwNcrLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
                     <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
@@ -107,28 +107,20 @@
             </display:column>
             <display:column title="Run Number" sortable="true" >${hdl.runNum}</display:column>
 
-<display:column title="Signatures<br>Missing" sortable="true" >${hdl.numMissingSigs}</display:column>
+            <display:column title="Signatures<br>Missing" sortable="true" >${hdl.numMissingSigs}</display:column>
             <display:column title="Signature<br>Groups<br>Missing" sortable="true" >
                 <c:if test="${hdl.numMissingSigs != 0}">
                     <c:forEach items="${hdl.missingSigs}" var="m"> 
-                        ${m.group}<br>
+                        <font color="purple"> <b>${m.group}</b></font><br>
+                        ${m.gmNames}<br>
                     </c:forEach>
                 </c:if>
             </display:column>
-                
-    <display:column title="Members" > 
-        <c:if test = "${hdl.numMissingSigs != 0}">
-            <c:forEach items="${hdl.missingSigs}" var="n">
-                ${n.gmNames}<br>   
-            </c:forEach>
-        </c:if>
-    </display:column>
-                
 
-                <display:setProperty name="export.excel.filename" value="ncrStatus.xls"/> 
-                <display:setProperty name="export.csv.filename" value="ncrStatus.csv"/> 
-                <display:setProperty name="export.xml.filename" value="ncrStatus.xml"/> 
-               
+            <display:setProperty name="export.excel.filename" value="ncrStatus.xls"/> 
+            <display:setProperty name="export.csv.filename" value="ncrStatus.csv"/> 
+            <display:setProperty name="export.xml.filename" value="ncrStatus.xml"/> 
+
         </display:table>
     </c:otherwise>
 </c:choose>
