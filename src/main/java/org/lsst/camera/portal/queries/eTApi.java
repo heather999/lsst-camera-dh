@@ -4,11 +4,6 @@ package org.lsst.camera.portal.queries;
 import org.lsst.camera.etraveler.javaclient.EtClientServices;
 import org.lsst.camera.etraveler.javaclient.EtClientException;
 
-//import junit.framework.TestCase;
-//import org.junit.Before;
-//import org.junit.Test;
-//import org.junit.Ignore;
-//import static org.junit.Assert.*;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -32,7 +27,6 @@ public class eTApi {
   
   public static Map getRunInfo(String db, Boolean prodServer) throws UnsupportedEncodingException,
                                       EtClientException, IOException {
-    //boolean prodServer = false;
     System.out.println("\nRunning testGetRunInfo");
     System.out.println("prodServer is " + prodServer);
     EtClientServices myService = new EtClientServices(db, null, prodServer);
@@ -40,7 +34,6 @@ public class eTApi {
     try {
       Map<String, Object> results = myService.getRunInfo(200);
 
- //     assertNotNull(results);
       for (String k: results.keySet() ) {
         Object v = results.get(k);
         if (v == null) {
@@ -75,7 +68,6 @@ public class eTApi {
       Map<String, Object> results =
         myService.getManufacturerId("E2V-CCD250-179", "e2v-CCD");
 
-      //assertNotNull(results);
       for (String k: results.keySet() ) {
         Object v = results.get(k);
         if (v == null) {
@@ -130,7 +122,6 @@ public class eTApi {
     
    public static Map getResultsJH(String db, Boolean prodServer) 
     throws UnsupportedEncodingException, EtClientException, IOException {
-    //boolean prodServer=false;
     System.out.println("\n\nRunning testGetResultsJH");
     System.out.println("prodServer is " + prodServer);
     boolean localServer=false;
@@ -214,8 +205,6 @@ public class eTApi {
     ArrayList<String> statusL = new ArrayList<>();
     statusL.add("inProgress");
     statusL.add("paused");
-    statusL.add("stopped");
-    statusL.add("new");
     
     EtClientServices myService =
       new EtClientServices(db, null, prodServer, localServer);
@@ -224,24 +213,6 @@ public class eTApi {
       HashMap<Integer, Object> results =
         myService.getMissingSignatures(statusL);
       return results;
-//      for (Integer hid: results.keySet()) {
-//        HashMap<String, Object> expData = (HashMap<String, Object>) results.get(hid);
-        /* NOTE:  Following is  certainly not quite right. 
-               At the very least, printManualSteps won't do the
-               right thing since step data is an array list (of maps),
-               not a map
-         */
-//        for (String run : expData.keySet()) {
-//          HashMap<String, Object> runData =
-//            (HashMap<String, Object>) expData.get(run);
-          //for (String key : runData.keySet())  {
-          //  if (!key.equals("steps")) {   // general run info
-          //    System.out.println(key + ":" + runData.get(key));
-          //  }
-//          }
-//          printMissingSigs((HashMap<String, Object>) runData.get("steps"));
- //       }
-      //}
     } catch (Exception ex) {
       System.out.println("Post failed with message " + ex.getMessage());
       throw new EtClientException(ex.getMessage());
@@ -250,6 +221,25 @@ public class eTApi {
     }
   }
 
+
+public static Map getContainingHardware(String db, Boolean prodServer, String experimentSN, String hardwareTypeName) 
+            throws UnsupportedEncodingException, EtClientException, IOException {
+
+    EtClientServices myService = new EtClientServices(db, null, prodServer);
+
+    try {
+      Map<String, Object> results =
+        myService.getContainingHardwareHierarchy(experimentSN, hardwareTypeName);
+      return results;   
+      
+    } catch (Exception ex) {
+      System.out.println("post failed with message " + ex.getMessage());
+      throw new EtClientException(ex.getMessage());
+    }
+    finally {
+      myService.close();
+    }
+  }
   
 
   /* New Stuff

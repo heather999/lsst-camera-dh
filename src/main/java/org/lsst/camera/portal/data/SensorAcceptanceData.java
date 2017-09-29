@@ -34,18 +34,9 @@ public class SensorAcceptanceData {
     private java.util.Date sensorAcceptedDate;
     private List<NcrData> allNcrs;
     private Boolean anyNcrs;
-//    private String status;
-//    private String location;
-//    private String site;
-//    private java.util.Date creationDate;
-//    private String curTravelerName;
- //   private String curActivityProcName;
- //   private String curActivityStatus;
- //   private java.util.Date curTravBeginTime;
- //   private java.util.Date curActivityLastTime;
-    //private Boolean inNCR;
-    //private HashMap<Integer,String> labelMap = new HashMap<>();
-    
+    private String grade;
+    private String contract;
+    private String rtm;
    
     public void setLsstId(String id) {
         lsstId = id == null || "".equals(id) ? "NA" : id; 
@@ -140,6 +131,18 @@ public class SensorAcceptanceData {
     
     public void setAnyNcrs(Boolean b) {
         anyNcrs = b;
+    }
+    
+    public void setGrade(String s) {
+        grade = s == null || "".equals(s) ? "NA" : s; 
+    }
+    
+     public void setContract(String s) {
+        contract = s == null || "".equals(s) ? "NA" : s; 
+    }
+    
+    public void setRtm(String s) {
+        rtm = s == null || "".equals(s) ? "NA" : s; 
     }
     
     public void setValues(String id, String ver, Integer i) {
@@ -240,16 +243,16 @@ public class SensorAcceptanceData {
         return anyNcrs;
     }
     
-    //
-    //public String getNcrRunNumber(Integer i) {
-    //    if (i < allNcrs.size() && i > 0) {
-    //        return allNcrs[i].getRunNum();
-    //    }
-   // }
-   // public Boolean getNcrFinalStatus(Integer i) {
-   //     if (i < allNcrs.size() && i > 0) {
-   //         return allNcrs[i].getFinalStatus();
-   //     }
-    //}
+    public String getGrade() {
+            return grade;
+    }
+    
+    public String getContract() {
+        return contract;
+    }
+    
+    public String getRtm() {
+        return rtm;
+    }
     
 }
