@@ -135,22 +135,21 @@ public class eTApi {
     String experimentSN="ITL-3800C-021";
 
     String function="getResultsJH";
-    System.out.println("Arguments are travelerName=" + travelerName +
-                       " hardwareType=" + hardwareType +
-                       " stepName=" + stepName +
-                       " schemaName=null" +
-                       " experimentSN=" + experimentSN + 
-                       ", function=" + function);
+    //System.out.println("Arguments are travelerName=" + travelerName +
+    //                   " hardwareType=" + hardwareType +
+    //                   " stepName=" + stepName +
+    //                   " schemaName=null" +
+    //                   " experimentSN=" + experimentSN + 
+    //                   ", function=" + function);
     try {
       Map<String, Object> results = 
         myService.getResultsJH(travelerName, hardwareType, stepName,
                                null, null, experimentSN);
-      for (String cmp : results.keySet() ) {
-        HashMap<String, Object> cmpResults =
-          (HashMap<String, Object>) results.get(cmp);
-        System.out.println("Results for " + cmp);
+      //for (String cmp : results.keySet() ) {
+       // HashMap<String, Object> cmpResults =
+       //   (HashMap<String, Object>) results.get(cmp);
+       // System.out.println("Results for " + cmp);
         //TestEtClientServices.outputRun(cmpResults);
-      }
       return results;
     } catch (Exception ex) {
       System.out.println("failed with exception " + ex.getMessage());
@@ -170,22 +169,22 @@ public class eTApi {
     
 
     String function="getResultsJH";
-    System.out.println("Arguments are travelerName=" + travelerName +
-                       " hardwareType=" + hardwareType +
-                       " stepName=" + stepName +
-                       " schemaName=" + schemaName +
-                       " experimentSN=" + experimentSN + 
-                       ", function=" + function);
+   // System.out.println("Arguments are travelerName=" + travelerName +
+   //                    " hardwareType=" + hardwareType +
+   //                    " stepName=" + stepName +
+   //                    " schemaName=" + schemaName +
+   //                    " experimentSN=" + experimentSN + 
+   //                    ", function=" + function);
     try {
       Map<String, Object> results = 
         myService.getResultsJH(travelerName, hardwareType, stepName,
                                schemaName, null, experimentSN);
-      for (String cmp : results.keySet() ) {
-        HashMap<String, Object> cmpResults =
-          (HashMap<String, Object>) results.get(cmp);
-        System.out.println("Results for " + cmp);
+     // for (String cmp : results.keySet() ) {
+     //   HashMap<String, Object> cmpResults =
+     //     (HashMap<String, Object>) results.get(cmp);
+     //   System.out.println("Results for " + cmp);
         //TestEtClientServices.outputRun(cmpResults);
-      }
+      //}
       return results;
     } catch (Exception ex) {
       System.out.println("failed with exception " + ex.getMessage());

@@ -521,7 +521,30 @@ public class QueryUtils {
         return result;
     }
 
-    public static List<NcrMissingSignatures> findMissingSignatures(String runNum, int hdwId, String db) {
+    public static String findParentHardware(String childLsstNum, String hdwTypeName, String parentNameSubString, String db) {
+        String result = null;
+        try {
+            Map<String, Object> hdwMap = eTApi.getContainingHardware(db, true, childLsstNum, hdwTypeName);
+            if (hdwMap != null) {
+                List<Map<String, String>> hier = ((List<Map<String,String>>) hdwMap.get("hierarchy"));
+                if (hier == null) {
+                    return null;
+                }
+                Iterator<Map<String, String>> it = hier.iterator();
+                while (it.hasNext()) {
+                    Map<String, String> curEntry = it.next();
+                    if (curEntry.get("parent_hardwareTypeName").toLowerCase().contains(parentNameSubString.toLowerCase())) {
+                        return curEntry.get("parent_experimentSN");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            return null;
+    }
+    return result ;
+}
+
+public static List<NcrMissingSignatures> findMissingSignatures(String runNum, int hdwId, String db) {
         List<NcrMissingSignatures> result = new ArrayList<>();
 
         try {
@@ -1112,7 +1135,8 @@ public class QueryUtils {
         HashMap<Integer, Boolean> sensorsFound = new HashMap<>();
 
         //  Sensor Acceptance Table will include these columns LSSTTD-811
-//    Grade (we'll get this from the label on the sensor)  NOT AVAILABLE YET
+//    Grade (we'll get this from the label on the sensor)  
+//    Contract
 //    Vendor EO test date  NOT AVAILABLE YET
 //    Vendor MET test date  NOT AVAILABLE YET
 //    Ingest (when we ran SR-RCV-01)
@@ -1132,8 +1156,8 @@ public class QueryUtils {
             String lower_manu = manuFilter.toLowerCase();
             Boolean manuParam = false, lsstNumParam = false;
 
-            String saQuery = "select hw.lsstId AS lsstId, hw.id AS hdwId, hw.manufacturer, "
-                    + "act.id, act.parentActivityId, act.end,statusHist.activityStatusId from Activity act "
+            String saQuery = "select hw.lsstId AS lsstId, hw.id AS hdwId, HT.name AS hdwTypeName, hw.manufacturer, "
+                    + "act.id, act.parentActivityId, act.end, statusHist.activityStatusId from Activity act "
                     + "INNER join Hardware hw on act.hardwareId=hw.id "
                     + "INNER join Process pr on act.processId=pr.id "
                     + "INNER join ActivityStatusHistory statusHist on act.id=statusHist.activityId "
@@ -1165,6 +1189,7 @@ public class QueryUtils {
                 Integer hdwId = vendorR.getInt("hdwId");
                 String lsstId = vendorR.getString("lsstId"); // LSSTNUM
                 String manu = vendorR.getString("manufacturer");
+                String hdwTypeName = vendorR.getString("hdwTypeName");
                 if (sensorsFound.put(hdwId, true)!=null)
                     continue;
                 
@@ -1177,6 +1202,8 @@ public class QueryUtils {
                 if ((contract > 0) && (!contractLabels.containsKey(contract))) {
                     continue;    
                 }
+                
+                String rtm = findParentHardware(lsstId, hdwTypeName, "RTM", db);
                 
                 java.util.Date vendorIngestDate = vendorR.getTimestamp("end");
                 
@@ -1233,10 +1260,16 @@ public class QueryUtils {
                 
                 SensorAcceptanceData sensorData = new SensorAcceptanceData();
                 sensorData.setValues(lsstId, eoVer, eo2ParentActId);
+                if (rtm != null) {
+                    sensorData.setRtm(rtm);
+                }
+                if (!gradeLabels.isEmpty()) {
+                    sensorData.setGrade(gradeLabels.entrySet().iterator().next().getValue());
+                }
+                if (!contractLabels.isEmpty()) {
+                    sensorData.setContract(contractLabels.entrySet().iterator().next().getValue());
+                }
 
-                 if (!gradeLabels.isEmpty()) sensorData.setGrade(gradeLabels.entrySet().iterator().next().getValue());
-                 if (!contractLabels.isEmpty()) sensorData.setContract(contractLabels.entrySet().iterator().next().getValue());
-                 
                 // SR-EOT-1
                 PreparedStatement ts3S = c.prepareStatement("SELECT hw.lsstId, act.id, act.parentActivityId, "
                         + "statusHist.activityStatusId, pr.name, SRH.name, SRH.value FROM Activity act JOIN Hardware hw on act.hardwareId=hw.id "
