@@ -51,7 +51,12 @@
             <display:column title="NCR Start Time" sortable="true" >${hdl.ncrCreationTime}</display:column>
             <display:column title="Priority" sortable="true" >${hdl.priority}</display:column>
             <display:column title="Current NCR Status" sortable="true" >${hdl.statusName}</display:column>
-            <display:column title="Current Step" sortable="true" >${hdl.currentStep}</display:column>
+            <display:column title="Current Step" sortable="true" >${hdl.currentStep}
+                <c:if test="${hdl.currentStep == 'NCR' && hdl.statusName == 'inProgress'}">
+                    <br>
+                    <b>Ready to be Closed</b>
+                </c:if>
+            </display:column>
             <display:column title="Closed?" sortable="true" >
                 <c:choose>
                     <c:when test="${hdl.finalStatus == true}">
