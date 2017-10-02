@@ -8,6 +8,8 @@
 <%@taglib uri="http://displaytag.sf.net" prefix="display" %>
 <%@taglib prefix="portal" uri="http://camera.lsst.org/portal" %>
 <%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
+<%@taglib prefix="et" tagdir="/WEB-INF/tags/eTrav"%>
+
 
 
 <html>
@@ -91,7 +93,10 @@
             </display:column>
             <display:column title="Grade" sortable="true">${sen.grade}</display:column>
             <display:column title="Contract" sortable="true">${sen.contract}</display:column>
-            <display:column title="RTM" sortable="true">${sen.rtm}</display:column>
+            <display:column title="RTM" sortable="true">
+            <et:hdwLink lsstNum="${sen.rtm}" var="mylink"/>
+            <a href="${mylink}" target="_blank"><c:out value="${sen.rtm}"/></a>
+            </display:column>
             <display:column title="Ingest" sortable="true" >${sen.vendorIngestDate}</display:column>
             <display:column title="Vendor-LSST<br/>eotest Ver" sortable="true" >${sen.sreot2Date}<br>${sen.vendorEoTestVer}</display:column>
             <display:column title="LSST-LSST<br/>eotest Ver" sortable="true" >${sen.ts3EoTestVer}</display:column>
