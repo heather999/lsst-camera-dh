@@ -69,6 +69,10 @@
                         </font>
                     </c:otherwise>
                 </c:choose>
+                <c:if test="${hdl.currentStep == 'NCR' && hdl.statusName == 'inProgress'}">
+                    <br>
+                    <b>Ready to be Closed</b>
+                </c:if>
             </display:column>
             <display:column title="Signatures<br>Missing" sortable="true" >${hdl.numMissingSigs}</display:column>
             <display:column title="Signature<br>Groups<br>Missing" sortable="true" >

@@ -146,7 +146,7 @@
                 <section>
                 
 <%-- Disable for now - come bac to this later
-                <c:set var="labelList" value="${portal:getAllActiveLabelsList(pageContext.session,selectedLsstId)}" scope="page"/>
+                <c:set var="labelList" value="${portal:getAllActiveLabelsList(pageContext.session,selectedLsstId,"")}" scope="page"/>
 
                 <style>
                     nav {
