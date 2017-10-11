@@ -12,7 +12,7 @@
 
 
 <%@attribute name="signatures" type="java.lang.Boolean" description="Toggle display of signature info"%>
-
+<%@attribute name="lsst_num" type="java.lang.String" description="Experiment SN"%>
 <%@attribute name="subsystem" description="Subsystem filter"%>
 <%@attribute name="label" description="Label filter"%>
 <%@attribute name="priority" description="Priority filter"%>
