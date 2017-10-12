@@ -27,7 +27,7 @@
 
         <sql:query var="result">
             select * from (
-            select r.runInt,r.runNumber,a.begin,a.end,a.id,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,ll.labels,
+            select r.runInt,r.runNumber,a.begin,a.end,a.id,p.name ,h.lsstid,h.manufacturer,f.name as status, t.name hardwareType,ss.name subsystem,i.name Site,ll.labels, rr.labels reportLabels,
             (select count(*) from Activity aa join FilepathResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as fileCount,
             (select count(*) from Activity aa join FloatResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as floatCount,
             (select count(*) from Activity aa join IntResultHarnessed ff on (aa.id=ff.activityId) where aa.rootActivityId=a.id) as intCount,
@@ -53,6 +53,15 @@
                 where lh.adding=true
                 group by lh.objectId
             ) ll on (ll.objectId=r.id)
+            left outer join (
+                select lh.objectId,group_concat(concat(lg.name,':',l.name) ORDER BY lg.name, l.name SEPARATOR ',') labels,group_concat(l.id ORDER BY lg.name, l.name) lids
+                from Label l
+                join LabelGroup lg on (lg.id=l.labelgroupid)
+                join Labelable la on (la.id=lg.labelableid and la.tableName='TravelerType')
+                join LabelHistory lh on (lh.id=(select max(id) from LabelHistory lhh where lhh.objectid=lh.objectId and lhh.LabelableId=la.id and lhh.labelId=l.id))
+                where lh.adding=true
+                group by lh.objectId               
+            ) rr on (rr.objectid=tt.id)
             where a.parentActivityId is null 
             and r.runInt = ?
             ) x
@@ -82,11 +91,9 @@
             <h2>Reports</h2>
             <ul>
                 <li><a href="RawReport.jsp?run=${param.run}">Raw Report</a> (data dump)</li>
-                <c:if test="${run.name=='SR-EOT-02'}"><li><a href="SummaryReport.jsp?run=${param.run}">EOTest Report</a></li></c:if>
-                <c:if test="${run.name=='SR-RSA-MET-07'}"><li><a href="SummaryReport.jsp?run=${param.run}">Metrology Report</a></li></c:if>
-                <c:if test="${run.name=='SR-RTM-EOT-03'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
-                <c:if test="${run.name=='Simulated_RTM-EOT-01'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
-                <c:if test="${run.name=='SR-RTM-PROTOCOLS'}"><li><a href="SummaryReport.jsp?run=${param.run}">Raft EO Report</a></li></c:if>
+                <c:forEach var="reportLabel" items="${fn:split(run.reportLabels,',')}">
+                   <li><a href="SummaryReport.jsp?run=${param.run}">${reportLabel}</a></li>
+                </c:forEach>
             </ul>
         </c:if>
 
