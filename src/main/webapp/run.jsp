@@ -54,7 +54,7 @@
                 group by lh.objectId
             ) ll on (ll.objectId=r.id)
             left outer join (
-                select lh.objectId,group_concat(concat(lg.name,':',l.name) ORDER BY lg.name, l.name SEPARATOR ',') labels,group_concat(l.id ORDER BY lg.name, l.name) lids
+                select lh.objectId,group_concat(l.name ORDER BY l.name SEPARATOR ',') labels,group_concat(l.id ORDER BY lg.name, l.name) lids
                 from Label l
                 join LabelGroup lg on (lg.id=l.labelgroupid)
                 join Labelable la on (la.id=lg.labelableid and la.tableName='TravelerType')
