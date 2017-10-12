@@ -77,5 +77,5 @@
 </filter:filterTable>
 
 
-<dp:ncr signatures="${signatures}" subsystem="${subsystem}" label="${label}" priority="${priorityLab}" ncrStatus="${ncrStatus}" />
+<dp:ncr lsst_num="${lsst_num}" signatures="${signatures}" subsystem="${subsystem}" label="${label}" priority="${priorityLab}" ncrStatus="${ncrStatus}" />
 
