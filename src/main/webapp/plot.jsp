@@ -11,8 +11,7 @@
 <html>
     <head>
         <title>Test Plot</title>
-        <script src="js/plotly-1.30.1-min.js" type="text/javascript"></script>
-
+        <script src="js/plotly-1.30.1-min.js"></script>
 
     </head>
 
@@ -20,9 +19,15 @@
         <div id="rawdata" style="width:600px;height:250px;"></div>
         <div id="test1" style="width:600px;height:250px;"></div>
         <div id="test2" style="width:600px;height:250px;"></div>
+        
+        <c:set var="tempPlot2" value="${plotutils:getSensorArrival('ITL-CCD',appVariables.dataSourceMode)}"/>
 
-        <script type="text/javascript">
-            TESTER = document.getElementById('rawdata');
+        <script>
+             var resp = ${tempPlot2};
+             var myfig = JSON.parse(resp);
+        Plotly.newPlot('rawdata', myfig.data, myfig.layout);
+            
+            TESTER = document.getElementById('test1';
             Plotly.plot(TESTER, [{
                     x: [1, 2, 3, 4, 5],
                     y: [1, 2, 4, 8, 16]}], {
@@ -43,18 +48,9 @@
 
             var data = [trace1, trace2];
 
-            Plotly.newPlot('test1', data);
+            Plotly.newPlot('test2', data);
         </script>
 
-
-    <c:set var="tempPlot" value="${plotutils:getSensorArrival("ITL-CCD", appVariables.dataSourceMode)}"/>
-
-<% String hmk = (String)pageContext.getAttribute("tempPlot"); %>
-   
-        figure = JSON.parse("${tempPlot}");
-        <script>
-        Plotly.newPlot('test2', figure.data, figure.layout);
-    </script>
 
 </body>
 </html>
