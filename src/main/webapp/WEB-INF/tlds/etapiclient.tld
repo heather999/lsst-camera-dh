@@ -39,4 +39,22 @@
         <function-signature>java.util.Map getMissingSignatures(java.lang.String)
         </function-signature>
     </function>
+     <function>
+        <name>getHardwareInstances</name>
+        <function-class>org.lsst.camera.portal.queries.eTApi</function-class>
+        <function-signature>java.util.ArrayList getHardwareInstances(java.lang.String,java.lang.Boolean,java.lang.String,java.util.Set)
+        </function-signature>
+    </function>
+    <function>
+        <name>getContainingHardware</name>
+        <function-class>org.lsst.camera.portal.queries.eTApi</function-class>
+        <function-signature>java.util.Map getContainingHardware(java.lang.String,java.lang.Boolean, java.lang.String,java.lang.String)
+        </function-signature>
+    </function>
+    <function>
+        <name>getComponentRuns</name>
+        <function-class>org.lsst.camera.portal.queries.eTApi</function-class>
+        <function-signature>java.util.Map getComponentRuns(java.lang.String,java.lang.String,java.lang.String)
+        </function-signature>
+    </function>
 </taglib>
