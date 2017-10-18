@@ -27,11 +27,6 @@ public class PlotObject {
         return data;
     }
 
-    
-  public void addXData(Integer i) {
-      data.addX(i);
-  }
-
   public PlotLayout getLayout() {
       return layout;
   }

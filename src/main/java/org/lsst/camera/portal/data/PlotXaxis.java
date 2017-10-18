@@ -10,21 +10,15 @@ package org.lsst.camera.portal.data;
  *
  * @author heather
  */
-public class PlotLayout {
+public class PlotXaxis {
 
     private String title;
-    private PlotXaxis xaxis;
    
 
-    public PlotLayout() {
-        xaxis = new PlotXaxis();
+    public PlotXaxis() {
         title = "";
     }
 
-    public PlotXaxis getXaxis() {
-        return xaxis;
-    }
-    
     public String getTitle() {
         return title;
     }

@@ -16,68 +16,15 @@
     </head>
 
     <body>
-        <div id="rawdata" style="width:600px;height:250px;"></div>
-        <div id="test1" style="width:600px;height:250px;"></div>
-        <div id="histo" style="width:600px;height:250px;"></div>
-        <div id="test2" style="width:600px;height:250px;"></div>
+        
         <div id="testJspVar" style="width:600px;height:250px;"></div>
 
        <c:set var="tempPlot" value="${plotutils:getSensorArrival('ITL-CCD',appVariables.dataSourceMode)}"/>
 
-
-        <script type="text/javascript">
-            TESTER = document.getElementById('rawdata');
-            Plotly.plot(TESTER, [{
-                    x: [1, 2, 3, 4, 5],
-                    y: [1, 2, 4, 8, 16]}], {
-                margin: {t: 0}});
-
-            var tempPlot = ${tempPlot};
- 
-
-            var trace1 = {
-                x: [1, 2, 3, 4],
-                y: [10, 15, 13, 17],
-                type: 'scatter'
-            };
-
-            var trace2 = {
-                x: [1, 2, 3, 4],
-                y: [16, 5, 11, 9],
-                type: 'scatter'
-            };
-
-            var data = [trace1, trace2];
-
-            Plotly.newPlot('test1', data);
-            
-            TESTER2 = document.getElementById("testJspVar");
-            Plotly.newPlot(TESTER2, tempPlot);
-            
-            
-            var x = [];
-            for (var i = 0; i < 500; i ++) {
-                x[i] = Math.random();
-            }
-
-            var trace = {
-                x: x,
-                type: 'histogram',
-            };
-            var dataH = [trace];
-            Plotly.newPlot('histo', dataH);
-
-        </script>
-
-
-
-  <%--
-        figure = JSON.parse("${tempPlot}");
-      --%>  
-        
     <script>  
-        var resp = [${tempPlot}];
-        Plotly.newPlot('testJspVar', resp);
+        var resp = ${tempPlot};
+        var respData = [resp.data];
+        Plotly.newPlot('testJspVar', respData, resp.layout);
     </script>
  
 

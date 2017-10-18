@@ -5,6 +5,7 @@
  */
 package org.lsst.camera.portal.queries;
 
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -72,12 +73,18 @@ public class PlotUtils {
     }
 
     public static String getSensorArrival(String hdwType, String db) {
-        String result = "{'data':[{'x':";
+        String result;
         //List<Long> result = new ArrayList<>();
         //PlotObject d = new PlotObject();
         //d.getLayout().setTitle("MyTitle");
-        PlotData d = new PlotData();
+        PlotObject d = new PlotObject();
+        d.getLayout().setTitle("Time between Vendor Data and Receipt at BNL");
+        d.getLayout().getXaxis().setTitle("Time Difference (days)");
+        
+        d.getData().setType("histogram");
+        d.getData().setNbinsx(100);
         ObjectMapper mapper = new ObjectMapper();
+        mapper.setSerializationInclusion(Include.NON_NULL); // NON_EMPTY
         Boolean prodServer = true;
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.S"); 
         List<Integer> t_diffs = new ArrayList<>();
@@ -87,7 +94,7 @@ public class PlotUtils {
             Iterator hdwIt = hdwInstances.iterator();
             int count_ccd = 0;
             while (hdwIt.hasNext()) {
-                String beginTime="";
+                String bnlTime="";
                 Boolean found = false;
                 HashMap<String, Object> curMap = (HashMap<String, Object>) hdwIt.next();
                 String curCcd = (String) curMap.get("experimentSN");
@@ -105,8 +112,8 @@ public class PlotUtils {
 
                         HashMap<String, Object> travRun = (HashMap<String, Object>) runList.get(key);
 
-                        beginTime = (String) travRun.get("begin");
-                        if (beginTime.isEmpty()) {
+                        bnlTime = (String) travRun.get("begin");
+                        if (bnlTime.isEmpty()) {
                             continue; // look at the next run
                         } else {
                             found = true;
@@ -121,8 +128,8 @@ public class PlotUtils {
 
                         HashMap<String, Object> travRun = (HashMap<String, Object>) runListOld.get(key);
 
-                        beginTime = (String) travRun.get("begin");
-                        if (beginTime.isEmpty()) {
+                        bnlTime = (String) travRun.get("begin");
+                        if (bnlTime.isEmpty()) {
                             continue; // look at the next run
                         } else {
                             found = true;
@@ -133,8 +140,8 @@ public class PlotUtils {
 
                 }
 
-                if (found) { // we have a begin time, now find BNL arrival
-                    Date beginDate = df.parse(beginTime);
+                if (found) { // we have a BNL arrival, now find Vendor Ingest
+                    Date bnlDate = df.parse(bnlTime);
                     Map<Integer, Object> runListCCD = eTApi.getComponentRuns(db, hdwType, curCcd, "SR-RCV-01");
                     if (runListCCD == null) 
                         continue;
@@ -144,13 +151,13 @@ public class PlotUtils {
 
                         HashMap<String, Object> travRun = (HashMap<String, Object>) runListCCD.get(key);
 
-                        String bnlTime = (String) travRun.get("begin");
-                        if (bnlTime.isEmpty()) 
+                        String vendorTime = (String) travRun.get("begin");
+                        if (vendorTime.isEmpty()) 
                             continue;
-                        Date arrivalDate = df.parse(bnlTime);
-                        Long diffDays = timeDiff(beginDate, arrivalDate);
+                        Date vendorDate = df.parse(vendorTime);
+                        Long diffDays = timeDiff(vendorDate, bnlDate);
                         t_diffs.add(diffDays.intValue());
-                        d.addX(diffDays.intValue());
+                        d.getData().addX(diffDays.intValue());
 
                     }
                 }
