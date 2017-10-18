@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Arrays;
 
 import org.lsst.camera.portal.data.PlotObject;
+import org.lsst.camera.portal.data.PlotData;
+
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -72,8 +74,9 @@ public class PlotUtils {
     public static String getSensorArrival(String hdwType, String db) {
         String result = "{'data':[{'x':";
         //List<Long> result = new ArrayList<>();
-        PlotObject d = new PlotObject();
-        d.getLayout().setTitle("MyTitle");
+        //PlotObject d = new PlotObject();
+        //d.getLayout().setTitle("MyTitle");
+        PlotData d = new PlotData();
         ObjectMapper mapper = new ObjectMapper();
         Boolean prodServer = true;
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.S"); 
@@ -147,7 +150,7 @@ public class PlotUtils {
                         Date arrivalDate = df.parse(bnlTime);
                         Long diffDays = timeDiff(beginDate, arrivalDate);
                         t_diffs.add(diffDays.intValue());
-                        d.addXData(diffDays.intValue());
+                        d.addX(diffDays.intValue());
 
                     }
                 }

@@ -18,6 +18,7 @@
     <body>
         <div id="rawdata" style="width:600px;height:250px;"></div>
         <div id="test1" style="width:600px;height:250px;"></div>
+        <div id="histo" style="width:600px;height:250px;"></div>
         <div id="test2" style="width:600px;height:250px;"></div>
         <div id="testJspVar" style="width:600px;height:250px;"></div>
 
@@ -53,19 +54,30 @@
             TESTER2 = document.getElementById("testJspVar");
             Plotly.newPlot(TESTER2, tempPlot);
             
+            
+            var x = [];
+            for (var i = 0; i < 500; i ++) {
+                x[i] = Math.random();
+            }
+
+            var trace = {
+                x: x,
+                type: 'histogram',
+            };
+            var dataH = [trace];
+            Plotly.newPlot('histo', dataH);
+
         </script>
 
 
-<% String hmk = (String)pageContext.getAttribute("tempPlot"); %> 
 
-
-  
+  <%--
         figure = JSON.parse("${tempPlot}");
-        
+      --%>  
         
     <script>  
-        var resp = ${tempPlot};
-        Plotly.newPlot('testJspVar', figure.data.map(), figure.layout);
+        var resp = [${tempPlot}];
+        Plotly.newPlot('testJspVar', resp);
     </script>
  
 
