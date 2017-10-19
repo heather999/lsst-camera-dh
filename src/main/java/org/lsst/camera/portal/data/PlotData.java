@@ -19,11 +19,12 @@ public class PlotData {
     private Boolean autobinx;
     private Integer nbinsx;
     private String type;
-    
+    private ArrayList<String> text;  // list of labels when hovering
 
     public PlotData() {
 
         x = new ArrayList<>();
+        text = new ArrayList<>();
         type = "";
         //autobinx=null;
         nbinsx = null;
@@ -35,6 +36,13 @@ public class PlotData {
 
     public void addX(Integer i) {
         x.add(i);
+    }
+    
+    public ArrayList<String> getText() {
+        return text;
+    }
+    public void addText(String str) {
+        text.add(str);
     }
     
     public void setType(String str) {

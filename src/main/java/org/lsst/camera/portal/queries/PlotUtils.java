@@ -46,9 +46,11 @@ public class PlotUtils {
     // private final ObjectMapper mapper = new ObjectMapper();
     
     public static long timeDiff(Date begin, Date end) {
-        TimeUnit myTime =TimeUnit.MILLISECONDS;
+        TimeUnit myTime = TimeUnit.MILLISECONDS;
         long milli = end.getTime() - begin.getTime();
         long days = myTime.toDays(milli);
+        if (days < 0)
+            System.out.println("days " + days + " begin: " + begin + " end: " + end);
         return days;
     }
     
@@ -74,9 +76,6 @@ public class PlotUtils {
 
     public static String getSensorArrival(String hdwType, String db) {
         String result;
-        //List<Long> result = new ArrayList<>();
-        //PlotObject d = new PlotObject();
-        //d.getLayout().setTitle("MyTitle");
         PlotObject d = new PlotObject();
         d.getLayout().setTitle("Time between Vendor Data and Receipt at BNL");
         d.getLayout().getXaxis().setTitle("Time Difference (days)");
@@ -145,20 +144,23 @@ public class PlotUtils {
                     Map<Integer, Object> runListCCD = eTApi.getComponentRuns(db, hdwType, curCcd, "SR-RCV-01");
                     if (runListCCD == null) 
                         continue;
-
+                    // Keys are rootActivityIds, so we want the smallest one, for the first vendor Ingest
                     SortedSet<Integer> keys = new TreeSet<Integer>(runListCCD.keySet());
                     for (Integer key : keys) {
 
                         HashMap<String, Object> travRun = (HashMap<String, Object>) runListCCD.get(key);
 
                         String vendorTime = (String) travRun.get("begin");
-                        if (vendorTime.isEmpty()) 
+                        if (vendorTime.isEmpty()) {
                             continue;
-                        Date vendorDate = df.parse(vendorTime);
-                        Long diffDays = timeDiff(vendorDate, bnlDate);
-                        t_diffs.add(diffDays.intValue());
-                        d.getData().addX(diffDays.intValue());
-
+                        } else {
+                            Date vendorDate = df.parse(vendorTime);
+                            Long diffDays = timeDiff(vendorDate, bnlDate);
+                            t_diffs.add(diffDays.intValue());
+                            d.getData().addX(diffDays.intValue());
+                            d.getData().addText(curCcd);
+                            break;
+                        }
                     }
                 }
             }
