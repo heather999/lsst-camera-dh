@@ -21,27 +21,33 @@
     <body>
         <fmt:setTimeZone value="UTC"/>
         <c:set var="debug" value="${param.debug}"/>
-        <sql:query var="sensor">
-            select hw.lsstId,p.name,a.id from Activity a 
-            join Process p on (a.processId=p.id)
-            join Hardware hw on a.hardwareId=hw.id 
-            join RunNumber r on r.rootActivityId=a.id
-            where r.runNumber=?
+        <sql:query var="label">
+            select RunNumber.rootActivityId, A.end, hw.lsstId, L.id as labelId,concat(LG.name,':',L.name) as fullname from 
+            Label L join LabelHistory LH on L.id=LH.labelId 
+            join Labelable on Labelable.id=LH.labelableId 
+            join LabelGroup LG on LG.id=L.labelGroupId 
+            join TravelerType TT on TT.id=LH.objectId 
+            join Activity A on TT.rootProcessId=A.processId 
+            join RunNumber on RunNumber.rootActivityId=A.id
+            join Hardware hw on A.hardwareId=hw.id
+            where runInt=? and LH.adding=1 
+            and Labelable.name='TravelerType' 
+            and LH.id in (select max(id) from LabelHistory group by objectId,labelId);
             <sql:param value="${param.run}"/>
         </sql:query> 
-        <c:set var="lsstId" value="${sensor.rows[0].lsstId}"/>  
-        <c:set var="actId" value="${sensor.rows[0].id}"/>  
-        <c:set var="end" value="${sensor.rows[0].end}"/>  
-        <c:set var="reportName" value="${sensor.rows[0].name}"/>
+        <c:set var="lsstId" value="${label.rows[0].lsstId}"/>  
+        <c:set var="actId" value="${label.rows[0].rootActivityId}"/>  
+        <c:set var="end" value="${label.rows[0].end}"/>  
+        <c:set var="reportLabel" value="${label.rows[0].fullname}"/>
         <sql:query var="reports" dataSource="${appVariables.reportDisplayDb}">
-            select id, name, report_title from report where travelername=?
-            <sql:param value="${reportName}"/>
+            select reportid, report_title, name from report_label where label=?
+            <sql:param value="${reportLabel}"/>
         </sql:query>
         <c:if test="${reports.rowCount==0}">
-            Unknown report name ${reportName}
+            Unknown report label ${reportLabel}
         </c:if>
         <c:if test="${reports.rowCount>0}">
-            <c:set var="reportId" value="${reports.rows[0].id}"/>
+            <c:set var="reportId" value="${reports.rows[0].reportid}"/>
             <sql:query var="data">
                 select a.id from Activity a
                 join Process p on (a.processId=p.id)
@@ -50,7 +56,6 @@
                 <sql:param value="${reports.rows[0].name}"/>        
             </sql:query>
             <c:set var="parentActivityId" value="${data.rows[0].id}"/>
-            <c:set var="reportId" value="${reportId==11?8:reportId}"/>
             <c:choose>
                 <c:when test="${empty param.component}">
                     <c:set var="theMap" value="${portal:getReportValues(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,reportId)}"/>
@@ -70,7 +75,7 @@
             <c:if test="${debug}">
                 <br>ReportId = ${reportId}
                 <br>actId = ${actId}
-                <br>reportName = ${reportName}
+                <br>reportLabel = ${reportLabel}
                 <br>parentActivityId = ${parentActivityId}
                 <c:forEach var="map" items="${theMap}">
                     <br>${map}
