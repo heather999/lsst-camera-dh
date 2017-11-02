@@ -95,7 +95,7 @@
         </c:when>
         <c:when test="${status==-2}">
             and f.isFinal=true
-        </c:when>
+        </c:when> 
         <c:when test="${status==-3}">
             and f.isFinal=false
         </c:when>
@@ -110,7 +110,7 @@
             and lids is null
         </c:when>
         <c:when test="${!empty labels}">
-            and find_in_set(?,lids)<>0
+            and find_in_set(?,ll.lids)<>0
             <sql:param value="${labels}"/>
         </c:when>
     </c:choose>   
