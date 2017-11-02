@@ -104,10 +104,10 @@
         <c:when test="${labels=='any'}">
         </c:when>
         <c:when test="${labels=='anyLabel'}">
-            and lids is not null
+            and ll.lids is not null
         </c:when>
         <c:when test="${labels=='none'}">
-            and lids is null
+            and ll.lids is null
         </c:when>
         <c:when test="${!empty labels}">
             and find_in_set(?,ll.lids)<>0
