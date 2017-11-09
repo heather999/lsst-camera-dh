@@ -9,6 +9,11 @@
         <function-signature>java.lang.String getSensorArrival(java.lang.String, java.lang.String)
         </function-signature>
     </function>
-    
+     <function>
+        <name>getBadChannels</name>
+        <function-class>org.lsst.camera.portal.queries.PlotUtils</function-class>
+        <function-signature>java.lang.String getBadChannels(java.lang.String, java.lang.String)
+        </function-signature>
+    </function>
     
 </taglib>

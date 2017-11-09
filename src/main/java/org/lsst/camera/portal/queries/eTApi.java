@@ -121,19 +121,16 @@ public class eTApi {
   }
     
     
-   public static Map getResultsJH(String db, Boolean prodServer) 
+   public static Map getResultsJH(String db, Boolean prodServer, String hardwareType, String travelerName, String stepName) 
     throws UnsupportedEncodingException, EtClientException, IOException {
-    System.out.println("\n\nRunning testGetResultsJH");
-    System.out.println("prodServer is " + prodServer);
-    boolean localServer=false;
-    System.out.println("localServer is " + localServer);
-
+    
+   
     EtClientServices myService =
-      new EtClientServices(db, null, prodServer, localServer);
-    String travelerName="SR-EOT-1";
-    String hardwareType="ITL-CCD";
-    String stepName="read_noise";
-    String experimentSN="ITL-3800C-021";
+      new EtClientServices(db, null, prodServer);
+    //String travelerName="SR-EOT-1";
+    //String hardwareType="ITL-CCD";
+    //String stepName="read_noise";
+    //String experimentSN="ITL-3800C-021";
 
     String function="getResultsJH";
     //System.out.println("Arguments are travelerName=" + travelerName +
@@ -145,7 +142,7 @@ public class eTApi {
     try {
       Map<String, Object> results = 
         myService.getResultsJH(travelerName, hardwareType, stepName,
-                               null, null, experimentSN);
+                               null, null, null);
       //for (String cmp : results.keySet() ) {
        // HashMap<String, Object> cmpResults =
        //   (HashMap<String, Object>) results.get(cmp);

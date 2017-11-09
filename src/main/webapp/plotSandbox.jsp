@@ -18,6 +18,8 @@
     <body>
         
         <div id="testJspVar" style="width:600px;height:250px;"></div>
+        <div id="badJspVar" style="width:600px;height:250px;"></div>
+
 
        <c:set var="tempPlot" value="${plotutils:getSensorArrival('ITL-CCD',appVariables.dataSourceMode)}"/>
 
@@ -26,7 +28,14 @@
         var respData = [resp.data];
         Plotly.newPlot('testJspVar', respData, resp.layout);
     </script>
- 
+    
+    
+        <c:set var="badPlot" value="${plotutils:getBadChannels('LCA-11021_RTM',appVariables.dataSourceMode)}"/>
+  <script>  
+        var resp2 = ${badPlot};
+        var respData2 = [resp2.data];
+        Plotly.newPlot('badJspVar', respData2, resp2.layout);
+    </script>
 
 </body>
 </html>

@@ -25,6 +25,7 @@ import java.util.Arrays;
 
 import org.lsst.camera.portal.data.PlotObject;
 import org.lsst.camera.portal.data.PlotData;
+import org.lsst.camera.portal.data.PlotXYObject;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -42,36 +43,43 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
  * @author heather
  */
 public class PlotUtils {
-    
+
     // private final ObjectMapper mapper = new ObjectMapper();
+    DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.S");
     
+    static ObjectMapper mapper = new ObjectMapper();
+
+
     public static long timeDiff(Date begin, Date end) {
         TimeUnit myTime = TimeUnit.MILLISECONDS;
         long milli = end.getTime() - begin.getTime();
         long days = myTime.toDays(milli);
-        if (days < 0)
+        if (days < 0) {
             System.out.println("days " + days + " begin: " + begin + " end: " + end);
+        }
         return days;
     }
-    
-    
+
     public static String stringFromList(List<Integer> theList) {
-        String result="";
-        if (theList.isEmpty()) return (""); // If no items, return empty string
-            Iterator<Integer> iterator = theList.iterator();
-            int counter=0;
-            while (iterator.hasNext()) {
-                if (counter==0)
-                    result+="[";
-                ++counter;
-                result += (iterator.next());
-                if (counter == theList.size()) {
-                    result += "]";
-                } else {
-                    result += ", ";
-                }
+        String result = "";
+        if (theList.isEmpty()) {
+            return (""); // If no items, return empty string
+        }
+        Iterator<Integer> iterator = theList.iterator();
+        int counter = 0;
+        while (iterator.hasNext()) {
+            if (counter == 0) {
+                result += "[";
             }
-            return result;
+            ++counter;
+            result += (iterator.next());
+            if (counter == theList.size()) {
+                result += "]";
+            } else {
+                result += ", ";
+            }
+        }
+        return result;
     }
 
     public static String getSensorArrival(String hdwType, String db) {
@@ -79,13 +87,13 @@ public class PlotUtils {
         PlotObject d = new PlotObject();
         d.getLayout().setTitle("Time between Vendor Data and Receipt at BNL");
         d.getLayout().getXaxis().setTitle("Time Difference (days)");
-        
+
         d.getData().setType("histogram");
         d.getData().setNbinsx(100);
-        ObjectMapper mapper = new ObjectMapper();
+        //ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(Include.NON_NULL); // NON_EMPTY
         Boolean prodServer = true;
-        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.S"); 
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.S");
         List<Integer> t_diffs = new ArrayList<>();
         try {
             Set<String> labels = new HashSet<>(Arrays.asList("SR_Grade", "SR_Contract"));
@@ -93,7 +101,7 @@ public class PlotUtils {
             Iterator hdwIt = hdwInstances.iterator();
             int count_ccd = 0;
             while (hdwIt.hasNext()) {
-                String bnlTime="";
+                String bnlTime = "";
                 Boolean found = false;
                 HashMap<String, Object> curMap = (HashMap<String, Object>) hdwIt.next();
                 String curCcd = (String) curMap.get("experimentSN");
@@ -142,8 +150,9 @@ public class PlotUtils {
                 if (found) { // we have a BNL arrival, now find Vendor Ingest
                     Date bnlDate = df.parse(bnlTime);
                     Map<Integer, Object> runListCCD = eTApi.getComponentRuns(db, hdwType, curCcd, "SR-RCV-01");
-                    if (runListCCD == null) 
+                    if (runListCCD == null) {
                         continue;
+                    }
                     // Keys are rootActivityIds, so we want the smallest one, for the first vendor Ingest
                     SortedSet<Integer> keys = new TreeSet<Integer>(runListCCD.keySet());
                     for (Integer key : keys) {
@@ -164,7 +173,7 @@ public class PlotUtils {
                     }
                 }
             }
-            
+
             // Now we have a list full of t_diffs
             result = mapper.writeValueAsString(d);
             //result += stringFromList(t_diffs);
@@ -178,6 +187,123 @@ public class PlotUtils {
 
         }
 
+    }
+
+    public static Map computeTimeRamp(Map<String, ArrayList<Double>> item_ramp) {
+        Map<String, Double> time_ramp = new HashMap<>();
+        Iterator it = item_ramp.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pair = (Map.Entry) it.next();
+            String beginTime = pair.getKey().toString();
+            ArrayList<Double> curList = (ArrayList<Double>)pair.getValue();
+            Iterator listIt = curList.iterator();
+            Double listTotal = 0.d;
+            while (listIt.hasNext()) {
+                listTotal += (Double) listIt.next();
+            }
+            time_ramp.put(beginTime, listTotal);
+        }
+        return time_ramp;
+    }
+    
+    public static Map getBad(Map<String, Object> data, String step, String item, float multiplier) {
+
+        //Map<String, Float> time_ramp = new HashMap<String, Float>(); construct this from item_ramp later
+        Map<String, ArrayList<Double>> item_ramp = new HashMap<>();
+        
+        Iterator it = data.entrySet().iterator();
+        while (it.hasNext()) {
+            //float badchannels = 0.f;  // will be computed outside later using item list
+            Map.Entry pair = (Map.Entry) it.next();
+            if (pair.getKey().toString().contains("RTM-004")) {
+                continue;
+            }
+            Map<String, Object> raftDict = (Map<String, Object>) pair.getValue();
+            Map<String, Object> stepDict = (Map<String, Object>) raftDict.get("steps");
+            String beginTime = (String) raftDict.get("begin");
+          //  Date beginDate = df2.parse(beginTime);
+            ArrayList<Double> item_list = new ArrayList<>();
+
+            //time_ramp.put(beginTime, 0.f);
+            
+            Map<String,Object> a = (Map<String, Object>) stepDict.get(step);
+            
+            ArrayList<Map<String, Object>> defects = (ArrayList< Map<String, Object>>) a.get(step);
+            Iterator defectIt = defects.iterator();
+            String type = "";
+            while (defectIt.hasNext()) {
+                Map<String,Object> cur = (Map<String,Object>) defectIt.next();
+                if ((Integer)cur.get("schemaInstance")==0) {
+                    type = (String)cur.get(item);
+                    continue;
+                }
+                double val = 0.d;
+                if (type.equals("int")) {
+                    val = (int) cur.get(item) * multiplier; 
+                } else if (type.equals("float")) {
+                    val = (double)cur.get(item) * multiplier;
+                }
+                //badchannels += val;
+                item_list.add(val);
+              //  time_ramp[beginTime] += val;
+
+            }
+            
+            item_ramp.put(beginTime, item_list);
+
+        }
+        return item_ramp;
+    }
+        
+ 
+    
+    public static String getBadChannels(String hdwType, String db) {
+        String result;
+        PlotXYObject d = new PlotXYObject();
+        d.getLayout().setTitle("LCA-11021_RTM Bad Channels");
+        d.getLayout().getYaxis().setType("log");
+        
+        Boolean prodServer = true;
+        DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.S"); 
+        
+        try {
+
+            Map<String, Object> brightDefects = eTApi.getResultsJH(db, true, hdwType, "SR-RTM-EOT-03", "bright_defects_raft");
+            Map<String, ArrayList<Double>> bl = getBad(brightDefects, "bright_defects_raft", "bright_pixels", 1.f);
+            Map<String, Float> brights = computeTimeRamp(bl);
+            Map<String, ArrayList<Double>> blc = getBad(brightDefects, "bright_defects_raft", "bright_columns", 2002.f);
+            Map<String, Float> bright_cols = computeTimeRamp(blc);
+
+            Map<String, Object> darkDefects = eTApi.getResultsJH(db, true, hdwType, "SR-RTM-EOT-03", "dark_defects_raft");
+            Map<String, ArrayList<Double>> dl = getBad(darkDefects, "dark_defects_raft", "dark_pixels", 1.f);
+            Map<String, Float> darks = computeTimeRamp(dl);
+            Map<String, ArrayList<Double>> dlc = getBad(darkDefects, "dark_defects_raft", "dark_columns", 2002.f);
+            Map<String, Float> dark_cols = computeTimeRamp(dlc);
+
+            Map<String, Object> readNoiseResults = eTApi.getResultsJH(db, true, hdwType, "SR-RTM-EOT-03", "read_noise_raft");
+            Map<String, ArrayList<Double>> read_noise_c = getBad(readNoiseResults, "read_noise_raft", "read_noise", 1.f);
+            Map<String, Float> readNoise = computeTimeRamp(read_noise_c);
+            
+            //calcBadChannels();
+
+            Iterator brightIt = brights.entrySet().iterator();
+            while (brightIt.hasNext()) {
+                Map.Entry pair = (Map.Entry) brightIt.next();
+
+                d.getData().addX((String) pair.getKey());
+                d.getData().addY((Double) pair.getValue());
+            }
+
+            result = mapper.writeValueAsString(d);
+            return result;
+            
+        } catch (Exception e) {
+            StringWriter errors = new StringWriter();
+            e.printStackTrace(new PrintWriter(errors));
+            return errors.toString();
+        } 
+        
+        
     }
 
 }

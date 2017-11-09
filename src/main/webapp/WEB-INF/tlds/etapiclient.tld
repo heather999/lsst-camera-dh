@@ -24,7 +24,7 @@
     <function>
         <name>getResultsJH</name>
         <function-class>org.lsst.camera.portal.queries.eTApi</function-class>
-        <function-signature>java.util.Map getResultsJH(java.lang.String, java.lang.Boolean)
+        <function-signature>java.util.Map getResultsJH(java.lang.String, java.lang.Boolean,java.lang.String,java.lang.String,java.lang.String)
         </function-signature>
     </function>
      <function>
