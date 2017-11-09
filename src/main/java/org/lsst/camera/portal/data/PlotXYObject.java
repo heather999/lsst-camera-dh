@@ -5,6 +5,8 @@
  */
 package org.lsst.camera.portal.data;
 
+import java.util.ArrayList;
+
 
 /**
  *
@@ -12,18 +14,19 @@ package org.lsst.camera.portal.data;
  */
 public class PlotXYObject {
 
-    private PlotXYData data;
+    private ArrayList<PlotXYData> data;
     private PlotXYLayout layout;
     
 
     public PlotXYObject() {
 
-        data = new PlotXYData();
+        data = new ArrayList<>();
+        //data = new PlotXYData();
         layout = new PlotXYLayout();
         
     }
 
-    public PlotXYData getData() {
+    public ArrayList<PlotXYData> getData() {
         return data;
     }
 

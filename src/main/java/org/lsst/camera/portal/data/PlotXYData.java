@@ -17,9 +17,10 @@ public class PlotXYData {
 
     private ArrayList<String> x;
     private ArrayList<Double> y;
+    private String name;
   //  private Boolean autobinx;
-    private Integer nbinsx;
-    private String type;
+   // private Integer nbinsx;
+ //   private String type;
     //private ArrayList<String> text;  // list of labels when hovering
 
     public PlotXYData() {
@@ -27,9 +28,9 @@ public class PlotXYData {
         x = new ArrayList<>();
         y = new ArrayList<>();
         //text = new ArrayList<>();
-        type = "";
+       // type = "";
         //autobinx=null;
-        nbinsx = null;
+     //   nbinsx = null;
     }
 
     public ArrayList<String> getX() {
@@ -47,6 +48,14 @@ public class PlotXYData {
         y.add(f);
     }
     
+    public void addName(String n) {
+        name = n;
+    }
+    
+    public String getName() {
+        return name;
+    }
+    
    // public ArrayList<String> getText() {
    //     return text;
    // }
@@ -54,13 +63,13 @@ public class PlotXYData {
    //     text.add(str);
    // }
     
-    public void setType(String str) {
-        type = str;
-    }
+    //public void setType(String str) {
+    //    type = str;
+   // }
 
-    public String getType() {
-        return type;
-    }
+    //public String getType() {
+    //    return type;
+   // }
    
     /*
     public void setAutobinx(Boolean b) {
@@ -70,10 +79,10 @@ public class PlotXYData {
         return autobinx;
     }
     */
-    public Integer getNbinsx() { 
-        return nbinsx;
-    }
-    public void setNbinsx(Integer i) {
-        nbinsx = i;
-    }
+    //public Integer getNbinsx() { 
+    //    return nbinsx;
+   // }
+   // public void setNbinsx(Integer i) {
+    //    nbinsx = i;
+    //}
 }

@@ -26,9 +26,12 @@ import java.util.Arrays;
 import org.lsst.camera.portal.data.PlotObject;
 import org.lsst.camera.portal.data.PlotData;
 import org.lsst.camera.portal.data.PlotXYObject;
+import org.lsst.camera.portal.data.PlotXYData;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 /*
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -189,8 +192,8 @@ public class PlotUtils {
 
     }
 
-    public static Map computeTimeRamp(Map<String, ArrayList<Double>> item_ramp) {
-        Map<String, Double> time_ramp = new HashMap<>();
+    public static SortedMap computeTimeRamp(SortedMap<String, ArrayList<Double>> item_ramp) {
+        SortedMap<String, Double> time_ramp = new TreeMap<>();
         Iterator it = item_ramp.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
@@ -206,10 +209,10 @@ public class PlotUtils {
         return time_ramp;
     }
     
-    public static Map getBad(Map<String, Object> data, String step, String item, float multiplier) {
+    public static SortedMap getBad(Map<String, Object> data, String step, String item, float multiplier) {
 
         //Map<String, Float> time_ramp = new HashMap<String, Float>(); construct this from item_ramp later
-        Map<String, ArrayList<Double>> item_ramp = new HashMap<>();
+        SortedMap<String, ArrayList<Double>> item_ramp = new TreeMap<>();
         
         Iterator it = data.entrySet().iterator();
         while (it.hasNext()) {
@@ -269,31 +272,65 @@ public class PlotUtils {
         try {
 
             Map<String, Object> brightDefects = eTApi.getResultsJH(db, true, hdwType, "SR-RTM-EOT-03", "bright_defects_raft");
-            Map<String, ArrayList<Double>> bl = getBad(brightDefects, "bright_defects_raft", "bright_pixels", 1.f);
-            Map<String, Float> brights = computeTimeRamp(bl);
-            Map<String, ArrayList<Double>> blc = getBad(brightDefects, "bright_defects_raft", "bright_columns", 2002.f);
-            Map<String, Float> bright_cols = computeTimeRamp(blc);
+            SortedMap<String, ArrayList<Double>> bl = getBad(brightDefects, "bright_defects_raft", "bright_pixels", 1.f);
+            SortedMap<String, Float> brights = computeTimeRamp(bl);
+            SortedMap<String, ArrayList<Double>> blc = getBad(brightDefects, "bright_defects_raft", "bright_columns", 2002.f);
+            SortedMap<String, Float> bright_cols = computeTimeRamp(blc);
 
             Map<String, Object> darkDefects = eTApi.getResultsJH(db, true, hdwType, "SR-RTM-EOT-03", "dark_defects_raft");
-            Map<String, ArrayList<Double>> dl = getBad(darkDefects, "dark_defects_raft", "dark_pixels", 1.f);
-            Map<String, Float> darks = computeTimeRamp(dl);
-            Map<String, ArrayList<Double>> dlc = getBad(darkDefects, "dark_defects_raft", "dark_columns", 2002.f);
-            Map<String, Float> dark_cols = computeTimeRamp(dlc);
+            SortedMap<String, ArrayList<Double>> dl = getBad(darkDefects, "dark_defects_raft", "dark_pixels", 1.f);
+            SortedMap<String, Float> darks = computeTimeRamp(dl);
+            SortedMap<String, ArrayList<Double>> dlc = getBad(darkDefects, "dark_defects_raft", "dark_columns", 2002.f);
+            SortedMap<String, Float> dark_cols = computeTimeRamp(dlc);
 
             Map<String, Object> readNoiseResults = eTApi.getResultsJH(db, true, hdwType, "SR-RTM-EOT-03", "read_noise_raft");
-            Map<String, ArrayList<Double>> read_noise_c = getBad(readNoiseResults, "read_noise_raft", "read_noise", 1.f);
-            Map<String, Float> readNoise = computeTimeRamp(read_noise_c);
+            SortedMap<String, ArrayList<Double>> read_noise_c = getBad(readNoiseResults, "read_noise_raft", "read_noise", 1.f);
+            SortedMap<String, Float> readNoise = computeTimeRamp(read_noise_c);
             
             //calcBadChannels();
 
             Iterator brightIt = brights.entrySet().iterator();
+            PlotXYData brightData = new PlotXYData();
             while (brightIt.hasNext()) {
                 Map.Entry pair = (Map.Entry) brightIt.next();
 
-                d.getData().addX((String) pair.getKey());
-                d.getData().addY((Double) pair.getValue());
+                brightData.addX((String)pair.getKey());
+                brightData.addY((Double)pair.getValue());
             }
+            brightData.addName("Bright Pixels");
+            d.getData().add(brightData);
 
+            Iterator bright_colIt = bright_cols.entrySet().iterator();
+            PlotXYData bright_colData = new PlotXYData();
+            while(bright_colIt.hasNext()) {
+                Map.Entry pair = (Map.Entry) bright_colIt.next();
+                bright_colData.addX((String)pair.getKey());
+                bright_colData.addY((Double)pair.getValue());
+            }
+            bright_colData.addName("Bright ColumnPixels");
+            d.getData().add(bright_colData);
+            
+            Iterator darkIt = darks.entrySet().iterator();
+            PlotXYData darkData = new PlotXYData();
+            while(darkIt.hasNext()) {
+                Map.Entry pair = (Map.Entry) darkIt.next();
+                darkData.addX((String)pair.getKey());
+                darkData.addY((Double)pair.getValue());
+            }
+            darkData.addName("Dark Pixels");
+            d.getData().add(darkData);
+            
+            Iterator dark_colIt = dark_cols.entrySet().iterator();
+            PlotXYData dark_colData = new PlotXYData();
+            while(dark_colIt.hasNext()) {
+                Map.Entry pair = (Map.Entry) dark_colIt.next();
+                dark_colData.addX((String)pair.getKey());
+                dark_colData.addY((Double)pair.getValue());
+            }
+            dark_colData.addName("Dark ColumnPixels");
+            d.getData().add(dark_colData);
+            
+            
             result = mapper.writeValueAsString(d);
             return result;
             

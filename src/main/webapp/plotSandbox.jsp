@@ -33,7 +33,7 @@
         <c:set var="badPlot" value="${plotutils:getBadChannels('LCA-11021_RTM',appVariables.dataSourceMode)}"/>
   <script>  
         var resp2 = ${badPlot};
-        var respData2 = [resp2.data];
+        var respData2 = resp2.data;
         Plotly.newPlot('badJspVar', respData2, resp2.layout);
     </script>
 
