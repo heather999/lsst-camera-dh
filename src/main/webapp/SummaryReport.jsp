@@ -109,7 +109,7 @@
                         <c:set var="tdata" value="${sect.extra_table}"/>
                         <display:table name="${portal:jexlEvaluateSubcomponentData(param.run, theMap, subComponentMap, subSpecs, tdata)}" class="datatable"/>
                     </c:catch>
-                    <c:if test="${!empty x}">No data returned <br/></c:if>
+                    <c:if test="${!empty x}">Error accessing data: ${x}<br/></c:if>
                 </c:if>
                 <sql:query var="images"  dataSource="${appVariables.reportDisplayDb}"> 
                     select image_url, to_char(caption) caption from report_image_info where section=? and report=? order by display_order asc

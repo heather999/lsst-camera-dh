@@ -230,8 +230,12 @@ public class JexlFunctions {
             Map<String, Object> item = new LinkedHashMap<>();
             for (int j = 0; j < headers.length; j++) {
                 mc.set("row", i);
-                JexlScript func = jexl.createScript(jexlCol[j]);
-                item.put(headers[j], func.execute(mc));
+                try {
+                    JexlScript func = jexl.createScript(jexlCol[j]);
+                    item.put(headers[j], func.execute(mc));
+                } catch (Exception x) {
+                    item.put(headers[j], "???");
+                }
             }
             result.add(item);
         }
