@@ -75,7 +75,7 @@ public class SensorAcceptanceUtils {
             c = ConnectionManager.getConnection(session);
 
             Double BadValue = -999.0, Tolerance = 0.001;
-            
+
             DecimalFormat df = new DecimalFormat("##.#");
 
             String ccd030 = "CCD-030";
@@ -170,14 +170,14 @@ public class SensorAcceptanceUtils {
                             ccd030Data.setVendorVendor("NA", false);
                         } else {
                             deviation_from_znom_Good = (deviation_from_znom < 0.009); // assuming deviation_from_znom is in mm
-                            ccd030Data.setVendorVendor(String.format("%s \u00B5", df.format(Math.round(deviation_from_znom*1000))), deviation_from_znom_Good);
+                            ccd030Data.setVendorVendor(String.format("%s \u00B5", df.format(Math.round(deviation_from_znom * 1000))), deviation_from_znom_Good);
                         }
 
                     }
                 } // end e2v
             } // end ccd030 calc
 
-                          // Always leaving LSST-LSST Met Data set to NA for now
+            // Always leaving LSST-LSST Met Data set to NA for now
             if (Objects.equals(manu.toUpperCase(), "E2V")) {  //CCD-031
                 ccd031Data.setVendorVendor("NA", null);
             } else { // ITL
@@ -205,6 +205,7 @@ public class SensorAcceptanceUtils {
                 String vlccd030bSpec = "|z_median_m_13|<25 &micro";
                 String vlccd030cSpec = "|z_quantile_0975 - z_quantile_0025|<18 &micro";
                 String vlccd031Spec = "peak_valley_95 < 10 &micro";
+                String vlccd031SpecITL = "flatnesshalfband_95 < 5 &micro";
 
                 PreparedStatement vlccd030bStatement = c.prepareStatement("SELECT res.activityId, res.value AS zmedian"
                         + " FROM FloatResultHarnessed res join Activity act ON res.activityId=act.id "
@@ -227,13 +228,6 @@ public class SensorAcceptanceUtils {
                 vlccd030cStatement2.setInt(1, met05ParentId);
                 ResultSet vlccd030cResult2 = vlccd030cStatement2.executeQuery();
 
-                PreparedStatement vlccd031Statement = c.prepareStatement("SELECT res.activityId, res.value AS peak_valley_95 "
-                        + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
-                        + " WHERE lower(res.schemaName) = 'sensor_flatness' AND res.name='peak_valley_95' "
-                        + " AND act.parentActivityId=?");
-                vlccd031Statement.setInt(1, met05ParentId);
-                ResultSet vlccd031Result = vlccd031Statement.executeQuery();
-
                 if (vlccd030bResult.first() && vlccd030cResult1.first() && vlccd030cResult2.first()) {
                     Double z_median_m_13 = vlccd030bResult.getDouble("zmedian");
                     Double z_quantile_0025 = vlccd030cResult1.getDouble("z_quantile_0025");
@@ -249,17 +243,44 @@ public class SensorAcceptanceUtils {
 
                 }
 
-                if (vlccd031Result.first()) {
-                    Double peak_valley_95 = vlccd031Result.getDouble("peak_valley_95");
-                    ccd031Data.setVendorLsst(String.format("%s \u00B5", df.format(peak_valley_95)), peak_valley_95 < 10.); // See LSSTTD-812
+                if (Objects.equals(manu.toUpperCase(), "E2V")) {  //CCD-031 vendor-lsst E2V
+                    PreparedStatement vlccd031Statement = c.prepareStatement("SELECT res.activityId, res.value AS peak_valley_95 "
+                            + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
+                            + " WHERE lower(res.schemaName) = 'sensor_flatness' AND res.name='peak_valley_95' "
+                            + " AND act.parentActivityId=?");
+                    vlccd031Statement.setInt(1, met05ParentId);
+                    ResultSet vlccd031Result = vlccd031Statement.executeQuery();
 
-                    ccd031Data.setVendlsstSpecification(vlccd031Spec);
+                    if (vlccd031Result.first()) {
+                        Double peak_valley_95 = vlccd031Result.getDouble("peak_valley_95");
+                        ccd031Data.setVendorLsst(String.format("%s \u00B5", df.format(peak_valley_95)), peak_valley_95 < 10.); // See LSSTTD-812
+
+                        ccd031Data.setVendlsstSpecification(vlccd031Spec);
+                    }
+                } else { // ITL vendor-lsst
+                    PreparedStatement vlccd031Statement = c.prepareStatement("SELECT res.activityId, res.value AS flatness "
+                            + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
+                            + " WHERE lower(res.schemaName) = 'flatness_sensor' AND res.name='flatnesshalfband_95' "
+                            + " AND act.parentActivityId=?");
+                    vlccd031Statement.setInt(1, met05ParentId);
+                    ResultSet vlccd031Result = vlccd031Statement.executeQuery();
+
+                    if (vlccd031Result.first()) {
+                        double flatness = vlccd031Result.getDouble("flatness");
+                        if (Math.abs(flatness - BadValue) < Tolerance) {
+                            ccd031Data.setVendorLsst("NA", false);
+                        } else {
+                            ccd031Data.setVendorLsst(String.format("%s \u00B5", df.format(flatness)), (flatness < 5.));
+                        }
+                        ccd031Data.setVendlsstSpecification(vlccd031SpecITL);
+
+                    }
                 }
             }
 
             if (Objects.equals(manu.toUpperCase(), "ITL")) {
                 result.add(ccd030Data);
-              //  result.add(ccd030aData);  LSSTTD-1036
+                //  result.add(ccd030aData);  LSSTTD-1036
                 result.add(ccd030bData);
                 result.add(ccd030cData);
                 result.add(ccd031Data);
