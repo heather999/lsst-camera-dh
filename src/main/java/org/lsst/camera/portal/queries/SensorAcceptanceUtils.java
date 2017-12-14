@@ -86,7 +86,7 @@ public class SensorAcceptanceUtils {
 
             String ccd030Desc = "Nominal height and Sensor height";
             String ccd030aDesc = "Nominal height (znom)";
-            String ccd030bDesc = "Nominal height (zmedian)";
+            String ccd030bDesc = "(zmedian - znom)";
             String ccd030cDesc = "Sensor height";
             String ccd031Desc = "Sensor Surface Flatness";
 
@@ -95,7 +95,7 @@ public class SensorAcceptanceUtils {
                 ccd030Spec = "|deviation_from_znom| < 9 &micro";
             }
             String ccd030aSpec = "|znom-13 mm|<25 &micro";
-            String ccd030bSpec = "|zmedian-13 mm|<25 &micro";
+            String ccd030bSpec = "...";
             String ccd030cSpec = "Z95halfband < 9 &micro";
             String ccd031Spec = "flatnesshalfband_95 < 5 &micro";
 
@@ -139,11 +139,11 @@ public class SensorAcceptanceUtils {
                     znomGood = (Math.abs(znom - 13.) * 1000 < 25); // converting the length in mm to microns *1000
                     ccd030aData.setVendorVendor(String.format("%s \u00B5", df.format(Math.abs(znom - 13.) * 1000)), znomGood);
                 }
-                if (Math.abs(zmedian - BadValue) < Tolerance) {
+                if ((Math.abs(zmedian - BadValue) < Tolerance) || (Math.abs(znom - BadValue) < Tolerance)) {
                     ccd030bData.setVendorVendor("NA", false);
                 } else {
-                    zmedianGood = (Math.abs(zmedian - 13.) * 1000 < 25); // converting length in mm to mircons *1000
-                    ccd030bData.setVendorVendor(String.format("%s \u00B5", df.format(Math.abs(zmedian - 13.) * 1000)), zmedianGood);
+                    //zmedianGood = (Math.abs(zmedian - znom) * 1000 < 25); // converting length in mm to mircons *1000
+                    ccd030bData.setVendorVendor(String.format("%s \u00B5", df.format(Math.abs(zmedian - znom) * 1000)), null);
                 }
                 if (Math.abs(z95halfband - BadValue) < Tolerance) {
                     ccd030cData.setVendorVendor("NA", false);
@@ -259,7 +259,7 @@ public class SensorAcceptanceUtils {
 
             if (Objects.equals(manu.toUpperCase(), "ITL")) {
                 result.add(ccd030Data);
-                result.add(ccd030aData);
+              //  result.add(ccd030aData);  LSSTTD-1036
                 result.add(ccd030bData);
                 result.add(ccd030cData);
                 result.add(ccd031Data);

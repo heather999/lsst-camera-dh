@@ -281,7 +281,7 @@
                     </c:otherwise>
                 </c:choose>
 
-                <%-- Add MET Table here for now  ITL only currently --%>
+                <%-- Add MET Table here for now --%>
                 <c:if test="${HaveVendData}">
                               <%-- && manu == 'ITL'}"> --%>
                     <c:set var="tempMetData" value="${portal:getMetReportValues(pageContext.session,manu,vendActId,HaveMet05Data,met05ParentActId)}"/>
@@ -308,14 +308,7 @@
 
 
                 </c:if>
-                <%--
-                <c:if test="${HaveMetSpreadsheet}">
-                    <h2>Metrology</h2>
-
-                    <a href="${metSpreadsheetLink}" target="_blank"><c:out value="TS2 Spreadsheet"/></a> 
-
-                </c:if>
---%>
+               
             </div>
         </c:if>
     </body>
