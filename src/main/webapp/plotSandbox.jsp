@@ -18,7 +18,7 @@
     <body>
         
         <div id="testJspVar" style="width:600px;height:250px;"></div>
-        <div id="badJspVar" style="width:600px;height:250px;"></div>
+        <div id="badJspVar" style="width:600px;height:500px;"></div>
 
 
        <c:set var="tempPlot" value="${plotutils:getSensorArrival('ITL-CCD',appVariables.dataSourceMode)}"/>
