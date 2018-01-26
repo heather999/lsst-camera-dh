@@ -75,31 +75,35 @@ public class SensorAcceptanceUtils {
             c = ConnectionManager.getConnection(session);
 
             Double BadValue = -999.0, Tolerance = 0.001;
-            
+
             DecimalFormat df = new DecimalFormat("##.#");
 
             String ccd030 = "CCD-030";
             String ccd030a = "CCD-030a";
-            String ccd030b = "CCD-030b";
+            String ccd030b = "CCD-030a";
             String ccd030c = "CCD-030c";
             String ccd031 = "CCD-031";
 
             String ccd030Desc = "Nominal height and Sensor height";
+            String ccd030E2VDesc = "(zmean - 13 mm)";
             String ccd030aDesc = "Nominal height (znom)";
-            String ccd030bDesc = "Nominal height (zmedian)";
+            String ccd030bDesc = "(zmedian - znom)";
             String ccd030cDesc = "Sensor height";
             String ccd031Desc = "Sensor Surface Flatness";
 
-            String ccd030Spec = "|znom-13 mm|<25 &micro && |zmedian-13 mm|<25 &micro && Z95halfband < 9 &micro";
+            String ccd030Spec = "frac_outside < 5%";
             if (Objects.equals(manu.toUpperCase(), "E2V")) {
                 ccd030Spec = "|deviation_from_znom| < 9 &micro";
             }
+            String ccd030E2VSpec = "...";
             String ccd030aSpec = "|znom-13 mm|<25 &micro";
-            String ccd030bSpec = "|zmedian-13 mm|<25 &micro";
-            String ccd030cSpec = "Z95halfband < 9 &micro";
+            String ccd030bSpec = "...";
+            //String ccd030cSpec = "Z95halfband < 9 &micro";
+            String ccd030cSpec = "frac_outside < 5%";
             String ccd031Spec = "flatnesshalfband_95 < 5 &micro";
 
             MetData ccd030Data = new MetData(ccd030, ccd030Desc, ccd030Spec);
+            MetData ccd030E2VData = new MetData(ccd030a, ccd030E2VDesc, ccd030E2VSpec);
             MetData ccd030aData = new MetData(ccd030a, ccd030aDesc, ccd030aSpec);
             MetData ccd030bData = new MetData(ccd030b, ccd030bDesc, ccd030bSpec);
             MetData ccd030cData = new MetData(ccd030c, ccd030cDesc, ccd030cSpec);
@@ -119,9 +123,9 @@ public class SensorAcceptanceUtils {
             ccd030bStatement.setInt(1, actParentId);
             ResultSet ccd030bResult = ccd030bStatement.executeQuery();
 
-            PreparedStatement ccd030cStatement = c.prepareStatement("SELECT res.activityId, res.value AS z95halfband "
+            PreparedStatement ccd030cStatement = c.prepareStatement("SELECT res.activityId, res.value AS frac_outside "
                     + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
-                    + " WHERE lower(res.schemaName) = 'metrology_vendoringest' AND res.name='z95halfband' "
+                    + " WHERE lower(res.schemaName) = 'metrology_vendoringest' AND res.name='frac_outside' "
                     + " AND act.parentActivityId=?");
             ccd030cStatement.setInt(1, actParentId);
             ResultSet ccd030cResult = ccd030cStatement.executeQuery();
@@ -129,33 +133,37 @@ public class SensorAcceptanceUtils {
             if (ccd030aResult.first() && ccd030bResult.first() && ccd030cResult.first()) {
                 Double znom = ccd030aResult.getDouble("znom");
                 Double zmedian = ccd030bResult.getDouble("zmedian");
-                Double z95halfband = ccd030cResult.getDouble("z95halfband");
+                Double frac_outside = ccd030cResult.getDouble("frac_outside");
                 Boolean znomGood = false;
                 Boolean zmedianGood = false;
-                Boolean z95halfbandGood = false;
+                Boolean frac_outsideGood = false;
+                String ccd030cString = "";
                 if (Math.abs(znom - BadValue) < Tolerance) {
                     ccd030aData.setVendorVendor("NA", false);
                 } else {
                     znomGood = (Math.abs(znom - 13.) * 1000 < 25); // converting the length in mm to microns *1000
                     ccd030aData.setVendorVendor(String.format("%s \u00B5", df.format(Math.abs(znom - 13.) * 1000)), znomGood);
                 }
-                if (Math.abs(zmedian - BadValue) < Tolerance) {
+                if ((Math.abs(zmedian - BadValue) < Tolerance) || (Math.abs(znom - BadValue) < Tolerance)) {
                     ccd030bData.setVendorVendor("NA", false);
                 } else {
-                    zmedianGood = (Math.abs(zmedian - 13.) * 1000 < 25); // converting length in mm to mircons *1000
-                    ccd030bData.setVendorVendor(String.format("%s \u00B5", df.format(Math.abs(zmedian - 13.) * 1000)), zmedianGood);
+                    //zmedianGood = (Math.abs(zmedian - znom) * 1000 < 25); // converting length in mm to mircons *1000
+                    ccd030bData.setVendorVendor(String.format("%s \u00B5", df.format(Math.abs(zmedian - znom) * 1000)), null);
                 }
-                if (Math.abs(z95halfband - BadValue) < Tolerance) {
+                if (Math.abs(frac_outside - BadValue) < Tolerance) {
                     ccd030cData.setVendorVendor("NA", false);
+                    ccd030cString = "NA";
                 } else {
-                    z95halfbandGood = (z95halfband < 0.009); // assuming z95halfband is in mm
-                    ccd030cData.setVendorVendor(String.format("%s \u00B5", df.format(z95halfband * 1000)), z95halfbandGood); // reporting value in microns
+                    frac_outsideGood = (frac_outside*100 < 5); // converting to percentage
+                    ccd030cString = String.format("%s", df.format(frac_outside * 100))+" %";
+                    ccd030cData.setVendorVendor(String.format("%s", df.format(frac_outside * 100))+" %", frac_outsideGood); // reporting value in percentage
                 }
 
                 if (Objects.equals(manu.toUpperCase(), "ITL")) {
 
-                    Boolean ccd030Status = (znomGood && zmedianGood && z95halfbandGood);
-                    ccd030Data.setVendorVendor("...", ccd030Status);
+                    Boolean ccd030Status = frac_outsideGood;
+                    String descString = ccd030cString;
+                    ccd030Data.setVendorVendor(descString, ccd030Status);
                 } else { // e2v
                     PreparedStatement ccd030e2vStatement = c.prepareStatement("SELECT res.activityId, res.value AS deviation_from_znom "
                             + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
@@ -170,14 +178,26 @@ public class SensorAcceptanceUtils {
                             ccd030Data.setVendorVendor("NA", false);
                         } else {
                             deviation_from_znom_Good = (deviation_from_znom < 0.009); // assuming deviation_from_znom is in mm
-                            ccd030Data.setVendorVendor(String.format("%s \u00B5", df.format(Math.round(deviation_from_znom*1000))), deviation_from_znom_Good);
+                            ccd030Data.setVendorVendor(String.format("%s \u00B5", df.format(Math.round(deviation_from_znom * 1000))), deviation_from_znom_Good);
                         }
 
                     }
+                    // Informational (zmean - 13 mm)
+                    PreparedStatement ccd030e2vStatement2 = c.prepareStatement("SELECT res.activityId, res.value AS zmean "
+                            + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
+                            + " WHERE lower(res.schemaName) = 'metrology_vendoringest' AND res.name='zmean' "
+                            + " AND act.parentActivityId=?");
+                    ccd030e2vStatement2.setInt(1, actParentId);
+                    ResultSet ccd030e2vResult2 = ccd030e2vStatement2.executeQuery();
+                    if (ccd030e2vResult2.first()) {
+                        Double zmean = ccd030e2vResult2.getDouble("zmean");
+                        ccd030E2VData.setVendorVendor(String.format("%s", df.format(Math.round(zmean - 13.))), null);
+                    }
+                    
                 } // end e2v
             } // end ccd030 calc
 
-                          // Always leaving LSST-LSST Met Data set to NA for now
+            // Always leaving LSST-LSST Met Data set to NA for now
             if (Objects.equals(manu.toUpperCase(), "E2V")) {  //CCD-031
                 ccd031Data.setVendorVendor("NA", null);
             } else { // ITL
@@ -200,71 +220,99 @@ public class SensorAcceptanceUtils {
             }
 
             if (haveMet05) {  // Continue with Vendor-LSST 
-                String vlccd030Spec = "|z_median_m_13|<25 &micro && |z_quantile_0975 - z_quantile_0025|<18 &micro";
+                //String vlccd030Spec = "|z_median_m_13|<25 &micro && |z_quantile_0975 - z_quantile_0025|<18 &micro";
+                //String vlccd030Spec = "|z_median_m_13|<25 &micro && frac_outside < 5%";
+                String vlccd030Spec = "frac_outside < 5%";
                 String vlccd030aSpec = "...";
-                String vlccd030bSpec = "|z_median_m_13|<25 &micro";
-                String vlccd030cSpec = "|z_quantile_0975 - z_quantile_0025|<18 &micro";
+                //String vlccd030bSpec = "|z_median_m_13|<25 &micro";
+                //String vlccd030cSpec = "|z_quantile_0975 - z_quantile_0025|<18 &micro";
+                String vlccd030cSpec = "frac_outside < 5%";
                 String vlccd031Spec = "peak_valley_95 < 10 &micro";
+                String vlccd031SpecITL = "flatnesshalfband_95 < 5 &micro";
 
-                PreparedStatement vlccd030bStatement = c.prepareStatement("SELECT res.activityId, res.value AS zmedian"
-                        + " FROM FloatResultHarnessed res join Activity act ON res.activityId=act.id "
-                        + " WHERE lower(res.schemaName) = 'sensor_abs_height' AND res.name='z_median_m_13' "
-                        + " AND act.parentActivityId=?");
-                vlccd030bStatement.setInt(1, met05ParentId);
-                ResultSet vlccd030bResult = vlccd030bStatement.executeQuery();
+                //PreparedStatement vlccd030bStatement = c.prepareStatement("SELECT res.activityId, res.value AS zmedian"
+                //        + " FROM FloatResultHarnessed res join Activity act ON res.activityId=act.id "
+                //        + " WHERE (lower(res.schemaName) = 'sensor_abs_height' OR lower(res.schemaName)='abs_height_sensor') AND res.name='z_median_m_13' "
+                //        + " AND act.parentActivityId=?");
+                //vlccd030bStatement.setInt(1, met05ParentId);
+                //ResultSet vlccd030bResult = vlccd030bStatement.executeQuery();
 
-                PreparedStatement vlccd030cStatement1 = c.prepareStatement("SELECT res.activityId, res.value AS z_quantile_0025 "
+                PreparedStatement vlccd030cStatement1 = c.prepareStatement("SELECT res.activityId, res.value AS frac_outside "
                         + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
-                        + " WHERE lower(res.schemaName) = 'sensor_abs_height' AND res.name='z_quantile_0025' "
+                        + " WHERE lower(res.schemaName) = 'abs_height_sensor' AND res.name='frac_outside' "
                         + " AND act.parentActivityId=?");
                 vlccd030cStatement1.setInt(1, met05ParentId);
                 ResultSet vlccd030cResult1 = vlccd030cStatement1.executeQuery();
 
-                PreparedStatement vlccd030cStatement2 = c.prepareStatement("SELECT res.activityId, res.value AS z_quantile_0975 "
-                        + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
-                        + " WHERE lower(res.schemaName) = 'sensor_abs_height' AND res.name='z_quantile_0975' "
-                        + " AND act.parentActivityId=?");
-                vlccd030cStatement2.setInt(1, met05ParentId);
-                ResultSet vlccd030cResult2 = vlccd030cStatement2.executeQuery();
+                
+                //ccd030bData.setVendlsstSpecification(vlccd030bSpec);
+                ccd030cData.setVendlsstSpecification(vlccd030cSpec);
 
-                PreparedStatement vlccd031Statement = c.prepareStatement("SELECT res.activityId, res.value AS peak_valley_95 "
-                        + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
-                        + " WHERE lower(res.schemaName) = 'sensor_flatness' AND res.name='peak_valley_95' "
-                        + " AND act.parentActivityId=?");
-                vlccd031Statement.setInt(1, met05ParentId);
-                ResultSet vlccd031Result = vlccd031Statement.executeQuery();
+                Boolean vlccd030cStatus=false;
 
-                if (vlccd030bResult.first() && vlccd030cResult1.first() && vlccd030cResult2.first()) {
-                    Double z_median_m_13 = vlccd030bResult.getDouble("zmedian");
-                    Double z_quantile_0025 = vlccd030cResult1.getDouble("z_quantile_0025");
-                    Double z_quantile_0975 = vlccd030cResult2.getDouble("z_quantile_0975");
-                    ccd030bData.setVendorLsst(String.format("%s \u00B5", df.format(Math.abs(z_median_m_13))), (Math.abs(z_median_m_13) < 25));
-                    ccd030cData.setVendorLsst(String.format("%s \u00B5", df.format(Math.abs(z_quantile_0975 - z_quantile_0025))), (Math.abs(z_quantile_0975 - z_quantile_0025) < 18.));
-                    Boolean vlccd030Status = (Math.abs(z_median_m_13) < 25) && (Math.abs(z_quantile_0975 - z_quantile_0025) < 18.);
-                    ccd030Data.setVendorLsst("...", vlccd030Status);
-
+                //if (vlccd030bResult.first()) {  // separate b and c
+                //    Double z_median_m_13 = vlccd030bResult.getDouble("zmedian");
+                    //vlccd030bStatus = (Math.abs(z_median_m_13) < 25);
+               //     ccd030bData.setVendorLsst(String.format("%s \u00B5", df.format(Math.abs(z_median_m_13))), null);
+               // }
+                if (Objects.equals(manu.toUpperCase(), "E2V")) {
+                    // do nothing
+                } else {
                     ccd030Data.setVendlsstSpecification(vlccd030Spec);
-                    ccd030bData.setVendlsstSpecification(vlccd030bSpec);
-                    ccd030cData.setVendlsstSpecification(vlccd030cSpec);
-
+                    String vlccd030String = "";
+                    if (vlccd030cResult1.first()) {
+                        Double frac_outside = vlccd030cResult1.getDouble("frac_outside");
+                        vlccd030cStatus = (frac_outside * 100 < 5);
+                        vlccd030String = String.format("%s ", df.format(frac_outside * 100)) + "%";
+                        ccd030cData.setVendorLsst(String.format("%s ", df.format(frac_outside * 100)) + "%", vlccd030cStatus);
+                    }
+                    Boolean vlccd030Status = vlccd030cStatus;
+                    ccd030Data.setVendorLsst(vlccd030String, vlccd030Status);
                 }
+                if (Objects.equals(manu.toUpperCase(), "E2V")) {  //CCD-031 vendor-lsst E2V
+                    PreparedStatement vlccd031Statement = c.prepareStatement("SELECT res.activityId, res.value AS peak_valley_95 "
+                            + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
+                            + " WHERE lower(res.schemaName) = 'sensor_flatness' AND res.name='peak_valley_95' "
+                            + " AND act.parentActivityId=?");
+                    vlccd031Statement.setInt(1, met05ParentId);
+                    ResultSet vlccd031Result = vlccd031Statement.executeQuery();
 
-                if (vlccd031Result.first()) {
-                    Double peak_valley_95 = vlccd031Result.getDouble("peak_valley_95");
-                    ccd031Data.setVendorLsst(String.format("%s \u00B5", df.format(peak_valley_95)), peak_valley_95 < 10.); // See LSSTTD-812
+                    if (vlccd031Result.first()) {
+                        Double peak_valley_95 = vlccd031Result.getDouble("peak_valley_95");
+                        ccd031Data.setVendorLsst(String.format("%s \u00B5", df.format(peak_valley_95)), peak_valley_95 < 10.); // See LSSTTD-812
 
-                    ccd031Data.setVendlsstSpecification(vlccd031Spec);
+                        ccd031Data.setVendlsstSpecification(vlccd031Spec);
+                    }
+                } else { // ITL vendor-lsst
+                    PreparedStatement vlccd031Statement = c.prepareStatement("SELECT res.activityId, res.value AS flatness "
+                            + " FROM FloatResultHarnessed res JOIN Activity act ON res.activityId=act.id "
+                            + " WHERE lower(res.schemaName) = 'flatness_sensor' AND res.name='flatnesshalfband_95' "
+                            + " AND act.parentActivityId=?");
+                    vlccd031Statement.setInt(1, met05ParentId);
+                    ResultSet vlccd031Result = vlccd031Statement.executeQuery();
+
+                    if (vlccd031Result.first()) {
+                        double flatness = vlccd031Result.getDouble("flatness");
+                        if (Math.abs(flatness - BadValue) < Tolerance) {
+                            ccd031Data.setVendorLsst("NA", false);
+                        } else {
+                            ccd031Data.setVendorLsst(String.format("%s \u00B5", df.format(flatness)), (flatness < 5.));
+                        }
+                        ccd031Data.setVendlsstSpecification(vlccd031SpecITL);
+
+                    }
                 }
             }
 
             if (Objects.equals(manu.toUpperCase(), "ITL")) {
                 result.add(ccd030Data);
-                result.add(ccd030aData);
+                //  result.add(ccd030aData);  LSSTTD-1036
                 result.add(ccd030bData);
-                result.add(ccd030cData);
+                //result.add(ccd030cData);
                 result.add(ccd031Data);
             } else { // e2v
                 result.add(ccd030Data);
+                result.add(ccd030E2VData);
                 result.add(ccd031Data);  // We only have Vendor-LSST CCD-031 for e2v 
             }
 
