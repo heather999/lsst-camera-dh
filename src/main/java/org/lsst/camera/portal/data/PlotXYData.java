@@ -7,6 +7,7 @@ package org.lsst.camera.portal.data;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *
@@ -15,9 +16,22 @@ import java.util.ArrayList;
 //@JsonInclude(Include.NON_NULL)
 public class PlotXYData {
 
+
+    public class Line {
+        public String width="2";
+        public String dash="solid";
+        public void setDash(String d) {dash=d;}
+        public String getDash() {return dash;}
+        public void setWidth(String w) {width=w;}
+        public String getWidth() {return width;}
+    }
+    
     private ArrayList<String> x;
     private ArrayList<Double> y;
+    private ArrayList<String> text = null;
     private String name;
+    private String mode="lines+markers";
+    private Line line;
   //  private Boolean autobinx;
    // private Integer nbinsx;
  //   private String type;
@@ -27,7 +41,9 @@ public class PlotXYData {
 
         x = new ArrayList<>();
         y = new ArrayList<>();
-        //text = new ArrayList<>();
+        line = new Line();
+        //line = new Line();
+
        // type = "";
         //autobinx=null;
      //   nbinsx = null;
@@ -47,6 +63,15 @@ public class PlotXYData {
     public void addY(Double f) {
         y.add(f);
     }
+
+    public ArrayList<String>getText() {
+        return text;
+    }
+
+    public void addText(String t) {
+        if (text == null)  text = new ArrayList<>();
+        text.add(t);
+    }
     
     public void addName(String n) {
         name = n;
@@ -55,13 +80,17 @@ public class PlotXYData {
     public String getName() {
         return name;
     }
-    
-   // public ArrayList<String> getText() {
-   //     return text;
-   // }
-   // public void addText(String str) {
-   //     text.add(str);
-   // }
+
+    public PlotXYData.Line getLine() {return line;}
+
+
+    public void setMode(String m) {
+        mode=m;
+    }
+
+    public String getMode() {
+        return mode;
+    }
     
     //public void setType(String str) {
     //    type = str;

@@ -17,7 +17,7 @@
 
     <body>
         
-        <div id="testJspVar" style="width:600px;height:250px;"></div>
+        <div id="testJspVar" style="width:600px;height:400px;"></div>
         <div id="badJspVar" style="width:600px;height:500px;"></div>
 
 

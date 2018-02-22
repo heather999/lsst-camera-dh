@@ -28,6 +28,10 @@ import org.lsst.camera.portal.data.PlotData;
 import org.lsst.camera.portal.data.PlotXYObject;
 import org.lsst.camera.portal.data.PlotXYData;
 
+import org.lsst.camera.etraveler.javaclient.EtClientServices;
+import org.lsst.camera.etraveler.javaclient.EtClientException;
+import org.lsst.camera.etraveler.javaclient.EtClientNoDataException;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -42,7 +46,9 @@ public class PlotUtils {
     DateFormat df2 = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.S");
 
     static ObjectMapper mapper = new ObjectMapper();
-
+    static ArrayList<String> successStatus = new ArrayList<> ();
+    static ArrayList<String> okSoFar = new ArrayList<> ();
+    
     public static long timeDiff(Date begin, Date end) {
         TimeUnit myTime = TimeUnit.MILLISECONDS;
         long milli = end.getTime() - begin.getTime();
@@ -85,12 +91,21 @@ public class PlotUtils {
         d.getData().setNbinsx(100);
         //ObjectMapper mapper = new ObjectMapper();
         mapper.setSerializationInclusion(Include.NON_NULL); // NON_EMPTY
-        Boolean prodServer = true;
+        Boolean prodServer = false;
+        Boolean localServer = false;
+        String  appSuffix = "-jrb";
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.S");
         List<Integer> t_diffs = new ArrayList<>();
-        try {
+        if (PlotUtils.successStatus.isEmpty()) {
+          PlotUtils.successStatus.add("success");
+          PlotUtils.okSoFar.add("success");
+          PlotUtils.okSoFar.add("inProgress");
+          PlotUtils.okSoFar.add("paused");
+        }
+
+        try (EtClientServices etClient = new EtClientServices(db, null, prodServer, localServer, appSuffix)) {
             Set<String> labels = new HashSet<>(Arrays.asList("SR_Grade", "SR_Contract"));
-            ArrayList<HashMap<String, Object>> hdwInstances = eTApi.getHardwareInstances(hdwType, prodServer, db, labels);
+            ArrayList<HashMap<String, Object>> hdwInstances = etClient.getHardwareInstances(hdwType, null, labels);
             Iterator hdwIt = hdwInstances.iterator();
             int count_ccd = 0;
             while (hdwIt.hasNext()) {
@@ -100,10 +115,20 @@ public class PlotUtils {
                 String curCcd = (String) curMap.get("experimentSN");
                 ArrayList<String> curLabels = (ArrayList<String>) curMap.get("hardwareLabels");
                 ++count_ccd;
+                Map<Integer, Object> runListOld = null;
+                Map<Integer, Object> runList = null;
                 // Some sensors were received with SR-RCV-2 and then later it changed to SR-GEN-RCV-02
-                Map<Integer, Object> runListOld = eTApi.getComponentRuns(db, hdwType, curCcd, "SR-RCV-2");
+                try {
+                    runListOld = etClient.getComponentRuns(hdwType, curCcd, "SR-RCV-2", 
+                                                           PlotUtils.okSoFar);
+                } catch (EtClientNoDataException noDataEx) {
+                }
                 if (runListOld == null) { // Check for other traveler name SR-GEN-RCV-02
-                    Map<Integer, Object> runList = eTApi.getComponentRuns(db, hdwType, curCcd, "SR-GEN-RCV-02");
+                    try {
+                        runList = etClient.getComponentRuns(hdwType, curCcd, "SR-GEN-RCV-02",
+                                                            PlotUtils.okSoFar);
+                    } catch (EtClientNoDataException noDataEx) {
+                    }
                     if (runList == null) {
                         continue; // skip this ccd entirely
                     }
@@ -142,7 +167,12 @@ public class PlotUtils {
 
                 if (found) { // we have a BNL arrival, now find Vendor Ingest
                     Date bnlDate = df.parse(bnlTime);
-                    Map<Integer, Object> runListCCD = eTApi.getComponentRuns(db, hdwType, curCcd, "SR-RCV-01");
+                    Map<Integer, Object> runListCCD = null;
+                    try {
+                        runListCCD =
+                              etClient.getComponentRuns(hdwType, curCcd, "SR-RCV-01", PlotUtils.okSoFar);
+                    } catch (EtClientNoDataException noDataEx) {
+                    }
                     if (runListCCD == null) {
                         continue;
                     }
@@ -209,23 +239,21 @@ public class PlotUtils {
             if (pair.getKey().toString().contains("RTM-004")) { // skipping just like Richard's script
                 continue;
             }
-            if (pair.getKey().toString().contains("RTM-011")) {  // latest SR-RTM-EOT-03 is incomplete
-                continue;
-            }
-            if (pair.getKey().toString().contains("RTM-003_ETU2")) { // ditto
-                continue;
-            }
-            if (pair.getKey().toString().contains("RTM-010")) {  // ditto
+            if (pair.getKey().toString().contains("RTM-003_ETU2")) { // skip because it's early; yucky data
                 continue;
             }
 
             Map<String, Object> raftDict = (Map<String, Object>) pair.getValue();
             Map<String, Object> stepDict = (Map<String, Object>) raftDict.get("steps");
             String beginTime = (String) raftDict.get("begin");
+            String runNumber = (String) raftDict.get("runNumber");
             ArrayList<Double> item_list = new ArrayList<>();
 
             Map<String, Object> a = (Map<String, Object>) stepDict.get(step);
 
+            // This only works because schema name happens to equal step name
+            // Since the getResultsJH call was restricted to schema we want, could
+            // just get the first (and only) entry in a
             ArrayList<Map<String, Object>> defects = (ArrayList< Map<String, Object>>) a.get(step);
             Iterator defectIt = defects.iterator();
             String type = "";
@@ -251,6 +279,18 @@ public class PlotUtils {
         return item_ramp;
     }
 
+    public static SortedMap<String, String> getRuns(Map<String, Object> data) {
+        SortedMap<String, String> runMap = new TreeMap<>();
+        
+        for (String k : data.keySet()) {
+            if (!k.contains("RTM-004") && !k.contains("RTM-003_ETU2")) {
+                Map<String, Object> runDataMap = (Map<String, Object>) data.get(k);
+                runMap.put((String) runDataMap.get("begin"), (String) runDataMap.get("runNumber"));
+            }
+        }
+        return runMap;
+    }
+
     public static Double sumReadNoise(ArrayList<Double> read_noise_list) {
         double limit = 9.;
         Double sum = 0.d;
@@ -268,26 +308,42 @@ public class PlotUtils {
         PlotXYObject d = new PlotXYObject();
         d.getLayout().setTitle("LCA-11021_RTM Bad Channels");
         d.getLayout().getYaxis().setType("log");
+        if (PlotUtils.successStatus.isEmpty()) {
+          PlotUtils.successStatus.add("success");
+          PlotUtils.okSoFar.add("success");
+          PlotUtils.okSoFar.add("inProgress");
+          PlotUtils.okSoFar.add("paused");
+        }
+      
 
-        Boolean prodServer = true;
+        Boolean prodServer = false;
+        Boolean localServer = false;
+        String  appSuffix = "-jrb";
         DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'kk:mm:ss.S");
 
-        try {
-
-            Map<String, Object> brightDefects = eTApi.getResultsJH(db, true, hdwType, "SR-RTM-EOT-03", "bright_defects_raft");
+        try (EtClientServices etClient = new EtClientServices(db, null, prodServer, localServer, appSuffix) ) {
+            Set<String> emptySet = new HashSet<String>();
+            Map<String, Object> brightDefects =
+                etClient.getResultsJH("SR-RTM-EOT-03", hdwType, "bright_defects_raft",
+                                   "bright_defects_raft", null, null, emptySet, successStatus);
             SortedMap<String, ArrayList<Double>> bl = getBad(brightDefects, "bright_defects_raft", "bright_pixels", 1.f);
             SortedMap<String, Double> brights = computeTimeRamp(bl);
             SortedMap<String, ArrayList<Double>> blc = getBad(brightDefects, "bright_defects_raft", "bright_columns", 2002.f);
             SortedMap<String, Double> bright_cols = computeTimeRamp(blc);
 
-            Map<String, Object> darkDefects = eTApi.getResultsJH(db, true, hdwType, "SR-RTM-EOT-03", "dark_defects_raft");
+            Map<String, Object> darkDefects =
+                etClient.getResultsJH("SR-RTM-EOT-03", hdwType, "dark_defects_raft",
+                                      "dark_defects_raft", null, null, emptySet, successStatus);
             SortedMap<String, ArrayList<Double>> dl = getBad(darkDefects, "dark_defects_raft", "dark_pixels", 1.f);
             SortedMap<String, Double> darks = computeTimeRamp(dl);
             SortedMap<String, ArrayList<Double>> dlc = getBad(darkDefects, "dark_defects_raft", "dark_columns", 2002.f);
             SortedMap<String, Double> dark_cols = computeTimeRamp(dlc);
 
-            Map<String, Object> readNoiseResults = eTApi.getResultsJH(db, true, hdwType, "SR-RTM-EOT-03", "read_noise_raft");
-            SortedMap<String, ArrayList<Double>> read_noise_c = getBad(readNoiseResults, "read_noise_raft", "read_noise", 1.f);
+            Map<String, Object> readNoiseResults =
+                etClient.getResultsJH("SR-RTM-EOT-03", hdwType, "read_noise_raft", "read_noise_raft", null, null,
+                                      emptySet, successStatus);
+            SortedMap<String, ArrayList<Double>> read_noise_c = getBad(readNoiseResults, "read_noise_raft",
+                                                                       "read_noise", 1.f);
             SortedMap<String, Double> readNoise = computeTimeRamp(read_noise_c);
 
             SortedMap<String, Double> read_noise_ramp = new TreeMap<>();
@@ -312,6 +368,7 @@ public class PlotUtils {
 
             }
             brightData.addName("Bright Pixels");
+            brightData.getLine().setDash("dot");
             d.getData().add(brightData);
 
             Iterator bright_colIt = bright_cols.entrySet().iterator();
@@ -322,6 +379,7 @@ public class PlotUtils {
                 bright_colData.addY((Double) pair.getValue());
             }
             bright_colData.addName("Bright ColumnPixels");
+            bright_colData.getLine().setDash("dot");
             d.getData().add(bright_colData);
 
             Iterator darkIt = darks.entrySet().iterator();
@@ -332,6 +390,7 @@ public class PlotUtils {
                 darkData.addY((Double) pair.getValue());
             }
             darkData.addName("Dark Pixels");
+            darkData.getLine().setDash("dot");
             d.getData().add(darkData);
 
             Iterator dark_colIt = dark_cols.entrySet().iterator();
@@ -342,8 +401,21 @@ public class PlotUtils {
                 dark_colData.addY((Double) pair.getValue());
             }
             dark_colData.addName("Dark ColumnPixels");
+            dark_colData.getLine().setDash("dot");
             d.getData().add(dark_colData);
 
+            Iterator read_noiseIt = read_noise_ramp.entrySet().iterator();
+            PlotXYData read_noiseData = new PlotXYData();
+            
+            while (read_noiseIt.hasNext()) {
+                Map.Entry pair = (Map.Entry) read_noiseIt.next();
+                read_noiseData.addX((String) pair.getKey());
+                read_noiseData.addY((Double) pair.getValue());
+            }
+            read_noiseData.addName("Read Noise AmpPixels");
+            read_noiseData.getLine().setDash("dot");
+            d.getData().add(read_noiseData);
+            
             PlotXYData bad_channel_rampData = new PlotXYData();
             Iterator bad_channel_rampIt = bad_channel_ramp_total.entrySet().iterator();
             while (bad_channel_rampIt.hasNext()) {
@@ -354,19 +426,20 @@ public class PlotUtils {
             bad_channel_rampData.addName("Running Total");
             d.getData().add(bad_channel_rampData);
 
-            Iterator read_noiseIt = read_noise_ramp.entrySet().iterator();
-            PlotXYData read_noiseData = new PlotXYData();
-            while (read_noiseIt.hasNext()) {
-                Map.Entry pair = (Map.Entry) read_noiseIt.next();
-                read_noiseData.addX((String) pair.getKey());
-                read_noiseData.addY((Double) pair.getValue());
+            PlotXYData run_numbers_data = new PlotXYData();
+            SortedMap run_map = getRuns(brightDefects);
+            for (Object k: run_map.keySet()) {
+                run_numbers_data.addX((String) k);
+                run_numbers_data.addY(5.0);
+                run_numbers_data.addText((String) run_map.get((String) k));
             }
-            read_noiseData.addName("Read Noise AmpPixels");
-            d.getData().add(read_noiseData);
+            run_numbers_data.addName("Runs");
+            run_numbers_data.setMode("text");
+            run_numbers_data.addName("Run numbers");
+            d.getData().add(run_numbers_data);
 
             result = mapper.writeValueAsString(d);
             return result;
-
         } catch (Exception e) {
             StringWriter errors = new StringWriter();
             e.printStackTrace(new PrintWriter(errors));
