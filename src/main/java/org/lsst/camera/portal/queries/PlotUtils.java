@@ -20,6 +20,7 @@ import java.util.SortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.Arrays;
 
@@ -48,6 +49,9 @@ public class PlotUtils {
     static ObjectMapper mapper = new ObjectMapper();
     static ArrayList<String> successStatus = new ArrayList<> ();
     static ArrayList<String> okSoFar = new ArrayList<> ();
+    static TreeSet<String> rtmExclude = new TreeSet<> ();
+    static Double badChannelMaxDOE = 3.2e9 * 0.02;
+    static Double badChannelMaxNSF = 2.6e9 * 0.02;
     
     public static long timeDiff(Date begin, Date end) {
         TimeUnit myTime = TimeUnit.MILLISECONDS;
@@ -132,7 +136,7 @@ public class PlotUtils {
                     if (runList == null) {
                         continue; // skip this ccd entirely
                     }
-                    SortedSet<Integer> keys = new TreeSet<>(runList.keySet());
+                    TreeSet<Integer> keys = new TreeSet<>(runList.keySet());
                     for (Integer key : keys) {
 
                         HashMap<String, Object> travRun = (HashMap<String, Object>) runList.get(key);
@@ -148,7 +152,7 @@ public class PlotUtils {
                     }
 
                 } else { // Found SR-RCV-2 data
-                    SortedSet<Integer> keys = new TreeSet<Integer>(runListOld.keySet());
+                    TreeSet<Integer> keys = new TreeSet<Integer>(runListOld.keySet());
                     for (Integer key : keys) {
 
                         HashMap<String, Object> travRun = (HashMap<String, Object>) runListOld.get(key);
@@ -177,7 +181,7 @@ public class PlotUtils {
                         continue;
                     }
                     // Keys are rootActivityIds, so we want the smallest one, for the first vendor Ingest
-                    SortedSet<Integer> keys = new TreeSet<Integer>(runListCCD.keySet());
+                    TreeSet<Integer> keys = new TreeSet<Integer>(runListCCD.keySet());
                     for (Integer key : keys) {
 
                         HashMap<String, Object> travRun = (HashMap<String, Object>) runListCCD.get(key);
@@ -236,10 +240,7 @@ public class PlotUtils {
         Iterator it = data.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pair = (Map.Entry) it.next();
-            if (pair.getKey().toString().contains("RTM-004")) { // skipping just like Richard's script
-                continue;
-            }
-            if (pair.getKey().toString().contains("RTM-003_ETU2")) { // skip because it's early; yucky data
+            if (rtmExclude.contains(pair.getKey().toString())) { // skipping just like Richard's script
                 continue;
             }
 
@@ -283,7 +284,7 @@ public class PlotUtils {
         SortedMap<String, String> runMap = new TreeMap<>();
         
         for (String k : data.keySet()) {
-            if (!k.contains("RTM-004") && !k.contains("RTM-003_ETU2")) {
+            if (!rtmExclude.contains(k)) {
                 Map<String, Object> runDataMap = (Map<String, Object>) data.get(k);
                 runMap.put((String) runDataMap.get("begin"), (String) runDataMap.get("runNumber"));
             }
@@ -306,6 +307,11 @@ public class PlotUtils {
     public static String getBadChannels(String hdwType, String db) {
         String result;
         PlotXYObject d = new PlotXYObject();
+
+        if (rtmExclude.isEmpty()) {
+            rtmExclude.add("LCA-11021_RTM-004");
+            rtmExclude.add("LCA-11021_RTM-003_ETU2");
+        }        
         d.getLayout().setTitle("LCA-11021_RTM Bad Channels");
         d.getLayout().getYaxis().setType("log");
         if (PlotUtils.successStatus.isEmpty()) {
@@ -424,20 +430,31 @@ public class PlotUtils {
                 bad_channel_rampData.addY((Double) pair.getValue());
             }
             bad_channel_rampData.addName("Running Total");
-            d.getData().add(bad_channel_rampData);
 
             PlotXYData run_numbers_data = new PlotXYData();
+            PlotXYData max_NSF_data = new PlotXYData();
+            PlotXYData max_DOE_data = new PlotXYData();
             SortedMap run_map = getRuns(brightDefects);
             for (Object k: run_map.keySet()) {
                 run_numbers_data.addX((String) k);
-                run_numbers_data.addY(5.0);
+                run_numbers_data.addY(10.0);
                 run_numbers_data.addText((String) run_map.get((String) k));
+                max_NSF_data.addX((String) k);
+                max_NSF_data.addY(badChannelMaxNSF);
+                max_DOE_data.addX((String) k);
+                max_DOE_data.addY(badChannelMaxDOE);                
             }
             run_numbers_data.addName("Runs");
             run_numbers_data.setMode("text");
             run_numbers_data.addName("Run numbers");
+            max_NSF_data.addName("Bad limit (NSF)");
+            max_DOE_data.addName("Bad limit (DOE)");
+            max_NSF_data.setMode("lines");
+            max_DOE_data.setMode("lines");
+            d.getData().add(max_DOE_data);
+            d.getData().add(max_NSF_data);
+            d.getData().add(bad_channel_rampData);
             d.getData().add(run_numbers_data);
-
             result = mapper.writeValueAsString(d);
             return result;
         } catch (Exception e) {
