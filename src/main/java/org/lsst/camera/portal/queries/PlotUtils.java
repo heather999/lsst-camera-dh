@@ -375,7 +375,6 @@ public class PlotUtils {
             }
             brightData.addName("Bright Pixels");
             brightData.getLine().setDash("dot");
-            d.getData().add(brightData);
 
             Iterator bright_colIt = bright_cols.entrySet().iterator();
             PlotXYData bright_colData = new PlotXYData();
@@ -386,7 +385,6 @@ public class PlotUtils {
             }
             bright_colData.addName("Bright ColumnPixels");
             bright_colData.getLine().setDash("dot");
-            d.getData().add(bright_colData);
 
             Iterator darkIt = darks.entrySet().iterator();
             PlotXYData darkData = new PlotXYData();
@@ -397,7 +395,6 @@ public class PlotUtils {
             }
             darkData.addName("Dark Pixels");
             darkData.getLine().setDash("dot");
-            d.getData().add(darkData);
 
             Iterator dark_colIt = dark_cols.entrySet().iterator();
             PlotXYData dark_colData = new PlotXYData();
@@ -408,7 +405,6 @@ public class PlotUtils {
             }
             dark_colData.addName("Dark ColumnPixels");
             dark_colData.getLine().setDash("dot");
-            d.getData().add(dark_colData);
 
             Iterator read_noiseIt = read_noise_ramp.entrySet().iterator();
             PlotXYData read_noiseData = new PlotXYData();
@@ -420,7 +416,6 @@ public class PlotUtils {
             }
             read_noiseData.addName("Read Noise AmpPixels");
             read_noiseData.getLine().setDash("dot");
-            d.getData().add(read_noiseData);
             
             PlotXYData bad_channel_rampData = new PlotXYData();
             Iterator bad_channel_rampIt = bad_channel_ramp_total.entrySet().iterator();
@@ -454,6 +449,11 @@ public class PlotUtils {
             d.getData().add(max_DOE_data);
             d.getData().add(max_NSF_data);
             d.getData().add(bad_channel_rampData);
+            d.getData().add(bright_colData);
+            d.getData().add(dark_colData);
+            d.getData().add(brightData);
+            d.getData().add(darkData);
+            d.getData().add(read_noiseData);
             d.getData().add(run_numbers_data);
             result = mapper.writeValueAsString(d);
             return result;
