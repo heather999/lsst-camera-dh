@@ -96,6 +96,13 @@
             </filter:filterSelection>
             <input type="hidden" name="run" value="${param.run}"/>
         </filter:filterTable>
+            <sql:query var="activities">     
+              select group_concat(x.activity) activities from (  
+              SELECT max(a.id) activity FROM Activity a JOIN RunNumber r ON r.rootActivityId=a.rootActivityId
+              WHERE r.runNumber=? and a.activityFinalStatusId = 1 group by a.processId ) x
+              <sql:param value="${param.run}"/>
+            </sql:query>
+            <c:set var="activityList" value="${activities.rows[0].activities}"/>  
         <sql:query var="data">
             select p.name, x.variable,x.value,x.type,x.instance, x.schemaName from (
             select res.id, res.activityId, res.name variable, res.value, "String" type, schemaInstance instance, schemaName from StringResultHarnessed res 
@@ -108,9 +115,7 @@
             ) x
             join Activity act on x.activityId=act.id 
             join Process p on act.processid=p.id
-            join RunNumber r on r.rootActivityId=act.rootActivityId
-            where r.runNumber=?
-            <sql:param value="${param.run}"/>
+            where act.id in (${activityList})
             <c:if test="${process != -1}">
                 and p.id=?
                 <sql:param value="${process}"/>

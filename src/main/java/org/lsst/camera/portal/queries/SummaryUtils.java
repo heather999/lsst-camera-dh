@@ -9,11 +9,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.servlet.jsp.*;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSession;
+import org.apache.commons.lang3.StringUtils;
 import org.srs.web.base.db.ConnectionManager;
 import org.srs.web.base.filters.modeswitcher.ModeSwitcherFilter;
 
@@ -23,7 +22,7 @@ import org.srs.web.base.filters.modeswitcher.ModeSwitcherFilter;
  */
 public class SummaryUtils {
 
-    public static Map<String, Map<String, List<Object>>> getReportValues(HttpSession session, Integer actParentId, Integer reportId) throws SQLException, ServletException, JspException {
+    public static Map<String, Map<String, List<Object>>> getReportValues(HttpSession session, Object activities, Integer reportId) throws SQLException, ServletException, JspException {
         Map<String, Map<String, List<Object>>> result = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
 
         try (Connection c = ConnectionManager.getConnection(ModeSwitcherFilter.getVariable(session, "reportDisplayDb"))) {
@@ -35,9 +34,15 @@ public class SummaryUtils {
                 while (r.next()) {
                     String key = r.getString("rkey");
                     String tmpstr = r.getString("query");
+                    // Horrible kludge to avoid having to change existing entries in report_queries
+                    if (activities instanceof String) {
+                        tmpstr = tmpstr.replace("act.rootActivityId=?","act.id in ("+activities+")");
+                    }
                     Map<String, List<Object>> map = new HashMap<>();
                     PreparedStatement stmt2 = oraconn.prepareStatement(tmpstr);
-                    stmt2.setInt(1, actParentId);
+                    if (!(activities instanceof String)) {   
+                        stmt2.setInt(1, (int) activities);
+                    }
                     ResultSet q = stmt2.executeQuery();
                     int nCol = q.getMetaData().getColumnCount();
                     for (int col = 1; col <= nCol; col++) {
@@ -56,16 +61,16 @@ public class SummaryUtils {
         return result;
     }
 
-    public static Map<String, Map<String, Map<String, List<Object>>>> getReportValuesForSubcomponents(HttpSession session, Integer actParentId, Integer reportId, List<String> components) throws SQLException, ServletException, JspException {
+    public static Map<String, Map<String, Map<String, List<Object>>>> getReportValuesForSubcomponents(HttpSession session, Object activities, Integer reportId, List<String> components) throws SQLException, ServletException, JspException {
         Map<String, Map<String, Map<String, List<Object>>>> results = new LinkedHashMap<>();
         // FIXME: We should not create independent database connectiosn for each iteration
         for (String component : components) {
-            results.put(component, getReportValuesForSubcomponent(session, actParentId, reportId, component));
+            results.put(component, getReportValuesForSubcomponent(session, activities, reportId, component));
         }
         return results;
     }
 
-    public static Map<String, Map<String, List<Object>>> getReportValuesForSubcomponent(HttpSession session, Integer actParentId, Integer reportId, String component) throws SQLException, ServletException, JspException {
+    public static Map<String, Map<String, List<Object>>> getReportValuesForSubcomponent(HttpSession session, Object activities, Integer reportId, String component) throws SQLException, ServletException, JspException {
         Map<String, Map<String, List<Object>>> result = new LinkedHashMap<>(); // orders the elements in the same order they're processed instead of random order.
 
         try (Connection c = ConnectionManager.getConnection(ModeSwitcherFilter.getVariable(session, "reportDisplayDb"))) {
@@ -77,10 +82,11 @@ public class SummaryUtils {
                 while (r.next()) {
                     String key = r.getString("rkey");
                     String tmpstr = r.getString("query");
+                    // Horrible kludge to avoid having to change existing entries in report_queries
+                    tmpstr = tmpstr.replace("act.rootActivityId=?","act.id in ("+activities+")");
                     Map<String, List<Object>> map = new HashMap<>();
                     PreparedStatement stmt2 = oraconn.prepareStatement(tmpstr);
-                    stmt2.setInt(1, actParentId);
-                    stmt2.setString(2, component);
+                    stmt2.setString(1, component);
                     ResultSet q = stmt2.executeQuery();
                     int nCol = q.getMetaData().getColumnCount();
                     for (int col = 1; col <= nCol; col++) {

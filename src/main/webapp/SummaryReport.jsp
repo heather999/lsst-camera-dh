@@ -47,6 +47,13 @@
             Unknown report label ${reportLabel}
         </c:if>
         <c:if test="${reports.rowCount>0}">
+            <sql:query var="activities">     
+              select group_concat(x.activity) activities from (  
+              SELECT max(a.id) activity FROM Activity a JOIN RunNumber r ON r.rootActivityId=a.rootActivityId
+              WHERE r.runNumber=? and a.activityFinalStatusId = 1 group by a.processId ) x
+              <sql:param value="${param.run}"/>
+            </sql:query>
+            <c:set var="activityList" value="${activities.rows[0].activities}"/> 
             <c:set var="reportId" value="${reports.rows[0].reportid}"/>
             <sql:query var="data">
                 select a.id from Activity a
@@ -58,10 +65,10 @@
             <c:set var="parentActivityId" value="${data.rows[0].id}"/>
             <c:choose>
                 <c:when test="${empty param.component}">
-                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,reportId)}"/>
+                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,reportId==8||reportId==7?activityList:parentActivityId,reportId)}"/>
                     <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
                     <c:if test="${!empty subcomponents}">
-                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,9,subcomponents)}"/>
+                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,reportId==8||reportId==7?activityList:parentActivityId,9,subcomponents)}"/>
                         <c:if test="${!empty subComponentMap}">
                             <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,9)}"/>
                         </c:if>
