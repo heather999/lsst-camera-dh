@@ -75,7 +75,7 @@
                     </c:if>
                 </c:when>
                 <c:otherwise>
-                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,9, param.component)}"/>
+                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,reportId==8||reportId==7?activityList:parentActivityId,9, param.component)}"/>
                     <c:set var="reportId" value="9"/>
                 </c:otherwise>
             </c:choose>
@@ -84,6 +84,7 @@
                 <br>actId = ${actId}
                 <br>reportLabel = ${reportLabel}
                 <br>parentActivityId = ${parentActivityId}
+                <br>activityList = ${activityList}
                 <c:forEach var="map" items="${theMap}">
                     <br>${map}
                 </c:forEach>
@@ -127,18 +128,19 @@
                 <c:forEach var="image" items="${images.rows}">
                     <sql:query var="filepath">
                         select catalogKey from FilepathResultHarnessed res 
-                        join Activity act on res.activityId=act.id where act.${reportId==8||reportId==9?'rootActivityId':'parentActivityId'}=?
+                        join Activity act on res.activityId=act.id where act.id in (${activityList})
                         and virtualPath rlike ?
-                        <sql:param value="${reportId==8||reportId==9?actId:parentActivityId}"/>
                         <sql:param value=".*/${empty param.component ? lsstId : param.component}${image.image_url}"/>
                     </sql:query>
                     <c:if test="${filepath.rowCount==0}">
-                        Missing image: ${image.image_url}
+                        Missing image: ${empty param.component ? lsstId : param.component}${image.image_url}
                     </c:if>
-                    <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${filepath.rows[0].catalogKey}" alt="${lsstId}${image.image_url}"/>
-                    <c:if test="${!empty image.caption}">
-                    <center> <c:out value="${image.caption}"/></center>
-                    </c:if>  
+                    <c:if test="${filepath.rowCount>0}">
+                        <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${filepath.rows[0].catalogKey}" alt="${lsstId}${image.image_url}"/>
+                        <c:if test="${!empty image.caption}">
+                            <center> <c:out value="${image.caption}"/></center>
+                        </c:if>  
+                </c:if>
                 </c:forEach>
 
             <c:if test="${sect.title == 'Software Versions'}">
