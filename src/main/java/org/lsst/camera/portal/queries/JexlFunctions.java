@@ -40,9 +40,6 @@ public class JexlFunctions {
     }
 
     public List fetch(String specId) {
-        // if you don't specify a value when calling u.toTable( u.fetch() ) from Report_Display_Info then fetch returns the value from the query.
-        // e.g. u.toTable(["Package","Version"],u.fetch('software_version','resval').size(),"u.fetch('software_version','resval')[row]","u.fetch('software_version','senval')[row]")
-        // 'resval' is the value in u.fetch('software_version','resval')
         return fetch(specId, "value");
     }
 
