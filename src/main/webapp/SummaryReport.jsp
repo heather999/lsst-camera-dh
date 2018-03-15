@@ -36,7 +36,7 @@
             <sql:param value="${param.run}"/>
         </sql:query> 
         <c:set var="lsstId" value="${label.rows[0].lsstId}"/>  
-        <c:set var="actId" value="${label.rows[0].rootActivityId}"/>  
+        <c:set var="actId" value="${label.rows[0].rootActivityId}"/> 
         <c:set var="end" value="${label.rows[0].end}"/>  
         <c:set var="reportLabel" value="${label.rows[0].fullname}"/>
         <sql:query var="reports" dataSource="${appVariables.reportDisplayDb}">
@@ -58,13 +58,13 @@
             <c:set var="parentActivityId" value="${data.rows[0].id}"/>
             <c:choose>
                 <c:when test="${empty param.component}">
-                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,reportId)}"/>
+                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,actId,reportId)}"/>
                     <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
                     <c:if test="${!empty subcomponents}">
-                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,9,subcomponents)}"/>
+                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,actId,9,subcomponents)}"/>
                         <c:if test="${!empty subComponentMap}">
                             <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,9)}"/>
-                        </c:if>
+                        </c:if>  
                     </c:if>
                 </c:when>
                 <c:otherwise>
@@ -132,30 +132,7 @@
                     <c:if test="${!empty image.caption}">
                     <center> <c:out value="${image.caption}"/></center>
                     </c:if>  
-                </c:forEach>
-
-            <c:if test="${sect.title == 'Software Versions'}">
-                <sql:query var="vers">
-                    select distinct res.name, res.value from StringResultHarnessed res join Activity act on res.activityId=act.id  where  name in ( 'harnessedJobs_version','eotest_version', 'LSST_stack_version','lcatr_harness_version' , 'lcatr_schema_version') and parentActivityId=?
-                    <sql:param value="${parentActivityId}"/>
-                </sql:query>
-                <c:if test="${vers.rowCount > 0}">
-                    <display:table name="${vers.rows}"   class="datatable" />
-                </c:if>  
-            </c:if>
-
-            <c:if test="${sect.title == 'eTraveler Activity'}">
-                <sql:query var="eTravIDs">
-                    select res.activityId, res.value from StringResultHarnessed res join Activity act on res.activityId=act.id 
-                    where res.name='job_name' and res.value in ('fe55_offline','read_noise_offline','bright_defects_offline','dark_defects_offline','traps_offline','dark_current_offline','cte_offline','prnu_offline','flat_pairs_offline','qe_offline')
-                    and act.parentActivityId = ?
-                    <sql:param value="${parentActivityId}"/>
-                </sql:query>
-                <c:if test="${eTravIDs.rowCount > 0}">
-                    <display:table name="${eTravIDs.rows}" class="datatable" />
-                </c:if>  
-            </c:if>
-
+                </c:forEach>  
         </c:forEach>
     </c:if>
 </body>
