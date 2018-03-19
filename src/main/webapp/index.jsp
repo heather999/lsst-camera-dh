@@ -37,6 +37,12 @@
                 </c:redirect>
             </c:when>
             <c:otherwise>
+                <h2>Find Run</h2>
+                <form action="index.jsp" method="GET">
+                    <input type = "text" name="runTextBox" value="">
+                    <input type="submit" value="Get Run">
+                </form>
+
                 <h2>General Links</h2>
                 <ul>
                     <dp:url var="runsLink" value="/runList.jsp"/>
@@ -44,12 +50,6 @@
                         <dp:url var="devicesLink" value="/deviceList.jsp"/>
                     <li> <a href="${devicesLink}" title="Device list" style=""><strong>Device list with links to reports</strong></a></li>
                 </ul>
-
-                <form action="index.jsp" method="GET">
-                    <input type = "text" name="runTextBox" value="">
-                    <input type="submit" value="Get Run">
-                </form>
-
                 <ul>
                     <dp:url var="actStatusLink" value="/activityStatus.jsp"/>
                     <li><a href="${actStatusLink}" title="Activity Status" style=""><strong>Recent activity</strong></a></li>
