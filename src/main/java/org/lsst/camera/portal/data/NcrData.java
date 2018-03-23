@@ -50,6 +50,23 @@ public class NcrData {
         this.numMissingSigs = 0;
     }
 
+    public NcrData(int actId, int rootId, String runN, String lsstId, String typeName, Date create) {
+        // truncated data for signatures only
+        this.activityId = actId;
+        this.rootActivityId = rootId;
+        this.statusId = 0;
+        this.runNum = runN == null || "".equals(runN) ? "NA" : runN;
+        this.lsstNum = lsstId == null || "".equals(lsstId) ? "NA" : lsstId;
+        this.statusName = "";
+        this.hdwType = typeName == null || "".equals(typeName) ? "NA" : typeName;
+        this.finalStatus = null;
+        this.ncrCreationTime = create;
+        this.priority = "";
+        this.currentStep = "";
+        this.missingSigs = new ArrayList<>();
+        this.numMissingSigs = 0;
+    }
+
     public Integer getActivityId() {
         return activityId;
     }

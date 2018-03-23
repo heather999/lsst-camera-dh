@@ -25,10 +25,10 @@
     <c:set var="selectedLsstId" value="${param.lsstId}" scope="page"/>
 </c:if>
 
-<c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem, label, priority, ncrStatus, appVariables.dataSourceMode, signatures)}"/>
-
 <c:choose>
     <c:when test = "${!signatures}">
+        <c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem, label, priority, ncrStatus, appVariables.dataSourceMode, signatures)}"/>
+
         <%-- defaultsort index starts from 1 --%>
         <display:table name="${ncrTable}" export="true" defaultsort="1" defaultorder="descending" class="datatable" id="hdl" >
 
@@ -91,6 +91,7 @@
 
     </c:when>
     <c:otherwise>
+        <c:set var="ncrTable" value="${portal:getNcrTableSigsOnly(pageContext.session, selectedLsstId, subsystem, label, priority, ncrStatus, appVariables.dataSourceMode, signatures)}"/>
 
         <display:table name="${ncrTable}" export="true" defaultsort="1" defaultorder="descending" class="datatable" id="hdl" >
 

@@ -654,6 +654,107 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
         }
         return result;
     }
+  public static List getNcrTableSigsOnly(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status, String db, Boolean signatures) throws SQLException {
+        List<NcrData> result = new ArrayList<>();
+        String lower_lsstNum = lsstNum.toLowerCase();
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+            // Find all Hardware components with NCRs
+            PreparedStatement ncrStatement;
+            if (subsysId <= 0) { // No subsystem filtering
+                if (lower_lsstNum.equals("")) {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE')");
+                } else {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
+                            + "AND LOWER(H.lsstId) LIKE concat('%', ?, '%')");
+                    ncrStatement.setString(1, lower_lsstNum);
+                }
+
+            } else {
+                if (lower_lsstNum.equals("")) {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "INNER JOIN Subsystem ON HardwareType.subsystemId = Subsystem.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
+                            + "AND HardwareType.subsystemId = ?");
+                    ncrStatement.setInt(1, subsysId);
+                } else {
+                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
+                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                            + "INNER JOIN Subsystem ON HardwareType.subsystemId = Subsystem.id "
+                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
+                            + "AND HardwareType.subsystemId = ? AND LOWER(H.lsstId) LIKE concat('%', ?, '%')");
+                    ncrStatement.setInt(1, subsysId);
+                    ncrStatement.setString(2, lower_lsstNum);
+                }
+            }
+            ResultSet r = ncrStatement.executeQuery();
+            while (r.next()) {  // Iterate over all hardware with NCRs that satisfy the queries above
+                int hdwId = r.getInt("hdwId");
+                PreparedStatement actStatement = c.prepareStatement("SELECT A.id AS actId, A.rootActivityId, A.creationTS "
+                        + "FROM Activity A WHERE A.inNCR='TRUE' AND A.hardwareId=? ORDER BY rootActivityId DESC");
+                actStatement.setInt(1, hdwId);
+                ResultSet a = actStatement.executeQuery();
+                int lastRootActId = 0;
+                Boolean firstTime = true;
+                // Loop over all NCR associated activites, dumping duplicates
+                while (a.next()) {
+                    int curRootActId = a.getInt("rootActivityId");
+
+                    if ((!firstTime) && (curRootActId == lastRootActId)) {
+                        continue;
+                    }
+                    
+                    String ncrRunNum = getRunNumberFromRootActivityId(session, curRootActId);
+
+                    List<NcrMissingSignatures> missing = findMissingSignatures(ncrRunNum, hdwId, db);
+                    if (signatures && missing == null) {
+                        continue; // if only searching for signatures, skip those w/o missing sigs
+                    }
+                    // Check for desired labels and whether they are set for this NCR where the rootActId is the ncrActId
+                    // in the Exception table
+                    // if label is ANY (0), then skip this check and carry on
+                    if ((labelId != 0) && (processNcr(session, curRootActId, labelId) == false)) {
+                        continue;
+                    }
+
+                    // If ANY(0) then skip this check and carry on
+                    if (priority != 0 && (processNcr(session, curRootActId, priority) == false)) {
+                        continue;
+                    }
+
+                   
+
+                    NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), ncrRunNum, r.getString("lsstid"), r.getString("hdwType"),
+                            a.getTimestamp("creationTS"));
+                    ncr.setHdwId(r.getInt("hdwId"));
+                    if (missing != null) {
+                        ncr.setMissingSigs(missing);
+                    }
+                    
+                    result.add(ncr);
+                    lastRootActId = a.getInt("rootActivityId");
+                    firstTime = false;
+                }
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+
+        return result;
+
+    }
 
     public static List getNcrTable(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status, String db, Boolean signatures) throws SQLException {
         List<NcrData> result = new ArrayList<>();
@@ -695,7 +796,7 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
                 }
             }
             ResultSet r = ncrStatement.executeQuery();
-            while (r.next()) {
+            while (r.next()) {  // Iterate over all hardware with NCRs that satisfy the queries above
                 int hdwId = r.getInt("hdwId");
                 PreparedStatement actStatement = c.prepareStatement("SELECT A.id AS actId, A.rootActivityId, A.creationTS "
                         + "FROM Activity A WHERE A.inNCR='TRUE' AND A.hardwareId=? ORDER BY rootActivityId DESC");
@@ -722,11 +823,7 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
                         continue;
                     }
 
-                    PreparedStatement ncrStartStatement = c.prepareStatement("SELECT creationTS FROM Activity "
-                            + "WHERE Activity.rootActivityId=?");
-                    ncrStartStatement.setInt(1, a.getInt("rootActivityId"));
-                    ResultSet startResult = ncrStartStatement.executeQuery();
-                    startResult.first();
+                    
                     // Find the status on the root activity
                     PreparedStatement detailStatement = c.prepareStatement("SELECT ASH.id, ASH.activityStatusId, AFS.name, "
                             + "AFS.isFinal AS final FROM ActivityStatusHistory ASH "
@@ -771,7 +868,7 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
 
                     NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), ncrRunNum, r.getString("lsstid"), r.getString("hdwType"),
                             d.getInt("activityStatusId"), d.getString("name"), a.getTimestamp("creationTS"), d.getBoolean("final"),
-                            startResult.getTimestamp("creationTS"));
+                            a.getTimestamp("creationTS"));
                     ncr.setHdwId(r.getInt("hdwId"));
                     ncr.setCurrentStep(currentStepName);
                     if (missing != null) {
