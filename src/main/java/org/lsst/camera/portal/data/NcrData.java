@@ -66,6 +66,23 @@ public class NcrData {
         this.missingSigs = new ArrayList<>();
         this.numMissingSigs = 0;
     }
+    
+    public NcrData(int rootId, String runN, String lsstId) {
+        // truncated data for signatures only
+        this.activityId = 0;
+        this.rootActivityId = rootId;
+        this.statusId = 0;
+        this.runNum = runN == null || "".equals(runN) ? "NA" : runN;
+        this.lsstNum = lsstId == null || "".equals(lsstId) ? "NA" : lsstId;
+        this.statusName = "";
+        this.hdwType = "NA";
+        this.finalStatus = null;
+        this.ncrCreationTime = null;
+        this.priority = "";
+        this.currentStep = "";
+        this.missingSigs = new ArrayList<>();
+        this.numMissingSigs = 0;
+    }
 
     public Integer getActivityId() {
         return activityId;
