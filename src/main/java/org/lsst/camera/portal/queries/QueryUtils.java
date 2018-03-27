@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.Objects;
@@ -50,6 +51,9 @@ import org.srs.groupmanager.UserInfo;
  */
 public class QueryUtils {
             
+    static HashMap<String, Object> gm = new HashMap<>();
+
+    
     public static Map getHardwareTypes(HttpSession session) throws SQLException {
         HashMap<Integer, String> result = new HashMap<>();
 
@@ -192,6 +196,32 @@ public class QueryUtils {
         }
     }
     
+    /*
+    public static Integer getRootActivityIdFromRunNumber(HttpSession session, String runNum) throws SQLException {
+        Integer result = 0;
+        Connection c = null;
+        try {
+            c = ConnectionManager.getConnection(session);
+
+            // Get all label activity for this lsstNum
+            PreparedStatement rnStatement = c.prepareStatement("SELECT rootActivityId, runNumber "
+                    + "FROM RunNumber RN "
+                    + "WHERE RN.runNumber = ? LIMIT 1");
+                    rnStatement.setString(1, runNum);
+            ResultSet r = rnStatement.executeQuery();
+            if (r.first() == true)
+                return (r.getInt("rootActivityId"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (c != null) {
+                //Close the connection
+                c.close();
+            }
+        }
+        return result;
+    }
+    */
     
     public static String getRunNumberFromRootActivityId(HttpSession session, Integer actId) throws SQLException {
         String result = "";
@@ -546,7 +576,8 @@ public class QueryUtils {
 
 public static List<NcrMissingSignatures> findMissingSignatures(String runNum, int hdwId, String db) {
         List<NcrMissingSignatures> result = new ArrayList<>();
-
+//        HashMap<String, Object> gm = new HashMap<>();
+        
         try {
             Map<Integer, Object> etResults = eTApi.getMissingSignatures(db);
 
@@ -559,12 +590,17 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
             // iterate over the steps, and then iterate over the list of substeps with missing sigs
 
             for (String step : stepData.keySet()) {
-                ArrayList<Object> inputs = (ArrayList<Object>) stepData.get(step);
-                for (Object sigObj : inputs) {
-                    HashMap<String, Object> sig = (HashMap<String, Object>) sigObj;
+           //     ArrayList<Object> inputs = (ArrayList<Object>) stepData.get(step);
+                ArrayList<HashMap<String,Object>> inputs = (ArrayList<HashMap<String,Object>>) stepData.get(step);
+                //for (Object sigObj : inputs) {
+                for (HashMap<String,Object> sig : inputs) {
+                    //HashMap<String, Object> sig = (HashMap<String, Object>) sigObj;
                     if (((String) sig.get("signerValue")).isEmpty()) {
                         String group = (String) sig.get("signerRequest");
-                        List<UserInfo> gmUserInfo = GroupManager.getListOfUsersInGroup(group, "LSST-CAMERA");
+                        //List<UserInfo> gmUserInfo = GroupManager.getListOfUsersInGroup(group, "LSST-CAMERA");
+                        if (gm.get(group)==null)
+                            gm.put(group,GroupManager.getListOfUsersInGroup(group,"LSST-CAMERA"));
+                        List<UserInfo> gmUserInfo = (List<UserInfo>)gm.get(group);
                         List<String> names = new ArrayList<>();
                         Iterator<UserInfo> iterator = gmUserInfo.iterator();
                         while (iterator.hasNext()) {
@@ -573,7 +609,7 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
                         }
                         NcrMissingSignatures myobj = new NcrMissingSignatures((Integer) sig.get("activityId"), runNum, group, names);
                         result.add(myobj);
-                    }
+                    } 
 
                 }
             }
@@ -654,92 +690,94 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
         }
         return result;
     }
-  public static List getNcrTableSigsOnly(HttpSession session, String lsstNum, Integer subsysId, Integer labelId, Integer priority, Integer status, String db, Boolean signatures) throws SQLException {
+    public static List getNcrTableSigsOnly(HttpSession session, String lsstNum, Integer subsysId, Integer labelId,
+            Integer priority, Integer status, String db, Boolean signatures) throws SQLException {
         List<NcrData> result = new ArrayList<>();
         String lower_lsstNum = lsstNum.toLowerCase();
         Connection c = null;
         try {
             c = ConnectionManager.getConnection(session);
-            // Find all Hardware components with NCRs
-            PreparedStatement ncrStatement;
-            if (subsysId <= 0) { // No subsystem filtering
-                if (lower_lsstNum.equals("")) {
-                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
-                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
-                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE')");
-                } else {
-                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
-                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
-                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
-                            + "AND LOWER(H.lsstId) LIKE concat('%', ?, '%')");
-                    ncrStatement.setString(1, lower_lsstNum);
-                }
 
-            } else {
-                if (lower_lsstNum.equals("")) {
-                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
-                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
-                            + "INNER JOIN Subsystem ON HardwareType.subsystemId = Subsystem.id "
-                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
-                            + "AND HardwareType.subsystemId = ?");
-                    ncrStatement.setInt(1, subsysId);
-                } else {
-                    ncrStatement = c.prepareStatement("SELECT H.id AS hdwId, H.lsstid, HardwareType.name AS hdwType from Hardware H "
-                            + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
-                            + "INNER JOIN Subsystem ON HardwareType.subsystemId = Subsystem.id "
-                            + "WHERE EXISTS (SELECT * FROM Activity WHERE hardwareId=H.id and inNCR='TRUE') "
-                            + "AND HardwareType.subsystemId = ? AND LOWER(H.lsstId) LIKE concat('%', ?, '%')");
-                    ncrStatement.setInt(1, subsysId);
-                    ncrStatement.setString(2, lower_lsstNum);
-                }
-            }
-            ResultSet r = ncrStatement.executeQuery();
-            while (r.next()) {  // Iterate over all hardware with NCRs that satisfy the queries above
-                int hdwId = r.getInt("hdwId");
-                PreparedStatement actStatement = c.prepareStatement("SELECT A.id AS actId, A.rootActivityId, A.creationTS "
-                        + "FROM Activity A WHERE A.inNCR='TRUE' AND A.hardwareId=? ORDER BY rootActivityId DESC");
-                actStatement.setInt(1, hdwId);
-                ResultSet a = actStatement.executeQuery();
-                int lastRootActId = 0;
-                Boolean firstTime = true;
-                // Loop over all NCR associated activites, dumping duplicates
-                while (a.next()) {
-                    int curRootActId = a.getInt("rootActivityId");
+            // Only search for NCR runs with missing signatures
+            Map<Integer, Object> etResults = eTApi.getMissingSignatures(db);
 
-                    if ((!firstTime) && (curRootActId == lastRootActId)) {
-                        continue;
+            Set<Map.Entry<Integer, Object>> hdwIdEntrySet = etResults.entrySet();
+
+            for (Entry hdwIdEntry : hdwIdEntrySet) { // loop over all hdwIds in the missing signature map
+                int hdwId = (int) hdwIdEntry.getKey();
+                HashMap<String, Object> runData = (HashMap<String, Object>) hdwIdEntry.getValue();
+                Set<Map.Entry<String, Object>> runEntrySet = runData.entrySet();
+                boolean foundMissing = false;
+                for (Entry runEntry : runEntrySet) { // loop over all runs for this hdwId
+                    // run data is a HashMap for <string, objects> including runInt and rootActivityId as well as Steps
+                    foundMissing = false;
+                    String runNum = (String) runEntry.getKey();
+                    HashMap<String, Object> allRunData = (HashMap<String, Object>) runEntry.getValue();
+                    String lsstId = (String) allRunData.get("experimentSN");
+                    int rootActId = (Integer) allRunData.get("rootActivityId");
+                    HashMap<String, Object> stepData = (HashMap<String, Object>) allRunData.get("steps");
+
+                    List<NcrMissingSignatures> missingSigList = new ArrayList<>();
+
+                    for (String step : stepData.keySet()) {
+                        ArrayList<HashMap<String, Object>> inputs = (ArrayList<HashMap<String, Object>>) stepData.get(step);
+                        for (HashMap<String, Object> sig : inputs) {
+                            if (((String) sig.get("signerValue")).isEmpty()) {
+                                foundMissing = true;
+                                String group = (String) sig.get("signerRequest");
+                                if (gm.get(group) == null) {
+                                    gm.put(group, GroupManager.getListOfUsersInGroup(group, "LSST-CAMERA"));
+                                }
+                                List<UserInfo> gmUserInfo = (List<UserInfo>) gm.get(group);
+                                List<String> names = new ArrayList<>();
+                                Iterator<UserInfo> iterator = gmUserInfo.iterator();
+                                while (iterator.hasNext()) {
+                                    UserInfo t = iterator.next();
+                                    names.add(t.getFullName());
+                                }
+                                NcrMissingSignatures myobj = new NcrMissingSignatures((Integer) sig.get("activityId"), runNum, group, names);
+                                missingSigList.add(myobj);
+                            }
+                        }
                     }
-                    
-                    String ncrRunNum = getRunNumberFromRootActivityId(session, curRootActId);
+                    if (foundMissing) {
+                        // Check for filters are subsystem and labels here
+                        if (!lower_lsstNum.equals("") && !lower_lsstNum.equals(lsstId.toLowerCase())) { // filtering on lsstId
+                            continue;
+                        }
+                        if (subsysId > 0) { //  subsystem filtering
+                            PreparedStatement subStatement;
+                            subStatement = c.prepareStatement("SELECT H.id AS hdwId, HardwareType.subsystemId FROM Hardware H "
+                                    + "INNER JOIN HardwareType ON H.hardwareTypeId = HardwareType.id "
+                                    + "INNER JOIN Subsystem ON HardwareType.subsystemId = Subsystem.id "
+                                    + "WHERE H.id =?");
+                            subStatement.setInt(1, hdwId);
+                            ResultSet subQ = subStatement.executeQuery();
+                            if (subQ.getInt("subsystemId") != subsysId) {
+                                continue;
+                            }
 
-                    List<NcrMissingSignatures> missing = findMissingSignatures(ncrRunNum, hdwId, db);
-                    if (signatures && missing == null) {
-                        continue; // if only searching for signatures, skip those w/o missing sigs
-                    }
-                    // Check for desired labels and whether they are set for this NCR where the rootActId is the ncrActId
-                    // in the Exception table
-                    // if label is ANY (0), then skip this check and carry on
-                    if ((labelId != 0) && (processNcr(session, curRootActId, labelId) == false)) {
-                        continue;
-                    }
+                        }
 
-                    // If ANY(0) then skip this check and carry on
-                    if (priority != 0 && (processNcr(session, curRootActId, priority) == false)) {
-                        continue;
-                    }
+                        // Check for desired labels and whether they are set for this NCR where the rootActId is the ncrActId
+                        // in the Exception table
+                        // if label is ANY (0), then skip this check and carry on
+                        if ((labelId != 0) && (processNcr(session, rootActId, labelId) == false)) {
+                            continue;
+                        }
 
-                   
+                        // If ANY(0) then skip this check and carry on
+                        if (priority != 0 && (processNcr(session, rootActId, priority) == false)) {
+                            continue;
+                        }
 
-                    NcrData ncr = new NcrData(a.getInt("actId"), a.getInt("rootActivityId"), ncrRunNum, r.getString("lsstid"), r.getString("hdwType"),
-                            a.getTimestamp("creationTS"));
-                    ncr.setHdwId(r.getInt("hdwId"));
-                    if (missing != null) {
-                        ncr.setMissingSigs(missing);
+                        // Need NCR number==rootActivityId, LSST_NUM, Run Number, # of sigs missing, groups with names
+                        NcrData ncr = new NcrData(rootActId, runNum, lsstId);
+                        ncr.setHdwId(hdwId);
+                        ncr.setMissingSigs(missingSigList);
+
+                        result.add(ncr);
                     }
-                    
-                    result.add(ncr);
-                    lastRootActId = a.getInt("rootActivityId");
-                    firstTime = false;
                 }
             }
 
