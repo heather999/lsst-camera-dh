@@ -22,20 +22,35 @@
 
 
        <c:set var="tempPlot" value="${plotutils:getSensorArrival('ITL-CCD',appVariables.dataSourceMode)}"/>
+       <c:choose>
+       <c:when test="${fn:startsWith(tempPlot,'{')}" >
+       
 
     <script>  
         var resp = ${tempPlot};
         var respData = [resp.data];
         Plotly.newPlot('testJspVar', respData, resp.layout);
     </script>
-    
+       </c:when>
+       <c:otherwise>
+           <p> <c:out value="${tempPlot}" /> <p>
+       </c:otherwise>
+       </c:choose>
     
         <c:set var="badPlot" value="${plotutils:getBadChannels('LCA-11021_RTM',appVariables.dataSourceMode)}"/>
+         <c:choose>
+       <c:when test="${fn:startsWith(badPlot,'{')}" >
+       
   <script>  
         var resp2 = ${badPlot};
         var respData2 = resp2.data;
         Plotly.newPlot('badJspVar', respData2, resp2.layout);
     </script>
+       </c:when>
+           <c:otherwise>
+           <p> <c:out value="${badPlot}" /> <p>
+       </c:otherwise>
+       </c:choose>
 
 </body>
 </html>

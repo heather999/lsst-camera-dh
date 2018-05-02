@@ -109,7 +109,12 @@ public class PlotUtils {
 
         try (EtClientServices etClient = new EtClientServices(db, null, prodServer, localServer, appSuffix)) {
             Set<String> labels = new HashSet<>(Arrays.asList("SR_Grade", "SR_Contract"));
-            ArrayList<HashMap<String, Object>> hdwInstances = etClient.getHardwareInstances(hdwType, null, labels);
+            ArrayList<HashMap<String, Object>> hdwInstances = null;            
+            try {
+              hdwInstances = etClient.getHardwareInstances(hdwType, null, labels);
+            } catch (EtClientNoDataException noD) {
+              return("No suitably labeled components found");
+            }
             Iterator hdwIt = hdwInstances.iterator();
             int count_ccd = 0;
             while (hdwIt.hasNext()) {
@@ -457,6 +462,9 @@ public class PlotUtils {
             d.getData().add(run_numbers_data);
             result = mapper.writeValueAsString(d);
             return result;
+        } catch (EtClientNoDataException noDataEx) {
+            return "No suitable Raft data found";
+            
         } catch (Exception e) {
             StringWriter errors = new StringWriter();
             e.printStackTrace(new PrintWriter(errors));
