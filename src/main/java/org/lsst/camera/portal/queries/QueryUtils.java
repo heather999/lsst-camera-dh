@@ -787,6 +787,7 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
             if (c != null) {
                 //Close the connection
                 c.close();
+                gm.clear(); // periodically clear the Group manager map
             }
         }
 
@@ -931,6 +932,7 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
             if (c != null) {
                 //Close the connection
                 c.close();
+                gm.clear(); // clear the group manager map periodically
             }
         }
 
