@@ -40,7 +40,7 @@
         <c:set var="end" value="${label.rows[0].end}"/>  
         <c:set var="reportLabel" value="${label.rows[0].fullname}"/>
         <sql:query var="reports" dataSource="${appVariables.reportDisplayDb}">
-            select reportid, report_title, name from report_label where label=?
+            select reportid, report_title, name, QUERIESUSEROOTACTIVITYID, SUBCOMPONENTREPORT  from report_label where label=?
             <sql:param value="${reportLabel}"/>
         </sql:query>
         <c:if test="${reports.rowCount==0}">
@@ -55,6 +55,8 @@
             </sql:query>
             <c:set var="activityList" value="${activities.rows[0].activities}"/> 
             <c:set var="reportId" value="${reports.rows[0].reportid}"/>
+            <c:set var="useRootActivityId" value="${reports.rows[0].QUERIESUSEROOTACTIVITYID=='Y'}"/>
+            <c:set var="subReportId" value="${reports.rows[0].SUBCOMPONENTREPORT}"/>
             <sql:query var="data">
                 select a.id from Activity a
                 join Process p on (a.processId=p.id)
@@ -65,22 +67,23 @@
             <c:set var="parentActivityId" value="${data.rows[0].id}"/>
             <c:choose>
                 <c:when test="${empty param.component}">
-                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,reportId==8||reportId==7?activityList:parentActivityId,reportId)}"/>
+                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,useRootActivityId?activityList:parentActivityId,reportId)}"/>
                     <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
                     <c:if test="${!empty subcomponents}">
-                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,reportId==8||reportId==7?activityList:parentActivityId,9,subcomponents)}"/>
+                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,useRootActivityId?activityList:parentActivityId,subReportId,subcomponents)}"/>
                         <c:if test="${!empty subComponentMap}">
-                            <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,9)}"/>
+                            <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,subReportId)}"/>
                         </c:if>
                     </c:if>
                 </c:when>
                 <c:otherwise>
-                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,reportId==8||reportId==7?activityList:parentActivityId,9, param.component)}"/>
+                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,useRootActivityId?activityList:parentActivityId,subReportId, param.component)}"/>
                     <c:set var="reportId" value="9"/>
                 </c:otherwise>
             </c:choose>
             <c:if test="${debug}">
                 <br>ReportId = ${reportId}
+                <br>SubReportId = ${subReportId}
                 <br>actId = ${actId}
                 <br>reportLabel = ${reportLabel}
                 <br>parentActivityId = ${parentActivityId}
