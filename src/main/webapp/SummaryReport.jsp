@@ -57,6 +57,9 @@
             <c:set var="reportId" value="${reports.rows[0].reportid}"/>
             <c:set var="useRootActivityId" value="${reports.rows[0].QUERIESUSEROOTACTIVITYID=='Y'}"/>
             <c:set var="subReportId" value="${reports.rows[0].SUBCOMPONENTREPORT}"/>
+            <c:if test="${reportId==13 && fn:length(param.component)>3}">
+                <c:set var="subReportId" value="14"/>
+            </c:if>
             <sql:query var="data">
                 select a.id from Activity a
                 join Process p on (a.processId=p.id)
@@ -78,7 +81,14 @@
                 </c:when>
                 <c:otherwise>
                     <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,useRootActivityId?activityList:parentActivityId,subReportId, param.component)}"/>
-                    <c:set var="reportId" value="9"/>
+                    <c:set var="reportId" value="${subReportId}"/>
+                    <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
+                    <c:if test="${!empty subcomponents}">
+                       <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,useRootActivityId?activityList:parentActivityId,14,subcomponents)}"/>
+                        <c:if test="${!empty subComponentMap}">
+                           <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,14)}"/>
+                        </c:if>
+                     </c:if>                        
                 </c:otherwise>
             </c:choose>
             <c:if test="${debug}">
