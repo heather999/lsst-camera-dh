@@ -55,6 +55,8 @@
                     <li><a href="${actStatusLink}" title="Activity Status" style=""><strong>Recent activity</strong></a></li>
                         <dp:url var="ncrStatusLink" value="/ncrStatus.jsp"/>
                     <li><a href="${ncrStatusLink}" title="NCR Status" style=""><strong>NCR Status</strong></a></li>
+                                            <dp:url var="ncrStatusCompactLink" value="/ncrStatus-compact.jsp"/>
+                    <li><a href="${ncrStatusCompactLink}" title="NCR Status, new style" style=""><strong>NCR Status New Style</strong></a></li>
                 </ul>  
 
                 <h2>CCD Links</h2>

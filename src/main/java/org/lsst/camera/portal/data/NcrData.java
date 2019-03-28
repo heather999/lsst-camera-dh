@@ -21,6 +21,8 @@ public class NcrData {
     private Integer hdwId;
     private String lsstNum;
     private String hdwType;
+    private String subsystem;
+    private String description;
     private java.util.Date beginTime;
     private Boolean finalStatus;
     private Integer statusId;
@@ -30,9 +32,32 @@ public class NcrData {
     private String currentStep;
     private int numMissingSigs;
     private List<NcrMissingSignatures> missingSigs;
+
+    // the whole enchilada
+    public NcrData(int actId, int rootId, String runN, String lsstId, String typeName, int sId,
+                   String sName, Date b, Boolean f,
+                   Date create, String subsystem, String description) {
+        this.activityId = actId;
+        this.rootActivityId = rootId;
+       // this.hdwId = hardwareId;
+        this.statusId = sId;
+        this.runNum = runN == null || "".equals(runN) ? "NA" : runN;
+        this.lsstNum = lsstId == null || "".equals(lsstId) ? "NA" : lsstId;
+        this.statusName = sName == null || "".equals(sName) ? "NA" : sName;
+        this.hdwType = typeName == null || "".equals(typeName) ? "NA" : typeName;
+        this.beginTime = b;
+        this.finalStatus = f;
+        this.ncrCreationTime = create;
+        this.priority = "";
+        this.currentStep = "";
+        this.missingSigs = new ArrayList<>();
+        this.numMissingSigs = 0;
+        this.subsystem = subsystem;
+        this.description = description;
+    }
     
-    public NcrData(int actId, int rootId, String runN, String lsstId, String typeName, int sId, String sName, Date b, Boolean f,
-            Date create) {
+    public NcrData(int actId, int rootId, String runN, String lsstId, String typeName, int sId,
+                   String sName, Date b, Boolean f, Date create) {
         this.activityId = actId;
         this.rootActivityId = rootId;
        // this.hdwId = hardwareId;
@@ -200,5 +225,18 @@ public class NcrData {
     
     public int getNumMissingSigs() {
         return numMissingSigs;
+    }
+
+    public String getSubsystem() {
+        return subsystem;
+    }
+    public void setSubsystem(String s) {
+        subsystem = s == null || "".equals(s) ? "NA" : s;
+    }
+    public String getDescription() {
+        return description;
+    }
+    public void setDescription(String d) {
+        description = d == null || "".equals(d) ? "NA" : d;
     }
 }
