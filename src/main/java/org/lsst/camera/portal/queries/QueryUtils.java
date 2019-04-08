@@ -928,15 +928,6 @@ public static List<NcrMissingSignatures> findMissingSignatures(String runNum, in
                     if (signatures && (missing == null)) {
                         continue; // if only searching for signatures, skip those w/o missing sigs
                     }
-                    // PreparedStatement currentStepStatement = c.prepareStatement("SELECT P.name "
-                    //         + "FROM Activity A "
-                    //         + "inner join ActivityStatusHistory ASH on ASH.id = (select max(id) from ActivityStatusHistory where activityId = A.id) "
-                    //         + "inner join ActivityFinalStatus AFS on AFS.id = ASH.activityStatusId "
-                    //         + "inner join Process P on P.id = A.processId "
-                    //         + "WHERE A.rootActivityId = ? "
-                    //         + "AND not AFS.isFinal "
-                    //         + "ORDER BY A.id DESC "
-                    //         + "limit 1;");
 
                     PreparedStatement currentStepStatement =
                         c.prepareStatement("SELECT P.name FROM Activity A INNER JOIN "
