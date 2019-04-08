@@ -11,14 +11,14 @@
 <%@taglib prefix="filter" uri="http://srs.slac.stanford.edu/filter"%>
 
 
-<%@attribute name="signatures" type="java.lang.Boolean" description="Toggle display of signature info"%>
+<%@attribute name="signatures" type="java.lang.Boolean"
+             description="Toggle display of signature info"%>
 <%@attribute name="lsst_num" type="java.lang.String" description="Experiment SN"%>
 <%@attribute name="subsystem" description="Subsystem filter"%>
 <%@attribute name="label" description="Label filter"%>
 <%@attribute name="priority" description="Priority filter"%>
 <%@attribute name="ncrStatus" description="Filter on current NCR status"%>
 
-<c:set var="descriptions"  value="false" scope="page" />
 
 
 <c:set var="selectedLsstId" value="${lsst_num}" scope="page"/>
@@ -26,56 +26,62 @@
     <c:set var="selectedLsstId" value="${param.lsstId}" scope="page"/>
 </c:if>
 
+<c:set var="priority" value="0" scope="page" />
+<c:set var="descriptions" value="true" scope="page" />
 <c:choose>
     <c:when test = "${!signatures}">
-        <c:set var="ncrTable" value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem, label, priority, ncrStatus, appVariables.dataSourceMode, signatures, descriptions)}"/>
+        <c:set var="ncrTable"
+	value="${portal:getNcrTable(pageContext.session, selectedLsstId, subsystem, 
+               label, priority, ncrStatus, appVariables.dataSourceMode, signatures,
+	       descriptions)}"/>
 
         <%-- defaultsort index starts from 1 --%>
-        <display:table name="${ncrTable}" export="true" defaultsort="1" defaultorder="descending" class="datatable" id="hdl" >
+        <display:table name="${ncrTable}" export="true" defaultsort="1"
+                       defaultorder="descending" class="datatable" id="hdl" >
 
-            <display:column title="NCR Number" sortable="true" sortProperty="rootActivityId" >
-                <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
-                    <c:param name="activityId" value="${hdl.rootActivityId}"/>
-                    <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
-                </c:url>
-                <a href="${actLink}" target="_blank">${hdl.rootActivityId}</a>
-            </display:column>
-            <display:column title="LSST_NUM" sortable="true" sortProperty="lsstNum">
-                <c:url var="hdwNcrLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
-                    <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
-                    <c:param name="hardwareId" value="${hdl.hdwId}"/>
-                </c:url>
-                <a href="${hdwNcrLink}" target="_blank"><c:out value="${hdl.lsstNum}"/></a>
-            </display:column>
-            <display:column title="Run Number" sortable="true" >${hdl.runNum}</display:column>
-            <display:column title="Hardware Type" sortable="true" >${hdl.hdwType}</display:column>
-            <display:column title="NCR Start Time" sortable="true" >${hdl.ncrCreationTime}</display:column>
-            <display:column title="Priority" sortable="true" >${hdl.priority}</display:column>
-            <display:column title="Current NCR Status" sortable="true" >${hdl.statusName}</display:column>
-            <display:column title="Current Step" sortable="true" >${hdl.currentStep}</display:column>
-            <display:column title="Closed?" sortable="true" >
-                <c:choose>
-                    <c:when test="${hdl.finalStatus == true}">
-                        <b>
-                            <font color="green">
-                            <c:out value="DONE"/>
-                            </font>
-                        </b>
-                    </c:when>
-                    <c:otherwise>
-                        <font color="purple">
-                        <b>
-                            <c:out value="OPEN"/>
-                        </b>
-                        </font>
-                    </c:otherwise>
-                </c:choose>
-                <c:if test="${hdl.currentStep == 'NCR' && hdl.statusName == 'inProgress'}">
+          <display:column title="NCR Number" sortable="true"
+                          sortProperty="rootActivityId" >
+            <c:url var="actLink"
+		   value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
+              <c:param name="activityId" value="${hdl.rootActivityId}"/>
+              <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+            </c:url>
+            <a href="${actLink}" target="_blank">${hdl.rootActivityId}</a>
+          </display:column>
+	  <display:column title="Subsystem" sortable="true" >${hdl.subsystem}</display:column>
+          <display:column title="LSST_NUM" sortable="true" sortProperty="lsstNum">
+            <c:url var="hdwNcrLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayHardware.jsp">
+              <c:param name="dataSourceMode" value="${appVariables.dataSourceMode}"/>
+              <c:param name="hardwareId" value="${hdl.hdwId}"/>
+            </c:url>
+            <a href="${hdwNcrLink}" target="_blank"><c:out value="${hdl.lsstNum}"/></a>
+          </display:column>
+	  <display:column title="Description" sortable="false" >${hdl.description}</display:column>
+          <display:column title="Closed?" sortable="true" >
+              <c:choose>
+                <c:when test="${hdl.finalStatus == true}">
+                  <b>
+                    <font color="green">
+                      <c:out value="DONE"/>
+                    </font>
+                  </b>
+                </c:when>
+                <c:otherwise>
+                  <font color="purple">
+                    <b>
+                      <c:out value="OPEN"/>
+                    </b>
+                  </font>
+                </c:otherwise>
+              </c:choose>
+              <c:if test="${hdl.currentStep == 'NCR' && hdl.statusName == 'inProgress'}">
                     <br>
                     <b>Ready to be Closed</b>
-                </c:if>
+              </c:if>
             </display:column>
-            <display:column title="Signatures<br>Missing" sortable="true" >${hdl.numMissingSigs}</display:column>
+          <display:column title="Current NCR Status" sortable="true" >${hdl.statusName}</display:column>
+          <display:column title="Current Step" sortable="true" >${hdl.currentStep}</display:column>
+
             <display:column title="Signature<br>Groups<br>Missing" sortable="true" >
                 <c:if test="${hdl.numMissingSigs != 0}">
                     <c:forEach items="${hdl.missingSigs}" var="m"> 
@@ -83,6 +89,7 @@
                     </c:forEach>
                 </c:if>
             </display:column>
+          <display:column title="NCR Start Time" sortable="true" >${hdl.ncrCreationTime}</display:column>
             <display:setProperty name="export.excel.filename" value="ncrStatus.xls"/> 
             <display:setProperty name="export.csv.filename" value="ncrStatus.csv"/> 
             <display:setProperty name="export.xml.filename" value="ncrStatus.xml"/> 
@@ -92,9 +99,12 @@
 
     </c:when>
     <c:otherwise>
-        <c:set var="ncrTable" value="${portal:getNcrTableSigsOnly(pageContext.session, selectedLsstId, subsystem, label, priority, ncrStatus, appVariables.dataSourceMode, signatures)}"/>
+      <c:set var="ncrTable" value="${portal:getNcrTableSigsOnly(pageContext.session,
+				   selectedLsstId, subsystem, label, priority, ncrStatus,
+				   appVariables.dataSourceMode, signatures)}"/>
 
-        <display:table name="${ncrTable}" export="true" defaultsort="1" defaultorder="descending" class="datatable" id="hdl" >
+      <display:table name="${ncrTable}" export="true" defaultsort="1"
+		     defaultorder="descending" class="datatable" id="hdl" >
 
             <display:column title="NCR Number" sortable="true" sortProperty="rootActivityId" >
                 <c:url var="actLink" value="http://lsst-camera.slac.stanford.edu/eTraveler/exp/LSST-CAMERA/displayActivity.jsp">
@@ -113,7 +123,8 @@
             </display:column>
             <display:column title="Run Number" sortable="true" >${hdl.runNum}</display:column>
 
-            <display:column title="Signatures<br>Missing" sortable="true" >${hdl.numMissingSigs}</display:column>
+            <display:column title="Signatures<br>Missing"
+	                    sortable="true" >${hdl.numMissingSigs}</display:column>
             <display:column title="Signature<br>Groups<br>Missing" sortable="true" >
                 <c:if test="${hdl.numMissingSigs != 0}">
                     <c:forEach items="${hdl.missingSigs}" var="m"> 
