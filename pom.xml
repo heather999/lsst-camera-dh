@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.lsst.camera</groupId>
         <artifactId>org-lsst-camera-maven-project-war</artifactId>
-        <version>1.0.5</version>
+        <version>1.0.6-SNAPSHOT</version>
         <relativePath />
     </parent>
 
@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.lsst.camera</groupId>
     <artifactId>org-lsst-camera-portal-web</artifactId>
-    <version>0.5.16-SNAPSHOT</version>
+    <version>0.5.16-SNAPSHOT-toHTTPS</version>
     <packaging>war</packaging>
     <name>LSST Camera Data Portal</name>    
 
@@ -19,12 +19,12 @@
         <repository>
             <id>srs-maven2-public</id>
             <name>SRS Maven 2 central repository</name>
-            <url>http://srs.slac.stanford.edu/nexus/content/groups/srs-maven2-public/</url>
+            <url>https://srs.slac.stanford.edu/nexus/content/groups/srs-maven2-public/</url>
         </repository>
         <repository>
             <id>lsst-dh-maven2-public</id>
             <name>LSST Data Handling Maven Central repository</name>
-            <url>http://srs.slac.stanford.edu/nexus/content/groups/lsst-dh-maven2-public/</url>
+            <url>https://srs.slac.stanford.edu/nexus/content/groups/lsst-dh-maven2-public/</url>
         </repository>
     </repositories>
 
@@ -66,7 +66,7 @@
         <dependency>
             <groupId>srs</groupId>
             <artifactId>org-srs-groupmanager-web</artifactId>
-            <version>1.35</version>
+            <version>1.73-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>srs</groupId>
@@ -139,7 +139,7 @@
 
     <properties>
         <netbeans.hint.deploy.server>Apache Tomcat 7.0.59</netbeans.hint.deploy.server>
-        <org.lsst.camera.project.finalName>DataPortal</org.lsst.camera.project.finalName>
+        <org.lsst.camera.project.finalName>DataPortal-heather</org.lsst.camera.project.finalName>
     </properties>
     
     <scm>
