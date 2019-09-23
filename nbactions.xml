@@ -13,9 +13,6 @@
             <activatedProfile>deploy-local</activatedProfile>
             <activatedProfile>LSST-CAMERA</activatedProfile>
         </activatedProfiles>
-        <properties>
-            <tomcat.server.httpport>8084</tomcat.server.httpport>
-        </properties>
     </action>
      <action>
         <actionName>CUSTOM-lsst-deploy-dev</actionName>
