@@ -241,4 +241,15 @@ public class JexlFunctions {
         }
         return result;
     }
+    
+    /**
+     * Convert amplified number (1-16) to segment number,
+     * Not this map is independent of the type of CCD.
+     * @param amp
+     * @return 
+     */
+    public String ampToSegment(int amp) {
+        int segment = amp<=8 ? 9+amp : 16-amp;
+        return String.format("%02d", segment);
+    }
 }

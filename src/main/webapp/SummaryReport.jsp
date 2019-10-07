@@ -40,14 +40,26 @@
         <c:set var="end" value="${label.rows[0].end}"/>  
         <c:set var="reportLabel" value="${label.rows[0].fullname}"/>
         <sql:query var="reports" dataSource="${appVariables.reportDisplayDb}">
-            select reportid, report_title, name from report_label where label=?
+            select reportid, report_title, name, QUERIESUSEROOTACTIVITYID, SUBCOMPONENTREPORT  from report_label where label=?
             <sql:param value="${reportLabel}"/>
         </sql:query>
         <c:if test="${reports.rowCount==0}">
             Unknown report label ${reportLabel}
         </c:if>
         <c:if test="${reports.rowCount>0}">
+            <sql:query var="activities">     
+              select group_concat(x.activity) activities from (  
+              SELECT max(a.id) activity FROM Activity a JOIN RunNumber r ON r.rootActivityId=a.rootActivityId
+              WHERE r.runNumber=? and a.activityFinalStatusId = 1 group by a.processId ) x
+              <sql:param value="${param.run}"/>
+            </sql:query>
+            <c:set var="activityList" value="${activities.rows[0].activities}"/> 
             <c:set var="reportId" value="${reports.rows[0].reportid}"/>
+            <c:set var="useRootActivityId" value="${reports.rows[0].QUERIESUSEROOTACTIVITYID=='Y'}"/>
+            <c:set var="subReportId" value="${reports.rows[0].SUBCOMPONENTREPORT}"/>
+            <c:if test="${reportId==13 && fn:length(param.component)>3}">
+                <c:set var="subReportId" value="14"/>
+            </c:if>
             <sql:query var="data">
                 select a.id from Activity a
                 join Process p on (a.processId=p.id)
@@ -58,25 +70,34 @@
             <c:set var="parentActivityId" value="${data.rows[0].id}"/>
             <c:choose>
                 <c:when test="${empty param.component}">
-                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,reportId)}"/>
+                    <c:set var="theMap" value="${portal:getReportValues(pageContext.session,useRootActivityId?activityList:parentActivityId,reportId)}"/>
                     <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
                     <c:if test="${!empty subcomponents}">
-                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,9,subcomponents)}"/>
+                        <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,useRootActivityId?activityList:parentActivityId,subReportId,subcomponents)}"/>
                         <c:if test="${!empty subComponentMap}">
-                            <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,9)}"/>
+                            <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,subReportId)}"/>
                         </c:if>
                     </c:if>
                 </c:when>
                 <c:otherwise>
-                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,reportId==8||reportId==7?actId:parentActivityId,9, param.component)}"/>
-                    <c:set var="reportId" value="9"/>
+                    <c:set var="theMap" value="${portal:getReportValuesForSubcomponent(pageContext.session,useRootActivityId?activityList:parentActivityId,subReportId, param.component)}"/>
+                    <c:set var="reportId" value="${subReportId}"/>
+                    <c:set var="subcomponents" value="${theMap.sensorlist.value}"/>
+                    <c:if test="${!empty subcomponents}">
+                       <c:set var="subComponentMap" value="${portal:getReportValuesForSubcomponents(pageContext.session,useRootActivityId?activityList:parentActivityId,14,subcomponents)}"/>
+                        <c:if test="${!empty subComponentMap}">
+                           <c:set var="subSpecs" value="${portal:getSpecifications(pageContext.session,14)}"/>
+                        </c:if>
+                     </c:if>                        
                 </c:otherwise>
             </c:choose>
             <c:if test="${debug}">
                 <br>ReportId = ${reportId}
+                <br>SubReportId = ${subReportId}
                 <br>actId = ${actId}
                 <br>reportLabel = ${reportLabel}
                 <br>parentActivityId = ${parentActivityId}
+                <br>activityList = ${activityList}
                 <c:forEach var="map" items="${theMap}">
                     <br>${map}
                 </c:forEach>
@@ -120,18 +141,19 @@
                 <c:forEach var="image" items="${images.rows}">
                     <sql:query var="filepath">
                         select catalogKey from FilepathResultHarnessed res 
-                        join Activity act on res.activityId=act.id where act.${reportId==8||reportId==9?'rootActivityId':'parentActivityId'}=?
+                        join Activity act on res.activityId=act.id where act.id in (${activityList})
                         and virtualPath rlike ?
-                        <sql:param value="${reportId==8||reportId==9?actId:parentActivityId}"/>
                         <sql:param value=".*/${empty param.component ? lsstId : param.component}${image.image_url}"/>
                     </sql:query>
                     <c:if test="${filepath.rowCount==0}">
-                        Missing image: ${image.image_url}
+                        Missing image: ${empty param.component ? lsstId : param.component}${image.image_url}
                     </c:if>
-                    <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${filepath.rows[0].catalogKey}" alt="${lsstId}${image.image_url}"/>
-                    <c:if test="${!empty image.caption}">
-                    <center> <c:out value="${image.caption}"/></center>
-                    </c:if>  
+                    <c:if test="${filepath.rowCount>0}">
+                        <img src="http://srs.slac.stanford.edu/DataCatalog/get?dataset=${filepath.rows[0].catalogKey}" alt="${lsstId}${image.image_url}"/>
+                        <c:if test="${!empty image.caption}">
+                            <center> <c:out value="${image.caption}"/></center>
+                        </c:if>  
+                </c:if>
                 </c:forEach>
 
             <c:if test="${sect.title == 'Software Versions'}">

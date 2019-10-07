@@ -217,7 +217,7 @@
         <name>getReportValues</name>
         <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
         <function-signature>
-           java.util.Map getReportValues(javax.servlet.http.HttpSession, java.lang.Integer, java.lang.Integer)
+           java.util.Map getReportValues(javax.servlet.http.HttpSession, java.lang.Object, java.lang.Integer)
         </function-signature>
     </function>
     
@@ -225,14 +225,14 @@
         <name>getReportValuesForSubcomponent</name>
         <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
         <function-signature>
-           java.util.Map getReportValuesForSubcomponent(javax.servlet.http.HttpSession, java.lang.Integer, java.lang.Integer, java.lang.String)
+           java.util.Map getReportValuesForSubcomponent(javax.servlet.http.HttpSession, java.lang.Object, java.lang.Integer, java.lang.String)
         </function-signature>
     </function>
     <function>
         <name>getReportValuesForSubcomponents</name>
         <function-class>org.lsst.camera.portal.queries.SummaryUtils</function-class>
         <function-signature>
-           java.util.Map getReportValuesForSubcomponents(javax.servlet.http.HttpSession, java.lang.Integer, java.lang.Integer, java.util.List)
+           java.util.Map getReportValuesForSubcomponents(javax.servlet.http.HttpSession, java.lang.Object, java.lang.Integer, java.util.List)
         </function-signature>
     </function>    
     <function>
